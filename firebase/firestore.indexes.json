@@ -1,0 +1,116 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "characters",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "media", "order": "ASCENDING" },
+        { "fieldPath": "score", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "characters",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "tier", "order": "ASCENDING" },
+        { "fieldPath": "score", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "characters",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "verseId", "order": "ASCENDING" },
+        { "fieldPath": "score", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "characters",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "tags", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "score", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "characters",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "searchKeys", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "score", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "feats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "netScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "feats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "stat", "order": "ASCENDING" },
+        { "fieldPath": "netScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "feats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "arguments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "netScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "arguments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "side", "order": "ASCENDING" },
+        { "fieldPath": "netScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "matchups",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "characterIds", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "lastActivityAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": [
+    {
+      "collectionGroup": "votes",
+      "fieldPath": "uid",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "arrayConfig": "CONTAINS", "queryScope": "COLLECTION" },
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+      ]
+    },
+    {
+      "collectionGroup": "votes",
+      "fieldPath": "characterId",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "arrayConfig": "CONTAINS", "queryScope": "COLLECTION" },
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+      ]
+    }
+  ]
+}

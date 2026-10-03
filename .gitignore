@@ -45,3 +45,6 @@ next-env.d.ts
 .vscode
 
 *-firebase-adminsdk-*.json
+firestore-debug.log
+*-debug.log
+.firebase/
