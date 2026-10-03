@@ -1,0 +1,91 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Roles come from Auth custom claims, set only with the Admin SDK
+    function isStaff() {
+      return signedIn()
+        && request.auth.token.get('role', 'user') in ['moderator', 'admin'];
+    }
+
+    // Every list query must declare a page size of at most 100.
+    // A query with no limit fails this check and is denied.
+    function pagedList() {
+      return request.query.limit <= 100;
+    }
+
+    // All writes happen on the server (Admin SDK bypasses rules),
+    // so every collection below is read-only for clients.
+
+    match /characters/{characterId} {
+      allow get: if true;
+      allow list: if pagedList();
+      allow write: if false;
+
+      match /feats/{featId} {
+        allow get: if resource.data.status in ['pending', 'verified'] || isStaff();
+        allow list: if pagedList()
+          && (resource.data.status in ['pending', 'verified'] || isStaff());
+        allow write: if false;
+      }
+    }
+
+    match /matchups/{matchupId} {
+      allow get: if true;
+      allow list: if pagedList();
+      allow write: if false;
+
+      match /arguments/{argId} {
+        allow get: if resource.data.status == 'visible' || isStaff();
+        allow list: if pagedList()
+          && (resource.data.status == 'visible' || isStaff());
+        allow write: if false;
+      }
+    }
+
+    // Vote documents (feat votes and matchup votes) are private to their owner.
+    // The document ID is the voter's uid. The collection group rule also allows
+    // "my votes" queries, such as all of my votes on one character's feats.
+    match /{path=**}/votes/{voteId} {
+      allow get: if isOwner(voteId);
+      allow list: if pagedList()
+        && signedIn()
+        && resource.data.uid == request.auth.uid;
+      allow write: if false;
+    }
+
+    // Public profiles only. Nothing private is ever stored here.
+    match /users/{uid} {
+      allow get: if true;
+      allow list: if pagedList();
+      allow write: if false;
+    }
+
+    match /creators/{creatorId} {
+      allow get: if true;
+      allow list: if pagedList();
+      allow write: if false;
+    }
+
+    match /verses/{verseId} {
+      allow get: if true;
+      allow list: if pagedList();
+      allow write: if false;
+    }
+
+    // Handles (uniqueness registry) and _rateLimits are server-only.
+    // Explicit default deny for everything else.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
