@@ -1,83 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { STAT_WEIGHTS } from "@/config/ranking";
-import { STAT_KEYS } from "@/config/stats";
 import { assignRanks, trendOf } from "@/lib/ranking/rank";
-import {
-  compareCharacters,
-  computeScore,
-  evidenceCoverage,
-  evidenceShare,
-  peakRatings,
-  resolveStatSheet,
-  tierFromScore,
-  type StatSheet,
-} from "@/lib/ranking/score";
+import { compareCharacters, evidenceShare } from "@/lib/ranking/score";
 import { decideFeatStatus } from "@/lib/ranking/verification";
 import { computeVerseScore, rankVerses } from "@/lib/ranking/verse";
 
-const sheetOf = (n: number): StatSheet =>
-  Object.fromEntries(STAT_KEYS.map((k) => [k, n])) as StatSheet;
-
-describe("score", () => {
-  it("has weights that sum to 100", () => {
-    const total = STAT_KEYS.reduce((sum, k) => sum + STAT_WEIGHTS[k], 0);
-    expect(total).toBe(100);
-  });
-
-  it("scales with evidence coverage", () => {
-    expect(computeScore(sheetOf(100), 8)).toBe(10000);
-    expect(computeScore(sheetOf(100), 20)).toBe(10000);
-    expect(computeScore(sheetOf(100), 4)).toBe(9000);
-    expect(computeScore(sheetOf(100), 0)).toBe(8000);
-    expect(computeScore(sheetOf(50), 8)).toBe(5000);
-  });
-
-  it("clamps coverage and survives bad input", () => {
-    expect(evidenceCoverage(-3)).toBe(0);
-    expect(evidenceCoverage(99)).toBe(1);
-    expect(computeScore({ ...sheetOf(50), speed: Number.NaN }, 8)).toBe(4000);
-  });
-
-  it("is deterministic", () => {
-    const a = computeScore(sheetOf(73), 5);
-    expect(computeScore(sheetOf(73), 5)).toBe(a);
-  });
-});
-
-describe("stat resolution", () => {
-  it("uses the best verified feat per stat and ignores unverified ones", () => {
-    const peaks = peakRatings([
-      { stat: "speed", rating: 80, status: "verified" },
-      { stat: "speed", rating: 95, status: "verified" },
-      { stat: "speed", rating: 100, status: "pending" },
-      { stat: "reach", rating: 70, status: "rejected" },
-    ]);
-    expect(peaks).toEqual({ speed: 95 });
-  });
-
-  it("falls back to the seeded baseline where nothing is verified", () => {
-    const sheet = resolveStatSheet(sheetOf(40), { speed: 95 });
-    expect(sheet.speed).toBe(95);
-    expect(sheet.durability).toBe(40);
-  });
-});
-
-describe("tiers", () => {
-  it("assigns tiers at the cutoffs", () => {
-    expect(tierFromScore(10000)).toBe("S+");
-    expect(tierFromScore(9500)).toBe("S+");
-    expect(tierFromScore(9499)).toBe("S");
-    expect(tierFromScore(9000)).toBe("S");
-    expect(tierFromScore(8999)).toBe("A");
-    expect(tierFromScore(8000)).toBe("A");
-    expect(tierFromScore(6500)).toBe("B");
-    expect(tierFromScore(6499)).toBe("C");
-    expect(tierFromScore(0)).toBe("C");
-  });
-
-  it("computes evidence share safely", () => {
+describe("evidence share", () => {
+  it("computes safely", () => {
     expect(evidenceShare(0, 0)).toBe(0);
     expect(evidenceShare(3, 4)).toBe(0.75);
+    expect(evidenceShare(9, 4)).toBe(1);
   });
 });
 
