@@ -12,7 +12,7 @@
       "collectionGroup": "characters",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "tier", "order": "ASCENDING" },
+        { "fieldPath": "tierGroup", "order": "ASCENDING" },
         { "fieldPath": "score", "order": "DESCENDING" }
       ]
     },
@@ -53,7 +53,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "stat", "order": "ASCENDING" },
+        { "fieldPath": "category", "order": "ASCENDING" },
         { "fieldPath": "netScore", "order": "DESCENDING" }
       ]
     },
