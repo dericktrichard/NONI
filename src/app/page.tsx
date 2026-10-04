@@ -1,10 +1,6 @@
 import { RankingBoard } from "@/components/characters/ranking-board";
 import { MOCK_CHARACTERS } from "@/config/mock-characters";
 
-const ranked = [...MOCK_CHARACTERS].sort(
-  (a, b) => b.score - a.score || a.name.localeCompare(b.name),
-);
-
 export default function Home() {
   return (
     <main className="mx-auto max-w-6xl px-4 pt-8 pb-24 sm:pt-12">
@@ -17,7 +13,7 @@ export default function Home() {
       </p>
 
       <div className="mt-8">
-        <RankingBoard characters={ranked} />
+        <RankingBoard characters={MOCK_CHARACTERS} />
       </div>
     </main>
   );
