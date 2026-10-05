@@ -1,12 +1,3 @@
-/**
- * Loads the sample roster into Firestore through the ranking engine.
- *
- *   npm run seed              dry run: prints what would be written
- *   npm run seed -- --write   writes to the project named in .env.local
- *
- * Development tool only. It overwrites whole character documents, so do not run
- * it against a database that holds real, server-written data.
- */
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { Timestamp, getFirestore } from "firebase-admin/firestore";
 import { MOCK_SEEDS } from "@/config/mock-characters";
@@ -16,11 +7,13 @@ import { buildCharacterDocs } from "@/lib/ranking/character-doc";
 const MAX_BATCH = 400;
 
 async function main(): Promise<number> {
-  const write = process.argv.includes("--write");
+  const args = process.argv.slice(2);
+  const write = args.includes("--write");
+  const confirmed = args.find((arg) => arg.startsWith("--project="))?.slice("--project=".length);
   const docs = buildCharacterDocs(MOCK_SEEDS);
 
   if (docs.length > MAX_BATCH) {
-    console.error(`Too many documents for one batch (${docs.length}). Split the seed first.`);
+    console.error(`Too many documents for one batch (${docs.length}).`);
     return 1;
   }
 
@@ -32,21 +25,25 @@ async function main(): Promise<number> {
   }
 
   if (!write) {
-    console.log("\nDry run. Add --write to save these to Firestore.");
+    console.log("\nDry run. To save: npm run seed -- --write --project=<your project id>");
     return 0;
   }
 
   const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
   const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, "\n");
+
   if (!projectId || !clientEmail || !privateKey) {
-    console.error("\nMissing FIREBASE_ADMIN_* values. Run this with npm run seed so .env.local is loaded.");
+    console.error("\nMissing FIREBASE_ADMIN_* values. Run this with npm run seed.");
+    return 1;
+  }
+  if (confirmed !== projectId) {
+    console.error(`\nRefusing to write. Add --project=${projectId} to confirm the target.`);
     return 1;
   }
 
   const app = getApps()[0] ?? initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
   const db = getFirestore(app);
-  console.log(`\nWriting to project ${projectId}`);
 
   const refs = docs.map((doc) => db.collection(COL.characters).doc(doc.slug));
   const existing = await db.getAll(...refs);
@@ -59,7 +56,7 @@ async function main(): Promise<number> {
   });
   await batch.commit();
 
-  console.log(`Wrote ${docs.length} documents.`);
+  console.log(`\nWrote ${docs.length} documents to ${projectId}.`);
   return 0;
 }
 

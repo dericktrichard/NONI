@@ -136,7 +136,7 @@ describe("filters over the sample roster", () => {
   });
 
   it("work end to end from a raw request", () => {
-    const parsed = parseCharacterQuery(new URLSearchParams("media=anime&limit=1"));
+    const parsed = parseCharacterQuery(new URLSearchParams("limit=1&media=anime"));
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
     const first = assemblePage(run(parsed.plan), parsed.plan.limit);

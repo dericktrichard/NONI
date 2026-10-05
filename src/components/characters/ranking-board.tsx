@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MEDIA_LABELS } from "@/config/media";
 import { TIER_GROUPS } from "@/config/scales";
-import { facetQueryString, type Facet } from "@/lib/data/query";
+import { facetQueryString, searchTerm, type Facet } from "@/lib/data/query";
 import type { CharacterPage } from "@/lib/data/summary";
 import type { MediaType } from "@/types/character";
 import { Podium } from "./podium";
@@ -18,7 +18,6 @@ type Status = "idle" | "loading" | "more" | "error";
 
 const GENERIC_ERROR = "Could not load the rankings. Check your connection and try again.";
 const SEARCH_DELAY_MS = 250;
-const SEARCH_MIN_LENGTH = 2;
 
 function facetLabel(facet: Facet): string {
   switch (facet.kind) {
@@ -101,10 +100,13 @@ export function RankingBoard({ initial }: { initial: CharacterPage }) {
     setSearchText(text);
     clearTimeout(timer.current);
 
-    const term = text.trim();
-    if (term.length === 0) {
+    if (text.trim().length === 0) {
       apply({ kind: "all" });
-    } else if (term.length >= SEARCH_MIN_LENGTH) {
+      return;
+    }
+
+    const term = searchTerm(text);
+    if (term !== null) {
       timer.current = setTimeout(() => apply({ kind: "search", term }), SEARCH_DELAY_MS);
     }
   }

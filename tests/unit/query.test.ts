@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_PLAN,
+  MAX_AFTER,
   PAGE,
+  canonicalQuery,
   facetQueryString,
+  isCanonicalSearch,
   parseCharacterQuery,
   searchTerm,
   type Facet,
@@ -30,7 +33,7 @@ describe("parseCharacterQuery", () => {
       ["tier=3", { field: "tierGroup", op: "==", value: 3 }],
       ["tier=0", { field: "tierGroup", op: "==", value: 0 }],
       ["verse=dragon-ball", { field: "verseId", op: "==", value: "dragon-ball" }],
-      ["q=Gojo", { field: "searchKeys", op: "array-contains", value: "gojo" }],
+      ["q=gojo", { field: "searchKeys", op: "array-contains", value: "gojo" }],
     ];
     for (const [query, where] of cases) {
       const result = parse(query);
@@ -39,29 +42,58 @@ describe("parseCharacterQuery", () => {
     }
   });
 
-  it("applies only one filter, in the order search, verse, scale, media", () => {
-    const all = parse("media=manga&tier=4&verse=one-piece&q=goku");
-    expect(all.ok && all.plan.facet.kind).toBe("search");
-    const noSearch = parse("media=manga&tier=4&verse=one-piece");
-    expect(noSearch.ok && noSearch.plan.facet.kind).toBe("verse");
-    const tierMedia = parse("media=manga&tier=4");
-    expect(tierMedia.ok && tierMedia.plan.facet.kind).toBe("tier");
+  it("accepts a cursor and a page size inside their ranges", () => {
+    const result = parse(`after=${MAX_AFTER}&limit=${PAGE.max}&media=anime`);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.plan.after).toBe(MAX_AFTER);
+      expect(result.plan.limit).toBe(PAGE.max);
+    }
+    const first = parse("after=0&limit=1");
+    expect(first.ok && first.plan.after).toBe(0);
+    expect(first.ok && first.plan.limit).toBe(1);
   });
 
-  it("clamps the page size and reads the cursor", () => {
-    const big = parse("limit=500&after=24");
-    expect(big.ok && big.plan.limit).toBe(PAGE.max);
-    expect(big.ok && big.plan.after).toBe(24);
-    const zero = parse("limit=0");
-    expect(zero.ok && zero.plan.limit).toBe(1);
+  it("rejects more than one filter", () => {
+    for (const query of ["media=manga&tier=4", "media=manga&q=goku", "q=goku&tier=4", "tier=4&verse=one-piece"]) {
+      expect(parse(query).ok).toBe(false);
+    }
   });
 
-  it("ignores empty parameters", () => {
-    const result = parse("media=&q=&after=");
-    expect(result.ok && result.plan.facet.kind).toBe("all");
+  it("rejects unknown, repeated, empty and out of order parameters", () => {
+    for (const query of [
+      "junk=1",
+      "media=manga&junk=1",
+      "media=manga&media=anime",
+      "media=",
+      "q=",
+      "after=",
+      "media=manga&after=5",
+      "q=goku&limit=5",
+      "Media=manga",
+    ]) {
+      expect(parse(query).ok).toBe(false);
+    }
   });
 
-  it("rejects bad input with a plain message", () => {
+  it("rejects values that are not in canonical form", () => {
+    for (const query of [
+      "media=%20manga",
+      "media=Manga",
+      "tier=03",
+      "tier=+3",
+      "after=007",
+      "limit=05",
+      "q=Gojo",
+      "q=gojo%20satoru",
+      "q=goku%21",
+      "q=goku%20",
+    ]) {
+      expect(parse(query).ok).toBe(false);
+    }
+  });
+
+  it("rejects bad values with a plain message", () => {
     for (const query of [
       "media=cartoon",
       "tier=12",
@@ -70,7 +102,11 @@ describe("parseCharacterQuery", () => {
       "verse=Not%20A%20Slug",
       "after=-5",
       "after=1.5",
+      `after=${MAX_AFTER + 1}`,
       "limit=ten",
+      "limit=0",
+      `limit=${PAGE.max + 1}`,
+      "limit=500",
       "q=a",
       "q=%21%21",
       `q=${"x".repeat(61)}`,
@@ -82,6 +118,12 @@ describe("parseCharacterQuery", () => {
         expect(result.error.includes(String.fromCharCode(8212))).toBe(false);
       }
     }
+  });
+
+  it("never reflects the input back in an error", () => {
+    const result = parse("media=%3Cscript%3Ealert(1)%3C/script%3E");
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.includes("script")).toBe(false);
   });
 });
 
@@ -110,6 +152,13 @@ describe("searchTerm", () => {
       expect(keys.has(searchTerm(typed)!)).toBe(true);
     }
   });
+
+  it("is idempotent, so a term the client sends passes the server check", () => {
+    for (const typed of ["Gojo Satoru", "Pokémon", "GOKU", "supercalifragilistic", "a goku"]) {
+      const term = searchTerm(typed)!;
+      expect(searchTerm(term)).toBe(term);
+    }
+  });
 });
 
 describe("facetQueryString", () => {
@@ -134,8 +183,50 @@ describe("facetQueryString", () => {
     }
   });
 
-  it("encodes free text safely", () => {
-    const query = facetQueryString({ kind: "search", term: "a&b=c d" }, null);
-    expect(query).toBe("q=a%26b%3Dc+d");
+  it("always writes parameters in the one accepted order", () => {
+    expect(facetQueryString({ kind: "media", media: "manga" }, 24)).toBe("after=24&media=manga");
+    expect(facetQueryString({ kind: "all" }, null)).toBe("");
+  });
+
+  it("encodes text safely", () => {
+    expect(facetQueryString({ kind: "search", term: "a&b=c d" }, null)).toBe("q=a%26b%3Dc+d");
+  });
+});
+
+describe("canonical query strings", () => {
+  const accepted = (search: string) => {
+    const result = parse(search);
+    return result.ok && isCanonicalSearch(search, result.plan);
+  };
+
+  it("accepts exactly one spelling of each request", () => {
+    for (const search of ["", "?", "media=manga", "?media=manga", "after=24&media=manga", "limit=5", "after=5&limit=5&q=goku"]) {
+      expect(accepted(search)).toBe(true);
+    }
+  });
+
+  it("rejects stray separators, explicit defaults and re-encoding", () => {
+    for (const search of [
+      "media=manga&",
+      "&media=manga",
+      "media=manga&&",
+      `limit=${PAGE.default}&media=manga`,
+      "%6Dedia=manga",
+      "media=man%67a",
+      "verse=one%2Dpiece",
+    ]) {
+      expect(accepted(search)).toBe(false);
+    }
+  });
+
+  it("rebuilds the same string the client sends", () => {
+    const facets: Facet[] = [{ kind: "all" }, { kind: "media", media: "anime" }, { kind: "tier", group: 4 }, { kind: "search", term: "goku" }];
+    for (const facet of facets) {
+      for (const after of [null, 12]) {
+        const search = facetQueryString(facet, after);
+        const result = parse(search);
+        expect(result.ok && canonicalQuery(result.plan)).toBe(search);
+      }
+    }
   });
 });
