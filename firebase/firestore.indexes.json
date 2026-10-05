@@ -5,7 +5,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "media", "order": "ASCENDING" },
-        { "fieldPath": "score", "order": "DESCENDING" }
+        { "fieldPath": "rank", "order": "ASCENDING" }
       ]
     },
     {
@@ -13,7 +13,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "tierGroup", "order": "ASCENDING" },
-        { "fieldPath": "score", "order": "DESCENDING" }
+        { "fieldPath": "rank", "order": "ASCENDING" }
       ]
     },
     {
@@ -21,7 +21,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "verseId", "order": "ASCENDING" },
-        { "fieldPath": "score", "order": "DESCENDING" }
+        { "fieldPath": "rank", "order": "ASCENDING" }
       ]
     },
     {
@@ -29,7 +29,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "tags", "arrayConfig": "CONTAINS" },
-        { "fieldPath": "score", "order": "DESCENDING" }
+        { "fieldPath": "rank", "order": "ASCENDING" }
       ]
     },
     {
@@ -37,7 +37,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "searchKeys", "arrayConfig": "CONTAINS" },
-        { "fieldPath": "score", "order": "DESCENDING" }
+        { "fieldPath": "rank", "order": "ASCENDING" }
       ]
     },
     {
