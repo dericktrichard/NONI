@@ -1,7 +1,17 @@
 import { RankingBoard } from "@/components/characters/ranking-board";
-import { MOCK_CHARACTERS } from "@/config/mock-characters";
+import { fetchCharacters } from "@/lib/data/characters";
+import { DEFAULT_PLAN } from "@/lib/data/query";
 
-export default function Home() {
+/**
+ * The first page is rendered on the server and cached for five minutes, so most
+ * visitors are served a static page and cost no Firestore reads. Filters and
+ * "load more" go through /api/characters, which is cached at the CDN.
+ */
+export const revalidate = 300;
+
+export default async function Home() {
+  const initial = await fetchCharacters(DEFAULT_PLAN);
+
   return (
     <main className="mx-auto max-w-6xl px-4 pt-8 pb-24 sm:pt-12">
       <p className="eyebrow">Global ranking</p>
@@ -13,7 +23,7 @@ export default function Home() {
       </p>
 
       <div className="mt-8">
-        <RankingBoard characters={MOCK_CHARACTERS} />
+        <RankingBoard initial={initial} />
       </div>
     </main>
   );

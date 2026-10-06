@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { AccountMenu } from "@/components/auth/account-menu";
 
 export function Header() {
   return (
@@ -9,7 +10,10 @@ export function Header() {
           <span className="size-3 bg-accent" aria-hidden />
           <span className="font-display text-lg font-semibold tracking-tight">NONI</span>
         </Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <AccountMenu />
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );
