@@ -1,4 +1,4 @@
-import { HAX_KINDS, isHaxKind, type HaxKind } from "@/config/combat";
+import { isHaxKind, type HaxKind } from "@/config/combat";
 import {
   AP_TIERS,
   MAX_DIMENSION,
@@ -104,7 +104,7 @@ export function isValidClaim(claim: FeatClaim): boolean {
       );
     case "hax":
     case "resistance":
-      return claim.kind in HAX_KINDS && isApTier(claim.power);
+      return isHaxKind(claim.kind) && isApTier(claim.power);
   }
 }
 
