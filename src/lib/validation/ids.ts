@@ -1,0 +1,1 @@
+export const FEAT_ID_RE = /^[A-Za-z0-9]{20}$/;

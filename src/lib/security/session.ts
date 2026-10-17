@@ -15,11 +15,11 @@ export const cookieOptions = {
   path: "/",
 };
 
-export async function getSessionUser() {
+export async function getSessionUser(checkRevoked = true) {
   const value = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!value) return null;
   try {
-    return await adminAuth().verifySessionCookie(value, true);
+    return await adminAuth().verifySessionCookie(value, checkRevoked);
   } catch {
     return null;
   }

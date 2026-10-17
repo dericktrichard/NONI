@@ -1,0 +1,1 @@
+export const OPEN_SIGN_IN = "noni:open-sign-in";
