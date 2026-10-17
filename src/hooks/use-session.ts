@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 export type SessionUser = { uid: string; verified: boolean };
 type State = { status: "loading" } | { status: "ready"; user: SessionUser | null };
 
-async function load(): Promise<State> {
+async function request(): Promise<State> {
   try {
     const response = await fetch("/api/auth/me", { cache: "no-store" });
     const user = response.ok ? ((await response.json()) as SessionUser | null) : null;
@@ -13,6 +13,15 @@ async function load(): Promise<State> {
   } catch {
     return { status: "ready", user: null };
   }
+}
+
+let inflight: Promise<State> | null = null;
+
+function load(): Promise<State> {
+  inflight ??= request().finally(() => {
+    inflight = null;
+  });
+  return inflight;
 }
 
 export function useSession() {
@@ -29,7 +38,7 @@ export function useSession() {
   }, []);
 
   const refresh = useCallback(async () => {
-    setState(await load());
+    setState(await request());
   }, []);
 
   return { state, refresh };

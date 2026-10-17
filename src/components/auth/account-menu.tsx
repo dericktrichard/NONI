@@ -6,6 +6,7 @@ import { AuthDialog } from "@/components/auth/auth-dialog";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/use-session";
 import { signOutEverywhere } from "@/lib/auth/client";
+import { OPEN_SIGN_IN } from "@/lib/auth/events";
 
 export function AccountMenu() {
   const { state, refresh } = useSession();
@@ -29,6 +30,12 @@ export function AccountMenu() {
       document.removeEventListener("keydown", onKey);
     };
   }, [menuOpen]);
+
+  useEffect(() => {
+    const open = () => setDialogOpen(true);
+    window.addEventListener(OPEN_SIGN_IN, open);
+    return () => window.removeEventListener(OPEN_SIGN_IN, open);
+  }, []);
 
   async function leave() {
     setLeaving(true);
