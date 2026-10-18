@@ -41,6 +41,7 @@ export function AuthDialog({ open, onClose, onSignedIn }: AuthDialogProps) {
   function handleClose() {
     setPassword("");
     setMessage(null);
+    setBusy(false);
     onClose();
   }
 
