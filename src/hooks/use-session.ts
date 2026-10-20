@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-export type SessionUser = { uid: string; verified: boolean };
+export type SessionUser = { uid: string; verified: boolean; role: "user" | "moderator" | "admin" };
 type State = { status: "loading" } | { status: "ready"; user: SessionUser | null };
 
 async function request(): Promise<State> {
