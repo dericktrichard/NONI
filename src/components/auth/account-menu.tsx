@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/use-session";
 import { signOutEverywhere } from "@/lib/auth/client";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 
 export function AccountMenu() {
@@ -15,6 +16,8 @@ export function AccountMenu() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const root = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -46,9 +49,11 @@ export function AccountMenu() {
       setLeaving(false);
       setMenuOpen(false);
       await refresh();
+      if (pathname.startsWith("/admin")) router.replace("/");
+      else router.refresh();
     }
   }
-
+  
   if (state.status === "loading") return <div className="h-9 w-20" aria-hidden />;
 
   if (!state.user) {
