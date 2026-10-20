@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/use-session";
 import { signOutEverywhere } from "@/lib/auth/client";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
+import Link from "next/link";
 
 export function AccountMenu() {
   const { state, refresh } = useSession();
@@ -86,6 +87,15 @@ export function AccountMenu() {
             <p className="mt-1 text-xs text-foreground/70">
               Open the link we emailed you, then sign in again. Voting and submitting need a verified email.
             </p>
+          )}
+          {state.user.role !== "user" && (
+            <Link
+              href="/admin"
+              onClick={() => setMenuOpen(false)}
+              className="mt-3 block text-sm underline underline-offset-4"
+            >
+              Admin
+            </Link>
           )}
           <Button variant="outline" size="sm" className="mt-4 w-full" onClick={() => void leave()} disabled={leaving}>
             <LogOut className="size-4" aria-hidden />

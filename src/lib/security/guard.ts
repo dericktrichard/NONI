@@ -6,11 +6,13 @@ import { isSameOrigin } from "@/lib/security/origin";
 import { consume } from "@/lib/security/rate-limit";
 import { createMemoryLimiter } from "@/lib/security/rate-limit-core";
 import { getSessionUser } from "@/lib/security/session";
+import { hasRole } from "@/lib/security/roles";
 
 export interface Rule {
   scope: string;
   limit: number;
   windowMs: number;
+  role?: "moderator" | "admin";
 }
 
 type SessionUser = NonNullable<Awaited<ReturnType<typeof getSessionUser>>>;
@@ -38,6 +40,7 @@ export async function guardWrite<T>(
   const user = await getSessionUser();
   if (!user) return fail(401, "Sign in required.");
   if (user.email_verified !== true) return fail(403, "Verify your email first.");
+  if (rule.role && !hasRole(user, rule.role)) return fail(403, "Forbidden.");
 
   try {
     const decision = await consume(rule.scope, user.uid, rule.limit, rule.windowMs);

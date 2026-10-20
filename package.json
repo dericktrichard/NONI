@@ -10,7 +10,8 @@
     "test": "vitest run tests/unit",
     "test:rules": "firebase emulators:exec --only firestore --project demo-noni \"vitest run tests/rules\"",
     "matchup": "tsx scripts/matchup.ts",
-    "seed": "tsx --env-file=.env.local scripts/seed.ts"
+    "seed": "tsx --env-file=.env.local scripts/seed.ts",
+    "role": "tsx --env-file=.env.local scripts/role.ts"
   },
   "overrides": {
     "@grpc/grpc-js": "^1.14.0"
