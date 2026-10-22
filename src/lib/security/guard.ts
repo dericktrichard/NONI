@@ -5,8 +5,8 @@ import { getClientIp } from "@/lib/security/client-ip";
 import { isSameOrigin } from "@/lib/security/origin";
 import { consume } from "@/lib/security/rate-limit";
 import { createMemoryLimiter } from "@/lib/security/rate-limit-core";
-import { getSessionUser } from "@/lib/security/session";
 import { hasRole } from "@/lib/security/roles";
+import { getSessionUser } from "@/lib/security/session";
 
 export interface Rule {
   scope: string;
@@ -15,23 +15,20 @@ export interface Rule {
   role?: "moderator" | "admin";
 }
 
-type SessionUser = NonNullable<Awaited<ReturnType<typeof getSessionUser>>>;
-export type Guarded<T> = { ok: true; user: SessionUser; body: T } | { ok: false; response: NextResponse };
+export type SessionUser = NonNullable<Awaited<ReturnType<typeof getSessionUser>>>;
+type Failure = { ok: false; response: NextResponse };
+export type Checked = { ok: true; user: SessionUser } | Failure;
+export type Guarded<T> = { ok: true; user: SessionUser; body: T } | Failure;
 
 const byIp = createMemoryLimiter(60, 60_000);
 
-function fail(status: number, error: string, retryAfter?: number): { ok: false; response: NextResponse } {
+function fail(status: number, error: string, retryAfter?: number): Failure {
   const headers: Record<string, string> = { "Cache-Control": "no-store" };
   if (retryAfter) headers["Retry-After"] = String(retryAfter);
   return { ok: false, response: NextResponse.json({ error }, { status, headers }) };
 }
 
-export async function guardWrite<T>(
-  request: Request,
-  rule: Rule,
-  schema: z.ZodType<T>,
-  maxBytes = 16_384,
-): Promise<Guarded<T>> {
+export async function guardRequest(request: Request, rule: Rule): Promise<Checked> {
   if (!isSameOrigin(request)) return fail(403, "Forbidden.");
 
   const ip = byIp(getClientIp(request));
@@ -50,6 +47,18 @@ export async function guardWrite<T>(
     return fail(503, "Try again shortly.");
   }
 
+  return { ok: true, user };
+}
+
+export async function guardWrite<T>(
+  request: Request,
+  rule: Rule,
+  schema: z.ZodType<T>,
+  maxBytes = 16_384,
+): Promise<Guarded<T>> {
+  const checked = await guardRequest(request, rule);
+  if (!checked.ok) return checked;
+
   if (!request.headers.get("content-type")?.startsWith("application/json")) return fail(415, "Unsupported content type.");
   const text = await request.text();
   if (text.length > maxBytes) return fail(413, "Request too large.");
@@ -63,5 +72,5 @@ export async function guardWrite<T>(
   const parsed = schema.safeParse(json);
   if (!parsed.success) return fail(400, "Invalid request.");
 
-  return { ok: true, user, body: parsed.data };
+  return { ok: true, user: checked.user, body: parsed.data };
 }
