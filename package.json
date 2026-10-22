@@ -11,12 +11,14 @@
     "test:rules": "firebase emulators:exec --only firestore --project demo-noni \"vitest run tests/rules\"",
     "matchup": "tsx scripts/matchup.ts",
     "seed": "tsx --env-file=.env.local scripts/seed.ts",
-    "role": "tsx --env-file=.env.local scripts/role.ts"
+    "role": "tsx --env-file=.env.local scripts/role.ts",
+    "rerank": "tsx --env-file=.env.local scripts/rerank.ts"
   },
   "overrides": {
     "@grpc/grpc-js": "^1.14.0"
   },
   "dependencies": {
+    "aws4fetch": "^1.0.20",
     "clsx": "^2.1.1",
     "firebase": "^12.19.0",
     "firebase-admin": "^14.5.0",
@@ -26,6 +28,7 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "server-only": "^0.0.1",
+    "sharp": "^0.35.5",
     "tailwind-merge": "^3.7.0",
     "zod": "^4.6.5"
   },
