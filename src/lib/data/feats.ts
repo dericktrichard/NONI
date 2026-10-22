@@ -10,6 +10,7 @@ import { evidenceShare } from "@/lib/ranking/score";
 import { applyVote, type VoteValue } from "@/lib/ranking/vote";
 import { pseudonymFor } from "@/lib/security/pseudonym";
 import type { FeatStatus, PowerProfile, Proof } from "@/types/domain";
+import { rerankAll } from "@/lib/data/rerank";
 
 const MAX_VERIFIED_READ = 500;
 
@@ -139,7 +140,11 @@ export async function castVote(
     return { result: { status, ...tally, value: next }, reprofile: status !== current };
   });
 
-  if (outcome.reprofile) await recomputeCharacter(characterId);
+  if (outcome.reprofile) {
+    await recomputeCharacter(characterId);
+    await rerankAll(adminDb()).catch((error) => console.error("rerank failed", error));
+  }
+  
   return outcome.result;
 }
 
