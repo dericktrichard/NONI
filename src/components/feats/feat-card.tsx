@@ -8,11 +8,12 @@ import type { VoteValue } from "@/lib/ranking/vote";
 import { cn } from "@/lib/utils";
 import type { FeatView } from "@/types/character-page";
 import type { Proof } from "@/types/domain";
+import { ReportButton } from "@/components/feats/report-button";
 
 const voteButton =
   "grid size-11 place-items-center border border-transparent transition-colors hover:bg-muted disabled:opacity-40";
 
-function ProofItem({ proof }: { proof: Proof }) {
+export function ProofItem({ proof }: { proof: Proof }) {
   const url = parseProofUrl(proof.url);
   const label = `${PROOF_TYPE_LABELS[proof.type]}, ${proof.locator}`;
 
@@ -87,9 +88,12 @@ export function FeatCard({ feat, mine, busy, onVote }: FeatCardProps) {
           ))}
         </ul>
 
-        <p className="eyebrow mt-3">
-          {feat.authorName} / {feat.createdAt.slice(0, 10)}
-        </p>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+          <p className="eyebrow">
+            {feat.authorName} / {feat.createdAt.slice(0, 10)}
+          </p>
+          <ReportButton featId={feat.id} />
+        </div>
       </div>
     </li>
   );
