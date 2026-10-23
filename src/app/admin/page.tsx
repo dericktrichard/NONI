@@ -19,7 +19,12 @@ export default async function AdminHome() {
             </Link>
           </li>
         ) : null}
-        <li className="py-4 text-muted-foreground">Moderation queue (coming)</li>
+        
+        <li className="py-4">
+          <Link href="/admin/moderation" className="font-medium underline underline-offset-4">
+            Moderation queue
+          </Link>
+        </li>
       </ul>
     </>
   );
