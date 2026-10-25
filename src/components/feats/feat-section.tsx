@@ -144,6 +144,7 @@ export function FeatSection({ characterId, initialFeats }: { characterId: string
               feat={feat}
               mine={myVotes[feat.id] ?? 0}
               busy={busyId === feat.id}
+              characterId={characterId}
               onVote={(value) => void vote(feat, value)}
             />
           ))}

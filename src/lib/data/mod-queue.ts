@@ -1,14 +1,14 @@
 import "server-only";
-import type { QueryDocumentSnapshot } from "firebase-admin/firestore";
+import type { DocumentSnapshot } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL } from "@/lib/firebase/paths";
 import type { ReportReason } from "@/lib/moderation/actions";
 import type { FeatClaim } from "@/lib/ranking/profile";
-import { pseudonymFor } from "@/lib/security/pseudonym";
 import type { FeatView } from "@/types/character-page";
 import type { FeatStatus, Proof } from "@/types/domain";
 
 const LIMIT = 25;
+const REPORT_SCAN = 200;
 const REPORTS_SHOWN = 5;
 
 export interface QueueReport {
@@ -28,7 +28,7 @@ export interface ModQueue {
   pending: QueueFeat[];
 }
 
-function toQueueFeat(doc: QueryDocumentSnapshot): QueueFeat {
+function toQueueFeat(doc: DocumentSnapshot, reports: QueueReport[] = []): QueueFeat {
   const created = doc.get("createdAt");
   return {
     id: doc.id,
@@ -39,42 +39,52 @@ function toQueueFeat(doc: QueryDocumentSnapshot): QueueFeat {
     status: doc.get("status") as FeatStatus,
     upvotes: Number(doc.get("upvotes") ?? 0),
     downvotes: Number(doc.get("downvotes") ?? 0),
-    authorName: pseudonymFor(String(doc.get("authorUid") ?? "")),
+    authorName: String(doc.get("authorName") ?? ""),
     createdAt: created?.toDate ? created.toDate().toISOString() : "",
     characterId: String(doc.get("characterId") ?? ""),
-    openReports: Number(doc.get("openReports") ?? 0),
+    openReports: reports.length,
     staffLocked: doc.get("staffLocked") === true,
-    reports: [],
+    reports,
   };
 }
 
 export async function fetchModQueue(): Promise<ModQueue> {
   const db = adminDb();
 
-  const [reportedSnap, pendingSnap] = await Promise.all([
-    db.collection(COL.feats).where("openReports", ">", 0).orderBy("openReports", "desc").limit(LIMIT).get(),
-    db.collection(COL.feats).where("status", "==", "pending").orderBy("netScore", "desc").limit(LIMIT).get(),
+  const [openSnap, pendingSnap] = await Promise.all([
+    db.collection(COL.reports).where("status", "==", "open").limit(REPORT_SCAN).get(),
+    db
+      .collectionGroup(COL.feats)
+      .where("status", "==", "pending")
+      .orderBy("netScore", "desc")
+      .limit(LIMIT)
+      .get(),
   ]);
 
-  const reported = await Promise.all(
-    reportedSnap.docs.map(async (doc) => {
-      const feat = toQueueFeat(doc);
-      const reports = await db
-        .collection(COL.reports)
-        .where("featId", "==", doc.id)
-        .where("status", "==", "open")
-        .limit(REPORTS_SHOWN)
-        .get();
-      feat.reports = reports.docs.map((report) => ({
-        reason: report.get("reason") as ReportReason,
-        note: String(report.get("note") ?? ""),
-      }));
-      return feat;
-    }),
+  const grouped = new Map<string, { characterId: string; reports: QueueReport[] }>();
+  for (const report of openSnap.docs) {
+    const featId = String(report.get("featId"));
+    const entry = grouped.get(featId) ?? { characterId: String(report.get("characterId")), reports: [] };
+    entry.reports.push({
+      reason: report.get("reason") as ReportReason,
+      note: String(report.get("note") ?? ""),
+    });
+    grouped.set(featId, entry);
+  }
+
+  const top = [...grouped.entries()].sort((a, b) => b[1].reports.length - a[1].reports.length).slice(0, LIMIT);
+  const refs = top.map(([featId, entry]) =>
+    db.collection(COL.characters).doc(entry.characterId).collection(COL.feats).doc(featId),
   );
+  const snaps = refs.length > 0 ? await db.getAll(...refs) : [];
+
+  const reported: QueueFeat[] = [];
+  snaps.forEach((snap, index) => {
+    if (snap.exists) reported.push(toQueueFeat(snap, top[index][1].reports.slice(0, REPORTS_SHOWN)));
+  });
 
   const reportedIds = new Set(reported.map((feat) => feat.id));
-  const pending = pendingSnap.docs.filter((doc) => !reportedIds.has(doc.id)).map(toQueueFeat);
+  const pending = pendingSnap.docs.filter((doc) => !reportedIds.has(doc.id)).map((doc) => toQueueFeat(doc));
 
   return { reported, pending };
 }

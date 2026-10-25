@@ -66,6 +66,14 @@
       ]
     },
     {
+      "collectionGroup": "feats",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "netScore", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "arguments",
       "queryScope": "COLLECTION",
       "fields": [

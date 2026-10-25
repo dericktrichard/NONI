@@ -5,7 +5,7 @@ import { controlClass } from "@/components/ui/fields";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import { REPORT_REASONS, REPORT_REASON_LABELS, type ReportReason } from "@/lib/moderation/actions";
 
-export function ReportButton({ featId }: { featId: string }) {
+export function ReportButton({ characterId, featId }: { characterId: string; featId: string }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<ReportReason>("inaccurate");
   const [note, setNote] = useState("");
@@ -20,7 +20,7 @@ export function ReportButton({ featId }: { featId: string }) {
       const response = await fetch("/api/feats/report", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ featId, reason, note: note.trim() || undefined }),
+        body: JSON.stringify({ characterId, featId, reason, note: note.trim() || undefined }),
       });
       if (response.status === 401) {
         window.dispatchEvent(new Event(OPEN_SIGN_IN));

@@ -30,7 +30,12 @@ export function QueueItem({ feat }: { feat: QueueFeat }) {
       const response = await fetch("/api/admin/feats/moderate", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ featId: feat.id, action, note: note.trim() || undefined }),
+        body: JSON.stringify({
+          characterId: feat.characterId,
+          featId: feat.id,
+          action,
+          note: note.trim() || undefined,
+        }),
       });
       if (!response.ok) {
         const data = (await response.json().catch(() => null)) as { error?: string } | null;
