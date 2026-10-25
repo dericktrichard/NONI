@@ -14,23 +14,27 @@ import type { FeatStatus } from "@/types/domain";
 
 const MAX_REPORTS_PER_FEAT = 100;
 
+function featRefOf(characterId: string, featId: string) {
+  return adminDb().collection(COL.characters).doc(characterId).collection(COL.feats).doc(featId);
+}
+
 export async function reportFeat(
   uid: string,
-  input: { featId: string; reason: ReportReason; note?: string },
+  input: { characterId: string; featId: string; reason: ReportReason; note?: string },
 ): Promise<void> {
   const db = adminDb();
-  const featRef = db.collection(COL.feats).doc(input.featId);
+  const featRef = featRefOf(input.characterId, input.featId);
   const reportRef = db.collection(COL.reports).doc(`${input.featId}_${uid}`);
 
   await db.runTransaction(async (tx) => {
     const [feat, existing] = await Promise.all([tx.get(featRef), tx.get(reportRef)]);
     if (!feat.exists) throw new HttpError(404, "Feat not found.");
-    if (feat.get("authorUid") === uid) throw new HttpError(403, "You cannot report your own feat.");
+    if (feat.get("authorId") === uid) throw new HttpError(403, "You cannot report your own feat.");
     if (existing.exists) throw new HttpError(409, "You already reported this feat.");
 
     tx.create(reportRef, {
       featId: input.featId,
-      characterId: feat.get("characterId") ?? null,
+      characterId: input.characterId,
       reporterUid: uid,
       reason: input.reason,
       note: input.note ?? "",
@@ -43,10 +47,10 @@ export async function reportFeat(
 
 export async function moderateFeat(
   actorUid: string,
-  input: { featId: string; action: ModAction; note?: string },
+  input: { characterId: string; featId: string; action: ModAction; note?: string },
 ): Promise<{ status: FeatStatus; changedVerified: boolean }> {
   const db = adminDb();
-  const featRef = db.collection(COL.feats).doc(input.featId);
+  const featRef = featRefOf(input.characterId, input.featId);
 
   const result = await db.runTransaction(async (tx) => {
     const feat = await tx.get(featRef);
@@ -92,7 +96,7 @@ export async function moderateFeat(
       actorUid,
       action: input.action,
       featId: input.featId,
-      characterId: feat.get("characterId") ?? null,
+      characterId: input.characterId,
       from: before,
       to: outcome.status,
       reportsClosed: open.size,
@@ -100,17 +104,13 @@ export async function moderateFeat(
       at: FieldValue.serverTimestamp(),
     });
 
-    return {
-      status: outcome.status,
-      characterId: feat.get("characterId") as string | undefined,
-      changedVerified: verificationChanged(before, outcome.status),
-    };
+    return { status: outcome.status, changedVerified: verificationChanged(before, outcome.status) };
   });
 
-  if (result.changedVerified && result.characterId) {
-    await recomputeCharacter(result.characterId);
+  if (result.changedVerified) {
+    await recomputeCharacter(input.characterId);
     rerankAll(db).catch((error) => console.error("rerank failed", error));
   }
 
-  return { status: result.status, changedVerified: result.changedVerified };
+  return result;
 }

@@ -42,10 +42,11 @@ interface FeatCardProps {
   feat: FeatView;
   mine: VoteValue;
   busy: boolean;
+  characterId: string;
   onVote: (value: 1 | -1) => void;
 }
 
-export function FeatCard({ feat, mine, busy, onVote }: FeatCardProps) {
+export function FeatCard({ feat, characterId, mine, busy, onVote }: FeatCardProps) {
   const verified = feat.status === "verified";
 
   return (
@@ -92,7 +93,7 @@ export function FeatCard({ feat, mine, busy, onVote }: FeatCardProps) {
           <p className="eyebrow">
             {feat.authorName} / {feat.createdAt.slice(0, 10)}
           </p>
-          <ReportButton featId={feat.id} />
+          <ReportButton characterId={characterId} featId={feat.id} />
         </div>
       </div>
     </li>
