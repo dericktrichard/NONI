@@ -19,6 +19,9 @@ export const PROOF_TYPE_LABELS: Record<ProofType, string> = {
   video: "Video",
   quote: "Quote",
   official: "Official source",
+  wiki: "Wiki page",
+  thread: "Thread or post",
+  other: "Other link",
 };
 
 export function tierText(id: string): string {

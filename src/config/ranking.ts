@@ -15,8 +15,11 @@ export const VERSE = {
 
 export const PROOF = {
   videoHosts: ["youtube.com", "youtu.be", "vimeo.com", "bilibili.com", "dailymotion.com"],
+  secondaryVideoHosts: ["youtube.com", "youtu.be", "vimeo.com", "bilibili.com", "dailymotion.com", "tiktok.com"],
+  threadHosts: ["x.com", "twitter.com", "reddit.com"],
   /** Shorteners hide the destination, so they are not accepted as proof */
   blockedHosts: ["bit.ly", "t.co", "tinyurl.com", "goo.gl", "is.gd", "ow.ly", "cutt.ly", "rb.gy"],
   maxUrlLength: 2048,
   excerptMin: 20,
+  maxSecondary: 3,
 } as const;

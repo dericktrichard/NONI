@@ -24,7 +24,8 @@ const claimSchema = z.discriminatedUnion("category", [
 
 const proofSchema = z
   .object({
-    type: z.enum(["panel", "video", "quote", "official"]),
+    source: z.enum(["primary", "secondary"]).optional(),
+    type: z.enum(["panel", "video", "quote", "official", "wiki", "thread", "other"]),
     url: z.string().trim().max(PROOF.maxUrlLength),
     locator: z.string().trim().max(LIMITS.proofLocator).refine(clean, "Invalid characters."),
     excerpt: z.string().trim().max(LIMITS.proofExcerpt).refine(clean, "Invalid characters.").optional(),

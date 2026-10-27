@@ -21,6 +21,7 @@ export async function POST(request: Request) {
   }
 
   const proofs: Proof[] = body.proofs.map((proof) => ({
+    source: proof.source ?? "primary",
     type: proof.type,
     url: proof.url,
     locator: proof.locator,
