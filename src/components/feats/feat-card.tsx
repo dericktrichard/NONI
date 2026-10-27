@@ -48,6 +48,8 @@ interface FeatCardProps {
 
 export function FeatCard({ feat, characterId, mine, busy, onVote }: FeatCardProps) {
   const verified = feat.status === "verified";
+  const primary = feat.proofs.filter((proof) => proof.source !== "secondary");
+  const secondary = feat.proofs.filter((proof) => proof.source === "secondary");
 
   return (
     <li className="flex gap-4 border-b py-6">
@@ -84,10 +86,21 @@ export function FeatCard({ feat, characterId, mine, busy, onVote }: FeatCardProp
         <p className="mt-1 text-sm whitespace-pre-line text-foreground/80">{feat.description}</p>
 
         <ul className="mt-3 space-y-2">
-          {feat.proofs.map((proof, index) => (
+          {primary.map((proof, index) => (
             <ProofItem key={index} proof={proof} />
           ))}
         </ul>
+
+        {secondary.length > 0 ? (
+          <div className="mt-3">
+            <p className="eyebrow">Secondary references</p>
+            <ul className="mt-1 space-y-2">
+              {secondary.map((proof, index) => (
+                <ProofItem key={index} proof={proof} />
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
           <p className="eyebrow">

@@ -5,14 +5,16 @@ import { Loader2, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HAX_KIND_LIST, HAX_KINDS, type HaxKind } from "@/config/combat";
 import { LIMITS } from "@/config/limits";
+import { PROOF } from "@/config/ranking";
 import { AP_TIERS, MAX_DIMENSION, MIN_DIMENSION, SPEED_LEVELS, dimensionLabel } from "@/config/scales";
 import { CATEGORY_LABELS, PROOF_TYPE_LABELS, buildClaim, type Category, type ClaimFields } from "@/lib/feats/labels";
-import type { ProofIssue } from "@/lib/ranking/proof";
+import { PROOF_TYPES_BY_SOURCE, type ProofIssue } from "@/lib/ranking/proof";
 import type { FeatView } from "@/types/character-page";
-import type { Proof, ProofType } from "@/types/domain";
+import type { Proof, ProofSource, ProofType } from "@/types/domain";
 
 interface ProofRow {
   key: number;
+  source: ProofSource;
   type: ProofType;
   url: string;
   locator: string;
@@ -20,7 +22,14 @@ interface ProofRow {
 }
 
 let nextKey = 0;
-const blankProof = (): ProofRow => ({ key: nextKey++, type: "panel", url: "", locator: "", excerpt: "" });
+const blankProof = (source: ProofSource = "primary"): ProofRow => ({
+  key: nextKey++,
+  source,
+  type: source === "primary" ? "panel" : "wiki",
+  url: "",
+  locator: "",
+  excerpt: "",
+});
 const blankClaim: ClaimFields = { category: "attackPotency", tier: "", level: "", dimension: 0, kind: "", power: "" };
 
 const control =
@@ -48,6 +57,12 @@ function TierSelect({ label, value, onChange }: { label: string; value: string; 
       </select>
     </Field>
   );
+}
+
+function locatorLabel(row: ProofRow): string {
+  if (row.type === "video") return "Timestamp, such as 12:45";
+  if (row.source === "secondary") return "Where to find it, such as a section name";
+  return "Chapter and page, such as Ch. 12 p. 4";
 }
 
 interface FeatFormProps {
@@ -78,6 +93,7 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
     }
 
     const payloadProofs: Proof[] = proofs.map((row) => ({
+      source: row.source,
       type: row.type,
       url: row.url.trim(),
       locator: row.locator.trim(),
@@ -130,6 +146,8 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
   }
 
   const featIssues = issues.filter((issue) => issue.index === undefined);
+  const secondaryCount = proofs.filter((row) => row.source === "secondary").length;
+  const canAddProof = proofs.length < LIMITS.proofsPerFeat;
 
   return (
     <form onSubmit={submit} className="space-y-5 border p-4 sm:p-6">
@@ -234,6 +252,11 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
 
       <fieldset className="space-y-4">
         <legend className="eyebrow mb-2">Proof from the source material</legend>
+        <p className="text-sm text-foreground/70">
+          At least one proof must come from the original work. Wiki pages, videos and threads can be added as
+          secondary references.
+        </p>
+
         {featIssues.map((issue) => (
           <p key={issue.code} role="alert" className="text-sm font-medium">
             {issue.message}
@@ -242,6 +265,8 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
 
         {proofs.map((row, index) => (
           <div key={row.key} className="space-y-3 border p-3">
+            {row.source === "secondary" ? <p className="eyebrow">Secondary reference</p> : null}
+
             <div className="grid gap-3 sm:grid-cols-[10rem_1fr]">
               <Field label="Type">
                 <select
@@ -249,7 +274,7 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
                   onChange={(e) => patchProof(row.key, { type: e.target.value as ProofType })}
                   className={control}
                 >
-                  {(Object.keys(PROOF_TYPE_LABELS) as ProofType[]).map((type) => (
+                  {PROOF_TYPES_BY_SOURCE[row.source].map((type) => (
                     <option key={type} value={type}>
                       {PROOF_TYPE_LABELS[type]}
                     </option>
@@ -269,7 +294,7 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
               </Field>
             </div>
 
-            <Field label={row.type === "video" ? "Timestamp, such as 12:45" : "Chapter and page, such as Ch. 12 p. 4"}>
+            <Field label={locatorLabel(row)}>
               <input
                 value={row.locator}
                 onChange={(e) => patchProof(row.key, { locator: e.target.value })}
@@ -311,12 +336,24 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
           </div>
         ))}
 
-        {proofs.length < LIMITS.proofsPerFeat && (
-          <Button variant="outline" size="sm" onClick={() => setProofs((rows) => [...rows, blankProof()])}>
-            <Plus className="size-4" aria-hidden />
-            Add proof
-          </Button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {canAddProof && (
+            <Button variant="outline" size="sm" onClick={() => setProofs((rows) => [...rows, blankProof()])}>
+              <Plus className="size-4" aria-hidden />
+              Add proof
+            </Button>
+          )}
+          {canAddProof && secondaryCount < PROOF.maxSecondary && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setProofs((rows) => [...rows, blankProof("secondary")])}
+            >
+              <Plus className="size-4" aria-hidden />
+              Add secondary reference
+            </Button>
+          )}
+        </div>
       </fieldset>
 
       {error ? (

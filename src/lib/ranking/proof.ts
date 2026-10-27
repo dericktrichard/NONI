@@ -1,17 +1,26 @@
 import { LIMITS } from "@/config/limits";
 import { PROOF } from "@/config/ranking";
-import type { Proof } from "@/types/domain";
+import type { Proof, ProofSource, ProofType } from "@/types/domain";
+
+export const PROOF_TYPES_BY_SOURCE: Record<ProofSource, readonly ProofType[]> = {
+  primary: ["panel", "video", "quote", "official"],
+  secondary: ["wiki", "video", "thread", "other"],
+};
 
 export type ProofIssueCode =
   | "url_invalid"
   | "url_blocked"
   | "video_host"
+  | "thread_host"
+  | "type_invalid"
   | "locator_missing"
   | "locator_format"
   | "excerpt_missing"
   | "excerpt_length"
   | "too_few"
   | "too_many"
+  | "too_many_secondary"
+  | "no_primary"
   | "duplicate";
 
 export interface ProofIssue {
@@ -24,18 +33,26 @@ export interface ProofIssue {
 const MESSAGES: Record<ProofIssueCode, string> = {
   url_invalid: "Use a public https link.",
   url_blocked: "Link shorteners are not accepted. Use the full link.",
-  video_host: "Video proof must be hosted on a supported video site.",
+  video_host: "Video links must be hosted on a supported video site.",
+  thread_host: "Thread links must come from X, Twitter or Reddit.",
+  type_invalid: "This type is not allowed for this kind of proof.",
   locator_missing: "Add where to find it, such as a chapter and page or a timestamp.",
   locator_format: "Video proof needs a timestamp like 12:45. Panels and quotes need a chapter or page number.",
   excerpt_missing: "Quote proof needs the quoted text.",
   excerpt_length: `The quote must be between ${PROOF.excerptMin} and ${LIMITS.proofExcerpt} characters.`,
   too_few: "Add at least one proof.",
   too_many: `A feat can have at most ${LIMITS.proofsPerFeat} proofs.`,
+  too_many_secondary: `A feat can have at most ${PROOF.maxSecondary} secondary references.`,
+  no_primary: "Add at least one proof from the original work. Secondary references cannot stand alone.",
   duplicate: "This proof is already listed.",
 };
 
 const TIMESTAMP = /^(?:\d{1,2}:)?[0-5]?\d:[0-5]\d$/;
 const IPV4 = /^\d{1,3}(?:\.\d{1,3}){3}$/;
+
+export function proofSource(proof: Pick<Proof, "source">): ProofSource {
+  return proof.source === "secondary" ? "secondary" : "primary";
+}
 
 function hostMatches(host: string, domains: readonly string[]): boolean {
   return domains.some((d) => host === d || host.endsWith(`.${d}`));
@@ -72,6 +89,9 @@ function normalizeUrl(raw: string): string {
 /** Issues for a single proof. An empty array means the proof is acceptable. */
 export function validateProof(proof: Proof): ProofIssueCode[] {
   const issues: ProofIssueCode[] = [];
+  const source = proofSource(proof);
+
+  if (!PROOF_TYPES_BY_SOURCE[source].includes(proof.type)) issues.push("type_invalid");
 
   const url = parseProofUrl(proof.url);
   if (!url) {
@@ -79,9 +99,11 @@ export function validateProof(proof: Proof): ProofIssueCode[] {
   } else {
     const host = url.hostname.toLowerCase();
     if (hostMatches(host, PROOF.blockedHosts)) issues.push("url_blocked");
-    if (proof.type === "video" && !hostMatches(host, PROOF.videoHosts)) {
-      issues.push("video_host");
+    if (proof.type === "video") {
+      const hosts = source === "secondary" ? PROOF.secondaryVideoHosts : PROOF.videoHosts;
+      if (!hostMatches(host, hosts)) issues.push("video_host");
     }
+    if (proof.type === "thread" && !hostMatches(host, PROOF.threadHosts)) issues.push("thread_host");
   }
 
   const locator = proof.locator.trim();
@@ -91,11 +113,11 @@ export function validateProof(proof: Proof): ProofIssueCode[] {
     issues.push("locator_format");
   } else if (proof.type === "video" && !TIMESTAMP.test(locator)) {
     issues.push("locator_format");
-  } else if ((proof.type === "panel" || proof.type === "quote") && !/\d/.test(locator)) {
+  } else if (source === "primary" && (proof.type === "panel" || proof.type === "quote") && !/\d/.test(locator)) {
     issues.push("locator_format");
   }
 
-  if (proof.type === "quote") {
+  if (source === "primary" && proof.type === "quote") {
     const length = (proof.excerpt ?? "").trim().length;
     if (length === 0) issues.push("excerpt_missing");
     else if (length < PROOF.excerptMin || length > LIMITS.proofExcerpt) {
@@ -113,6 +135,13 @@ export function validateFeatProofs(proofs: readonly Proof[]): ProofIssue[] {
   if (proofs.length < 1) issues.push({ code: "too_few", message: MESSAGES.too_few });
   if (proofs.length > LIMITS.proofsPerFeat) {
     issues.push({ code: "too_many", message: MESSAGES.too_many });
+  }
+
+  if (proofs.length >= 1 && !proofs.some((proof) => proofSource(proof) === "primary")) {
+    issues.push({ code: "no_primary", message: MESSAGES.no_primary });
+  }
+  if (proofs.filter((proof) => proofSource(proof) === "secondary").length > PROOF.maxSecondary) {
+    issues.push({ code: "too_many_secondary", message: MESSAGES.too_many_secondary });
   }
 
   const seen = new Set<string>();

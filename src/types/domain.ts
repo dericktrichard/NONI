@@ -75,9 +75,13 @@ export interface CharacterDoc {
 
 export type FeatStatus = "pending" | "verified" | "rejected";
 
-export type ProofType = "panel" | "video" | "quote" | "official";
+export type ProofSource = "primary" | "secondary";
+
+export type ProofType = "panel" | "video" | "quote" | "official" | "wiki" | "thread" | "other";
 
 export interface Proof {
+  /** Missing means primary, so feats saved before source types stay valid */
+  source?: ProofSource;
   type: ProofType;
   /** https only, validated on the server */
   url: string;
