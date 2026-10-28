@@ -6,6 +6,7 @@ import { kindText, tierText } from "@/lib/feats/labels";
 import type { MatchupPageData, MatchupSideView } from "@/lib/data/matchup-page";
 import { favorsText, percentA, verdictText } from "@/lib/matchup/labels";
 import type { HaxClaim } from "@/lib/ranking/profile";
+import { CommunityVote } from "@/components/matchups/community-vote";
 
 function SideHeader({ side }: { side: MatchupSideView }) {
   return (
@@ -103,6 +104,22 @@ export function MatchupView({ data }: { data: MatchupPageData }) {
             Swap sides
           </Link>
         </p>
+      </section>
+
+      <section className="mt-10" aria-labelledby="community">
+        <h2 id="community" className="eyebrow">
+          Community vote
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Who do you think wins? Voting needs a verified account. It does not change the verdict above.
+        </p>
+        <div className="mt-4">
+          <CommunityVote
+            a={{ slug: a.slug, name: a.name }}
+            b={{ slug: b.slug, name: b.name }}
+            initial={data.community}
+          />
+        </div>
       </section>
 
       <section className="mt-10" aria-labelledby="compare">

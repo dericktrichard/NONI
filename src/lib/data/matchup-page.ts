@@ -1,9 +1,10 @@
 import "server-only";
 import { adminDb } from "@/lib/firebase/admin";
-import { COL, SLUG_RE } from "@/lib/firebase/paths";
 import { resolveMatchup, type MatchupResult } from "@/lib/ranking/matchup";
 import { compileProfile, type CombatProfile, type HaxClaim } from "@/lib/ranking/profile";
 import type { PowerProfile } from "@/types/domain";
+import { COL, SLUG_RE, matchupId } from "@/lib/firebase/paths";
+import { orderPair, toViewTally, type ViewTally } from "@/lib/matchup/vote";
 
 export interface MatchupSideView {
   slug: string;
@@ -27,6 +28,7 @@ export interface MatchupPageData {
   a: MatchupSideView;
   b: MatchupSideView;
   result: MatchupResult;
+  community: ViewTally;
 }
 
 export interface CharacterOption {
@@ -87,9 +89,10 @@ export async function fetchMatchupPage(a: string, b: string): Promise<MatchupPag
   if (a === b) return null;
 
   const db = adminDb();
-  const [snapA, snapB] = await db.getAll(
+  const [snapA, snapB, matchup] = await db.getAll(
     db.collection(COL.characters).doc(a),
     db.collection(COL.characters).doc(b),
+    db.collection(COL.matchups).doc(matchupId(a, b)),
   );
   if (!snapA.exists || !snapB.exists) return null;
 
@@ -97,7 +100,13 @@ export async function fetchMatchupPage(a: string, b: string): Promise<MatchupPag
   const sideB = load(b, snapB.data() ?? {});
   if (!sideA || !sideB) return null;
 
-  return { a: sideA.view, b: sideB.view, result: resolveMatchup(sideA.combat, sideB.combat) };
+  const { flipped } = orderPair(a, b);
+  const community = toViewTally(
+    { votesA: Number(matchup.get("votesA")) || 0, votesB: Number(matchup.get("votesB")) || 0 },
+    flipped,
+  );
+
+  return { a: sideA.view, b: sideB.view, result: resolveMatchup(sideA.combat, sideB.combat), community };
 }
 
 export async function fetchCharacterOptions(): Promise<CharacterOption[]> {
