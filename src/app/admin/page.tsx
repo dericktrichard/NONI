@@ -13,11 +13,18 @@ export default async function AdminHome() {
       <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight">Admin</h1>
       <ul className="mt-8 divide-y border-y">
         {isAdmin ? (
-          <li className="py-4">
-            <Link href="/admin/characters/new" className="font-medium underline underline-offset-4">
-              Add a character
-            </Link>
-          </li>
+          <>
+            <li className="py-4">
+              <Link href="/admin/characters" className="font-medium underline underline-offset-4">
+                Characters
+              </Link>
+            </li>
+            <li className="py-4">
+              <Link href="/admin/characters/new" className="font-medium underline underline-offset-4">
+                Add a character
+              </Link>
+            </li>
+          </>
         ) : null}
         
         <li className="py-4">

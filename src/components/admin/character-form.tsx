@@ -9,7 +9,9 @@ import { Field, TierSelect, controlClass } from "@/components/ui/fields";
 import { HAX_KIND_LIST, HAX_KINDS, type HaxKind } from "@/config/combat";
 import { MEDIA_LABELS, MEDIA_TYPES } from "@/config/media";
 import { MAX_DIMENSION, MIN_DIMENSION, SPEED_LEVELS, dimensionLabel } from "@/config/scales";
+import type { HaxClaim } from "@/lib/ranking/profile";
 import { slugify } from "@/lib/slug";
+import type { CharacterEditData } from "@/types/admin-character";
 import type { MediaType } from "@/types/character";
 
 interface AbilityRow {
@@ -20,6 +22,7 @@ interface AbilityRow {
 
 let nextKey = 0;
 const blankRow = (): AbilityRow => ({ key: nextKey++, kind: "", power: "" });
+const toRow = (claim: HaxClaim): AbilityRow => ({ key: nextKey++, kind: claim.kind, power: claim.power });
 const splitList = (value: string) =>
   value
     .split(",")
@@ -77,27 +80,30 @@ function AbilityEditor({
   );
 }
 
-export function CharacterForm() {
-  const [name, setName] = useState("");
-  const [slugText, setSlugText] = useState("");
-  const [verse, setVerse] = useState("");
-  const [media, setMedia] = useState<MediaType>(MEDIA_TYPES[0]);
-  const [aliases, setAliases] = useState("");
-  const [tags, setTags] = useState("");
-  const [attackPotency, setAttackPotency] = useState("");
-  const [durability, setDurability] = useState("");
-  const [speed, setSpeed] = useState("");
-  const [dimension, setDimension] = useState(0);
-  const [hax, setHax] = useState<AbilityRow[]>([]);
-  const [resistances, setResistances] = useState<AbilityRow[]>([]);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [credit, setCredit] = useState("");
+export function CharacterForm({ initial }: { initial?: CharacterEditData }) {
+  const editing = initial !== undefined;
+
+  const [name, setName] = useState(initial?.name ?? "");
+  const [slugText, setSlugText] = useState(initial?.slug ?? "");
+  const [verse, setVerse] = useState(initial?.verse ?? "");
+  const [media, setMedia] = useState<MediaType>(initial?.media ?? MEDIA_TYPES[0]);
+  const [aliases, setAliases] = useState(initial?.aliases.join(", ") ?? "");
+  const [tags, setTags] = useState(initial?.tags.join(", ") ?? "");
+  const [attackPotency, setAttackPotency] = useState(initial?.attackPotency ?? "");
+  const [durability, setDurability] = useState(initial?.durability ?? "");
+  const [speed, setSpeed] = useState(initial?.speed ?? "");
+  const [dimension, setDimension] = useState(initial?.dimension ?? 0);
+  const [hax, setHax] = useState<AbilityRow[]>(() => (initial?.hax ?? []).map(toRow));
+  const [resistances, setResistances] = useState<AbilityRow[]>(() => (initial?.resistances ?? []).map(toRow));
+  const [imageUrl, setImageUrl] = useState<string | null>(initial?.imageUrl ?? null);
+  const [credit, setCredit] = useState(initial?.imageCredit ?? "");
   const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
 
-  const slug = slugText.trim() || slugify(name);
+  const slug = initial?.slug ?? (slugText.trim() || slugify(name));
 
   async function upload(file: File) {
     if (!slug) {
@@ -135,32 +141,40 @@ export function CharacterForm() {
     const toAbilities = (rows: AbilityRow[]) =>
       rows.filter((row) => row.kind !== "").map((row) => ({ kind: row.kind, power: row.power }));
 
+    const fields = {
+      name: name.trim(),
+      verse: verse.trim(),
+      media,
+      aliases: splitList(aliases),
+      tags: splitList(tags),
+      attackPotency,
+      durability,
+      speed,
+      ...(dimension > 0 ? { dimension } : {}),
+      hax: toAbilities(hax),
+      resistances: toAbilities(resistances),
+      imageUrl,
+      imageCredit: imageUrl && credit.trim() ? credit.trim() : null,
+    };
+
     setBusy(true);
     setError(null);
+    setSaved(false);
     try {
-      const response = await fetch("/api/admin/characters", {
-        method: "POST",
+      const response = await fetch(editing ? `/api/admin/characters/${initial.slug}` : "/api/admin/characters", {
+        method: editing ? "PUT" : "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          slug: slugText.trim() || undefined,
-          name: name.trim(),
-          verse: verse.trim(),
-          media,
-          aliases: splitList(aliases),
-          tags: splitList(tags),
-          attackPotency,
-          durability,
-          speed,
-          ...(dimension > 0 ? { dimension } : {}),
-          hax: toAbilities(hax),
-          resistances: toAbilities(resistances),
-          imageUrl,
-          imageCredit: imageUrl && credit.trim() ? credit.trim() : null,
-        }),
+        body: JSON.stringify(editing ? fields : { slug: slugText.trim() || undefined, ...fields }),
       });
       const json = (await response.json().catch(() => null)) as { id?: string; error?: string } | null;
-      if (response.status === 201 && json?.id) setCreated(json.id);
-      else setError(json?.error ?? "Could not save the character.");
+
+      if (editing && response.ok) {
+        setSaved(true);
+      } else if (!editing && response.status === 201 && json?.id) {
+        setCreated(json.id);
+      } else {
+        setError(json?.error ?? "Could not save the character.");
+      }
     } catch {
       setError("Network error. Try again.");
     } finally {
@@ -186,17 +200,27 @@ export function CharacterForm() {
 
   return (
     <form onSubmit={submit} className="mt-8 max-w-2xl space-y-8">
+      {saved ? (
+        <p role="status" className="border p-3 text-sm">
+          Saved.{" "}
+          <Link href={`/characters/${slug}`} className="underline underline-offset-4">
+            View the page
+          </Link>
+        </p>
+      ) : null}
+
       <fieldset className="space-y-4">
         <legend className="eyebrow mb-2">Identity</legend>
         <Field label="Name">
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} required className={controlClass} />
         </Field>
-        <Field label="Slug (optional, used in the page address)">
+        <Field label={editing ? "Slug (fixed once created)" : "Slug (optional, used in the page address)"}>
           <input
             value={slugText}
             onChange={(e) => setSlugText(e.target.value)}
             placeholder={slugify(name)}
             maxLength={80}
+            readOnly={editing}
             className={controlClass}
           />
         </Field>
@@ -244,6 +268,11 @@ export function CharacterForm() {
             ))}
           </select>
         </Field>
+        {editing ? (
+          <p className="text-sm text-muted-foreground">
+            This is the starting baseline. Verified feats override it automatically on the live profile.
+          </p>
+        ) : null}
       </fieldset>
 
       <AbilityEditor title="Abilities" rows={hax} onChange={setHax} />
@@ -288,7 +317,7 @@ export function CharacterForm() {
 
       <Button type="submit" variant="primary" disabled={busy || uploading}>
         {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
-        Create character
+        {editing ? "Save changes" : "Create character"}
       </Button>
     </form>
   );

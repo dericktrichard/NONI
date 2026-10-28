@@ -39,3 +39,7 @@ export const createCharacterSchema = z
   .strict();
 
 export type CreateCharacterInput = z.infer<typeof createCharacterSchema>;
+
+export const updateCharacterSchema = createCharacterSchema.omit({ slug: true });
+
+export type UpdateCharacterInput = z.infer<typeof updateCharacterSchema>;
