@@ -102,6 +102,13 @@ export function AccountMenu() {
               Admin
             </Link>
           )}
+          <Link
+            href="/settings/profile"
+            onClick={() => setMenuOpen(false)}
+            className="mt-3 block min-h-11 py-3 text-sm underline underline-offset-4"
+          >
+            Profile
+          </Link>
           <Button variant="outline" size="sm" className="mt-4 w-full" onClick={() => void leave()} disabled={leaving}>
             <LogOut className="size-4" aria-hidden />
             Sign out
