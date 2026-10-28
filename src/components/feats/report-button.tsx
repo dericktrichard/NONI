@@ -5,7 +5,12 @@ import { controlClass } from "@/components/ui/fields";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import { REPORT_REASONS, REPORT_REASON_LABELS, type ReportReason } from "@/lib/moderation/actions";
 
-export function ReportButton({ characterId, featId }: { characterId: string; featId: string }) {
+interface ReportButtonProps {
+  endpoint: string;
+  target: Record<string, string>;
+}
+
+export function ReportButton({ endpoint, target }: ReportButtonProps) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<ReportReason>("inaccurate");
   const [note, setNote] = useState("");
@@ -17,14 +22,14 @@ export function ReportButton({ characterId, featId }: { characterId: string; fea
     setBusy(true);
     setMessage(null);
     try {
-      const response = await fetch("/api/feats/report", {
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ characterId, featId, reason, note: note.trim() || undefined }),
+        body: JSON.stringify({ ...target, reason, note: note.trim() || undefined }),
       });
       if (response.status === 401) {
         window.dispatchEvent(new Event(OPEN_SIGN_IN));
-        setMessage("Sign in to report a feat.");
+        setMessage("Sign in to report.");
         return;
       }
       if (response.ok) {

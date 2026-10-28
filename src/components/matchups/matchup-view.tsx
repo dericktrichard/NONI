@@ -7,6 +7,8 @@ import type { MatchupPageData, MatchupSideView } from "@/lib/data/matchup-page";
 import { favorsText, percentA, verdictText } from "@/lib/matchup/labels";
 import type { HaxClaim } from "@/lib/ranking/profile";
 import { CommunityVote } from "@/components/matchups/community-vote";
+import { ArgumentForm } from "@/components/matchups/argument-form";
+import { ArgumentList } from "@/components/matchups/argument-list";
 
 function SideHeader({ side }: { side: MatchupSideView }) {
   return (
@@ -153,6 +155,14 @@ export function MatchupView({ data }: { data: MatchupPageData }) {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="mt-10" aria-labelledby="arguments">
+        <h2 id="arguments" className="eyebrow">
+          Arguments
+        </h2>
+        <ArgumentList items={data.arguments} names={names} slugs={{ a: a.slug, b: b.slug }} />
+        <ArgumentForm a={{ slug: a.slug, name: a.name }} b={{ slug: b.slug, name: b.name }} citable={data.citable} />
       </section>
 
       <p className="mt-8 text-sm text-muted-foreground">

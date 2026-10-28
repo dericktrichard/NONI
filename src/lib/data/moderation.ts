@@ -1,7 +1,6 @@
 import "server-only";
 import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase/admin";
-import { COL } from "@/lib/firebase/paths";
 import { HttpError, recomputeCharacter } from "@/lib/data/feats";
 import { rerankAll } from "@/lib/data/rerank";
 import {
@@ -11,6 +10,9 @@ import {
   type ReportReason,
 } from "@/lib/moderation/actions";
 import type { FeatStatus } from "@/types/domain";
+import { COL, matchupId } from "@/lib/firebase/paths";
+import { applyArgumentAction, type ArgumentAction, type ArgumentStatus } from "@/lib/moderation/argument-actions";
+import { orderPair } from "@/lib/matchup/vote";
 
 const MAX_REPORTS_PER_FEAT = 100;
 
@@ -113,4 +115,92 @@ export async function moderateFeat(
   }
 
   return result;
+}
+
+function argumentRefOf(a: string, b: string, argumentId: string) {
+  return adminDb().collection(COL.matchups).doc(matchupId(a, b)).collection(COL.arguments).doc(argumentId);
+}
+
+export async function reportArgument(
+  uid: string,
+  input: { a: string; b: string; argumentId: string; reason: ReportReason; note?: string },
+): Promise<void> {
+  const db = adminDb();
+  const id = matchupId(input.a, input.b);
+  const { first, second } = orderPair(input.a, input.b);
+  const argumentRef = argumentRefOf(input.a, input.b, input.argumentId);
+  const reportRef = db.collection(COL.reports).doc(`arg_${id}_${input.argumentId}_${uid}`);
+
+  await db.runTransaction(async (tx) => {
+    const [argument, existing] = await Promise.all([tx.get(argumentRef), tx.get(reportRef)]);
+    if (!argument.exists) throw new HttpError(404, "Argument not found.");
+    if (argument.get("authorId") === uid) throw new HttpError(403, "You cannot report your own argument.");
+    if (existing.exists) throw new HttpError(409, "You already reported this argument.");
+
+    tx.create(reportRef, {
+      targetType: "argument",
+      matchupId: id,
+      argumentId: input.argumentId,
+      a: first,
+      b: second,
+      reporterUid: uid,
+      reason: input.reason,
+      note: input.note ?? "",
+      status: "open",
+      createdAt: FieldValue.serverTimestamp(),
+    });
+  });
+}
+
+export async function moderateArgument(
+  actorUid: string,
+  input: { a: string; b: string; argumentId: string; action: ArgumentAction; note?: string },
+): Promise<{ status: ArgumentStatus }> {
+  const db = adminDb();
+  const id = matchupId(input.a, input.b);
+  const argumentRef = argumentRefOf(input.a, input.b, input.argumentId);
+
+  return db.runTransaction(async (tx) => {
+    const argument = await tx.get(argumentRef);
+    if (!argument.exists) throw new HttpError(404, "Argument not found.");
+
+    const before: ArgumentStatus = argument.get("status") === "hidden" ? "hidden" : "visible";
+    const outcome = applyArgumentAction(input.action, before);
+
+    const open = await tx.get(
+      db
+        .collection(COL.reports)
+        .where("matchupId", "==", id)
+        .where("argumentId", "==", input.argumentId)
+        .where("status", "==", "open")
+        .limit(MAX_REPORTS_PER_FEAT),
+    );
+
+    if (outcome.touchesArgument) {
+      tx.update(argumentRef, { status: outcome.status, updatedAt: FieldValue.serverTimestamp() });
+    }
+
+    for (const report of open.docs) {
+      tx.update(report.ref, {
+        status: outcome.reportStatus,
+        resolvedBy: actorUid,
+        resolvedAt: FieldValue.serverTimestamp(),
+      });
+    }
+
+    tx.create(db.collection(COL.modLog).doc(), {
+      targetType: "argument",
+      actorUid,
+      action: input.action,
+      matchupId: id,
+      argumentId: input.argumentId,
+      from: before,
+      to: outcome.status,
+      reportsClosed: open.size,
+      note: input.note ?? "",
+      at: FieldValue.serverTimestamp(),
+    });
+
+    return { status: outcome.status };
+  });
 }

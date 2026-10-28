@@ -156,6 +156,8 @@ export interface MatchupVoteDoc {
 export interface Citation {
   characterId: string;
   featId: string;
+  /** Copied when the argument is posted so lists need no extra reads */
+  title: string;
 }
 
 export interface ArgumentDoc {
