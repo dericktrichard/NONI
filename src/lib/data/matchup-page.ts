@@ -4,7 +4,7 @@ import { resolveMatchup, type MatchupResult } from "@/lib/ranking/matchup";
 import { compileProfile, type CombatProfile, type HaxClaim } from "@/lib/ranking/profile";
 import type { PowerProfile } from "@/types/domain";
 import { COL, SLUG_RE, matchupId } from "@/lib/firebase/paths";
-import { orderPair, toViewTally, type ViewTally } from "@/lib/matchup/vote";
+import { orderPair, toViewPick, toViewTally, type ViewTally } from "@/lib/matchup/vote";
 
 export interface MatchupSideView {
   slug: string;
@@ -29,12 +29,94 @@ export interface MatchupPageData {
   b: MatchupSideView;
   result: MatchupResult;
   community: ViewTally;
+  arguments: ArgumentView[];
+  citable: CitableFeat[];
 }
 
 export interface CharacterOption {
   slug: string;
   name: string;
   rank: number | null;
+}
+
+export interface ArgumentView {
+  id: string;
+  side: "a" | "b";
+  authorName: string;
+  body: string;
+  citations: Array<{ characterId: string; featId: string; title: string }>;
+  createdAt: string;
+}
+
+export interface CitableFeat {
+  characterId: string;
+  characterName: string;
+  featId: string;
+  title: string;
+}
+
+const ARGUMENT_LIMIT = 20;
+const CITABLE_LIMIT = 25;
+
+async function fetchCitable(characterId: string, characterName: string): Promise<CitableFeat[]> {
+  const snap = await adminDb()
+    .collection(COL.characters)
+    .doc(characterId)
+    .collection(COL.feats)
+    .where("status", "==", "verified")
+    .orderBy("netScore", "desc")
+    .limit(CITABLE_LIMIT)
+    .get();
+
+  return snap.docs.map((doc) => ({
+    characterId,
+    characterName,
+    featId: doc.id,
+    title: String(doc.get("title") ?? ""),
+  }));
+}
+
+async function fetchArguments(a: string, b: string): Promise<ArgumentView[]> {
+  const { flipped } = orderPair(a, b);
+
+  try {
+    const snap = await adminDb()
+      .collection(COL.matchups)
+      .doc(matchupId(a, b))
+      .collection(COL.arguments)
+      .where("status", "==", "visible")
+      .orderBy("netScore", "desc")
+      .limit(ARGUMENT_LIMIT)
+      .get();
+
+    const views: ArgumentView[] = [];
+    for (const doc of snap.docs) {
+      const stored = doc.get("side");
+      const side = toViewPick(stored === "a" || stored === "b" ? stored : null, flipped);
+      if (side === "none") continue;
+
+      const created = doc.get("createdAt");
+      const citations: unknown = doc.get("citations");
+      views.push({
+        id: doc.id,
+        side,
+        authorName: String(doc.get("authorName") ?? ""),
+        body: String(doc.get("body") ?? ""),
+        citations: Array.isArray(citations)
+          ? citations.map((item) => ({
+              characterId: String(item?.characterId ?? ""),
+              featId: String(item?.featId ?? ""),
+              title: String(item?.title ?? ""),
+            }))
+          : [],
+        createdAt: created?.toDate ? created.toDate().toISOString() : "",
+      });
+    }
+    return views;
+  } catch (error) {
+    console.error("arguments query failed", error);
+    return [];
+  }
 }
 
 function load(slug: string, data: FirebaseFirestore.DocumentData): { combat: CombatProfile; view: MatchupSideView } | null {
@@ -106,7 +188,20 @@ export async function fetchMatchupPage(a: string, b: string): Promise<MatchupPag
     flipped,
   );
 
-  return { a: sideA.view, b: sideB.view, result: resolveMatchup(sideA.combat, sideB.combat), community };
+  const [arguments_, citableA, citableB] = await Promise.all([
+    fetchArguments(a, b),
+    fetchCitable(a, sideA.view.name),
+    fetchCitable(b, sideB.view.name),
+  ]);
+
+  return {
+    a: sideA.view,
+    b: sideB.view,
+    result: resolveMatchup(sideA.combat, sideB.combat),
+    community,
+    arguments: arguments_,
+    citable: [...citableA, ...citableB],
+  };
 }
 
 export async function fetchCharacterOptions(): Promise<CharacterOption[]> {
