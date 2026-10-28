@@ -44,6 +44,8 @@ export interface ArgumentView {
   side: "a" | "b";
   authorName: string;
   body: string;
+  upvotes: number;
+  downvotes: number;
   citations: Array<{ characterId: string; featId: string; title: string }>;
   createdAt: string;
 }
@@ -102,6 +104,8 @@ async function fetchArguments(a: string, b: string): Promise<ArgumentView[]> {
         side,
         authorName: String(doc.get("authorName") ?? ""),
         body: String(doc.get("body") ?? ""),
+        upvotes: Number(doc.get("upvotes")) || 0,
+        downvotes: Number(doc.get("downvotes")) || 0,
         citations: Array.isArray(citations)
           ? citations.map((item) => ({
               characterId: String(item?.characterId ?? ""),

@@ -6,6 +6,7 @@ import { COL, matchupId } from "@/lib/firebase/paths";
 import { CITATION_MESSAGES, checkCitationScope, checkCitedFeats } from "@/lib/matchup/arguments";
 import { orderPair, toCanonicalPick } from "@/lib/matchup/vote";
 import { pseudonymFor } from "@/lib/security/pseudonym";
+import { applyVote, type VoteValue } from "@/lib/ranking/vote";
 import type { ArgumentInput } from "@/lib/validation/argument";
 
 function optionalString(value: unknown): string | null {
@@ -84,5 +85,53 @@ export async function createArgument(uid: string, input: ArgumentInput): Promise
       netScore: 0,
       createdAt: now,
     });
+  });
+}
+
+export interface ArgumentVoteResult {
+  upvotes: number;
+  downvotes: number;
+  value: VoteValue;
+}
+
+export async function castArgumentVote(
+  uid: string,
+  input: { a: string; b: string; argumentId: string; value: VoteValue },
+): Promise<ArgumentVoteResult> {
+  const db = adminDb();
+  const id = matchupId(input.a, input.b);
+  const argumentRef = db.collection(COL.matchups).doc(id).collection(COL.arguments).doc(input.argumentId);
+  const voteRef = argumentRef.collection(COL.votes).doc(uid);
+
+  return db.runTransaction(async (tx) => {
+    const [argument, vote] = await Promise.all([tx.get(argumentRef), tx.get(voteRef)]);
+    if (!argument.exists) throw new HttpError(404, "Argument not found.");
+    if (argument.get("authorId") === uid) throw new HttpError(403, "You cannot vote on your own argument.");
+    if (argument.get("status") !== "visible") throw new HttpError(409, "Voting is closed on this argument.");
+
+    const stored = vote.exists ? Number(vote.get("value")) : 0;
+    const previous: VoteValue = stored === 1 ? 1 : stored === -1 ? -1 : 0;
+    const current = {
+      upvotes: Number(argument.get("upvotes")) || 0,
+      downvotes: Number(argument.get("downvotes")) || 0,
+    };
+    if (previous === input.value) return { ...current, value: input.value };
+
+    const tally = applyVote(current, previous, input.value);
+    tx.update(argumentRef, { ...tally, netScore: tally.upvotes - tally.downvotes });
+
+    if (input.value === 0) {
+      tx.delete(voteRef);
+    } else {
+      tx.set(voteRef, {
+        uid,
+        argumentId: input.argumentId,
+        matchupId: id,
+        value: input.value,
+        createdAt: vote.exists ? vote.get("createdAt") : Timestamp.now(),
+      });
+    }
+
+    return { ...tally, value: input.value };
   });
 }

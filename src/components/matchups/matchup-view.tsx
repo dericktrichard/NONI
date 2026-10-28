@@ -161,7 +161,7 @@ export function MatchupView({ data }: { data: MatchupPageData }) {
         <h2 id="arguments" className="eyebrow">
           Arguments
         </h2>
-        <ArgumentList items={data.arguments} names={names} />
+        <ArgumentList items={data.arguments} names={names} slugs={{ a: a.slug, b: b.slug }} />
         <ArgumentForm a={{ slug: a.slug, name: a.name }} b={{ slug: b.slug, name: b.name }} citable={data.citable} />
       </section>
 
