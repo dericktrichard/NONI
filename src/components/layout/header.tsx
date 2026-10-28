@@ -10,6 +10,9 @@ export function Header() {
           <span className="size-3 bg-accent" aria-hidden />
           <span className="font-display text-lg font-semibold tracking-tight">NONI</span>
         </Link>
+        <Link href="/matchups" className="eyebrow ml-6 mr-auto px-1 py-3 hover:underline">
+          Matchups
+        </Link>
         <div className="flex items-center gap-2">
           <AccountMenu />
           <ThemeToggle />
