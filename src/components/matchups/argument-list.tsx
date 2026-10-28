@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import type { ArgumentView } from "@/lib/data/matchup-page";
 import { cn } from "@/lib/utils";
+import { ReportButton } from "@/components/feats/report-button";
 
 interface ArgumentListProps {
   items: ArgumentView[];
@@ -131,6 +132,10 @@ export function ArgumentList({ items, names, slugs }: ArgumentListProps) {
                     </li>
                   ))}
                 </ul>
+                <ReportButton
+                  endpoint="/api/matchups/arguments/report"
+                  target={{ a: slugs.a, b: slugs.b, argumentId: item.id }}
+                />
               </div>
             </li>
           );

@@ -106,7 +106,7 @@ export function FeatCard({ feat, characterId, mine, busy, onVote }: FeatCardProp
           <p className="eyebrow">
             {feat.authorName} / {feat.createdAt.slice(0, 10)}
           </p>
-          <ReportButton characterId={characterId} featId={feat.id} />
+          <ReportButton endpoint="/api/feats/report" target={{ characterId, featId: feat.id }} />
         </div>
       </div>
     </li>
