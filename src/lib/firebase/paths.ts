@@ -14,6 +14,7 @@ export const COL = {
   rateLimits: "_rateLimits",
   reports: "reports",
   modLog: "modLog",
+  lists: "lists",
 } as const;
 
 /** Canonical matchup ID: the same pair always maps to the same document */

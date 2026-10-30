@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { getProfileByHandle } from "@/lib/data/profile";
@@ -37,6 +38,35 @@ export default async function ProfilePage({ params }: Props) {
           <dd className="tabular mt-1 font-display text-xl font-semibold">{profile.featsSubmitted}</dd>
         </div>
       </dl>
+
+      {profile.lists.length > 0 ? (
+        <section className="mt-12">
+          <h2 className="eyebrow">Lists</h2>
+          <div className="mt-4 space-y-10">
+            {profile.lists.map((list) => (
+              <article key={list.id}>
+                <h3 className="font-display text-2xl font-semibold tracking-tight">{list.title}</h3>
+                <ol className="mt-4 border-t">
+                  {list.items.map((item, index) => (
+                    <li key={item.characterId} className="grid grid-cols-[2rem_1fr] gap-3 border-b py-4">
+                      <span className="tabular text-sm text-muted-foreground">{index + 1}</span>
+                      <div>
+                        <Link
+                          href={`/characters/${item.characterId}`}
+                          className="font-medium underline underline-offset-4"
+                        >
+                          {item.name}
+                        </Link>
+                        <p className="mt-1 whitespace-pre-line text-sm">{item.reason}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

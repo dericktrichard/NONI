@@ -4,12 +4,14 @@ import { HttpError } from "@/lib/data/feats";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL } from "@/lib/firebase/paths";
 import { HANDLE_MESSAGES, checkHandle, handleCooldownDays, normalizeHandle } from "@/lib/profile/handle";
+import { getPublicLists, type UserList } from "@/lib/data/lists";
 
 export interface PublicProfile {
   handle: string;
   bio: string;
   createdAt: string;
   featsSubmitted: number;
+  lists: UserList[];
 }
 
 export interface OwnProfile {
@@ -91,7 +93,8 @@ export async function getProfileByHandle(raw: string): Promise<PublicProfile | n
   const owner = await db.collection(COL.handles).doc(handle).get();
   if (!owner.exists) return null;
 
-  const user = await db.collection(COL.users).doc(String(owner.get("uid"))).get();
+  const uid = String(owner.get("uid"));
+  const user = await db.collection(COL.users).doc(uid).get();
   if (!user.exists || user.get("handle") !== handle) return null;
 
   const created = millis(user.get("createdAt"));
@@ -100,5 +103,6 @@ export async function getProfileByHandle(raw: string): Promise<PublicProfile | n
     bio: String(user.get("bio") ?? ""),
     createdAt: created === null ? "" : new Date(created).toISOString(),
     featsSubmitted: Number(user.get("featsSubmitted")) || 0,
+    lists: await getPublicLists(uid),
   };
 }

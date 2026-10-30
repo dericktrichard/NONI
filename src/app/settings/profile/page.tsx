@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { getOwnProfile } from "@/lib/data/profile";
 import { getSessionUser } from "@/lib/security/session";
+import Link from "next/link";
 
 export const metadata: Metadata = { title: "Profile settings", robots: { index: false, follow: false } };
 
@@ -24,6 +25,11 @@ export default async function ProfileSettingsPage() {
       <p className="eyebrow">Settings</p>
       <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight">Your profile</h1>
       <ProfileForm initial={profile} verified={user.email_verified === true} />
+      <p className="mt-10 text-sm">
+        <Link href="/settings/lists" className="underline underline-offset-4">
+          Manage your lists
+        </Link>
+      </p>
     </div>
   );
 }
