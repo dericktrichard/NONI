@@ -4,6 +4,7 @@ import { HttpError } from "@/lib/data/feats";
 import { rerankAll } from "@/lib/data/rerank";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL } from "@/lib/firebase/paths";
+import { removeCharacterFromLists } from "@/lib/data/lists";
 
 const MATCHUP_PASS = 100;
 const REPORT_BATCH = 400;
@@ -72,6 +73,8 @@ export async function deleteCharacter(actorUid: string, slug: string): Promise<D
     reportsDeleted,
     at: FieldValue.serverTimestamp(),
   });
+
+  await removeCharacterFromLists(slug);
 
   await rerankAll(db).catch((error) => console.error("rerank failed", error));
 

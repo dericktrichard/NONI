@@ -125,6 +125,9 @@ export function ListsManager({ lists, options }: ListsManagerProps) {
               <p className="text-sm text-muted-foreground">
                 {list.items.length} {list.items.length === 1 ? "entry" : "entries"}
               </p>
+              {list.status === "hidden" ? (
+                <p className="mt-1 text-sm font-medium">Hidden by a moderator. It is not shown on your profile.</p>
+              ) : null}
             </div>
             <div className="flex gap-2">
               <button type="button" className={plainButton} onClick={() => startEdit(list)} disabled={busy}>

@@ -3,8 +3,9 @@ import { Timestamp, type Firestore } from "firebase-admin/firestore";
 import { HttpError } from "@/lib/data/feats";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL } from "@/lib/firebase/paths";
-import { MAX_LISTS } from "@/lib/lists/rules";
 import type { ListInput } from "@/lib/validation/list";
+import { withoutCharacter, MAX_LISTS } from "@/lib/lists/rules";
+import type { ListStatus } from "@/lib/lists/moderation";
 
 export interface ListItem {
   characterId: string;
@@ -16,6 +17,7 @@ export interface UserList {
   id: string;
   title: string;
   items: ListItem[];
+  status: ListStatus;
 }
 
 export interface CharacterOption {
@@ -125,6 +127,7 @@ async function loadLists(uid: string, publicOnly: boolean): Promise<UserList[]> 
     .map((doc) => ({
       id: doc.id,
       title: String(doc.get("title") ?? ""),
+      status: (doc.get("status") === "hidden" ? "hidden" : "visible") as ListStatus,
       items: ((doc.get("items") as ListItem[] | undefined) ?? []).map((item) => ({
         characterId: String(item.characterId),
         name: String(item.name),
@@ -141,4 +144,29 @@ export async function listCharacterOptions(): Promise<CharacterOption[]> {
   return snap.docs
     .map((doc) => ({ id: doc.id, name: String(doc.get("name") ?? doc.id) }))
     .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export async function removeCharacterFromLists(characterId: string): Promise<void> {
+  const db = adminDb();
+  const snap = await db.collection(COL.lists).where("characterIds", "array-contains", characterId).limit(500).get();
+
+  for (const doc of snap.docs) {
+    const items = withoutCharacter((doc.get("items") as ListItem[] | undefined) ?? [], characterId);
+    if (items.length > 0) {
+      await doc.ref.update({
+        items,
+        characterIds: items.map((item) => item.characterId),
+        updatedAt: Timestamp.now(),
+      });
+      continue;
+    }
+
+    const userRef = db.collection(COL.users).doc(String(doc.get("ownerUid")));
+    await db.runTransaction(async (tx) => {
+      const user = await tx.get(userRef);
+      const count = Number(user.get("listCount")) || 0;
+      tx.delete(doc.ref);
+      tx.set(userRef, { listCount: Math.max(0, count - 1) }, { merge: true });
+    });
+  }
 }
