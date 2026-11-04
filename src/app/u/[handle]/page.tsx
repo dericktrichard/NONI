@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { getProfileByHandle } from "@/lib/data/profile";
+import { ListReportButton } from "@/components/lists/list-report-button";
 
 export const revalidate = 300;
 
@@ -45,7 +46,10 @@ export default async function ProfilePage({ params }: Props) {
           <div className="mt-4 space-y-10">
             {profile.lists.map((list) => (
               <article key={list.id}>
-                <h3 className="font-display text-2xl font-semibold tracking-tight">{list.title}</h3>
+                <div className="flex flex-wrap items-baseline justify-between gap-3">
+                  <h3 className="font-display text-2xl font-semibold tracking-tight">{list.title}</h3>
+                  <ListReportButton listId={list.id} />
+                </div>
                 <ol className="mt-4 border-t">
                   {list.items.map((item, index) => (
                     <li key={item.characterId} className="grid grid-cols-[2rem_1fr] gap-3 border-b py-4">

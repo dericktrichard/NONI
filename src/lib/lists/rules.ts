@@ -9,3 +9,7 @@ export const REASON_MAX = 200;
 export function hasDuplicates(ids: readonly string[]): boolean {
   return new Set(ids).size !== ids.length;
 }
+
+export function withoutCharacter<T extends { characterId: string }>(items: readonly T[], characterId: string): T[] {
+  return items.filter((item) => item.characterId !== characterId);
+}
