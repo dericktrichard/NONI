@@ -78,7 +78,7 @@ interface FilterBarProps {
   onView: (view: View) => void;
 }
 
-/** Sticky under the header: media chips and the list/grid switch */
+/** Floats just under the nav: media chips and the list/grid switch. Green marks the active choice. */
 export function RankingFilterBar({ media, view, onMedia, onView }: FilterBarProps) {
   const chips: Array<{ key: MediaType | null; label: string }> = [
     { key: null, label: "All" },
@@ -86,48 +86,52 @@ export function RankingFilterBar({ media, view, onMedia, onView }: FilterBarProp
   ];
 
   return (
-    <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-30 -mx-4 flex items-center gap-3 border-b bg-background px-4 py-2">
-      <div className="no-scrollbar flex min-w-0 flex-1 gap-2 overflow-x-auto">
-        {chips.map((chip) => {
-          const active = media === chip.key;
-          return (
+    <div className="sticky top-[calc(var(--nav-space)+0.5rem)] z-30">
+      <div className="acrylic flex items-center gap-3 rounded-sm px-3 py-2">
+        <div className="no-scrollbar flex min-w-0 flex-1 gap-2 overflow-x-auto">
+          {chips.map((chip) => {
+            const active = media === chip.key;
+            return (
+              <button
+                key={chip.label}
+                type="button"
+                aria-pressed={active}
+                onClick={() => onMedia(chip.key)}
+                className={cn(
+                  "inline-flex h-10 shrink-0 items-center rounded-sm border px-3 text-sm font-medium transition-colors",
+                  active
+                    ? "border-accent bg-accent text-accent-foreground"
+                    : "bg-transparent hover:bg-foreground/10",
+                )}
+              >
+                {chip.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex shrink-0 border" role="group" aria-label="View">
+          {(
+            [
+              ["rows", List, "List view"],
+              ["grid", LayoutGrid, "Grid view"],
+            ] as const
+          ).map(([key, Icon, label]) => (
             <button
-              key={chip.label}
+              key={key}
               type="button"
-              aria-pressed={active}
-              onClick={() => onMedia(chip.key)}
+              aria-pressed={view === key}
+              aria-label={label}
+              onClick={() => onView(key)}
               className={cn(
-                "inline-flex h-10 shrink-0 items-center rounded-sm border px-3 text-sm font-medium transition-colors",
-                active ? "border-foreground bg-foreground text-background" : "bg-transparent hover:bg-muted",
+                "grid size-10 place-items-center transition-colors",
+                view === key ? "bg-accent text-accent-foreground" : "hover:bg-foreground/10",
               )}
             >
-              {chip.label}
+              <Icon className="size-4" strokeWidth={1.75} aria-hidden />
             </button>
-          );
-        })}
-      </div>
-
-      <div className="flex shrink-0 border" role="group" aria-label="View">
-        {(
-          [
-            ["rows", List, "List view"],
-            ["grid", LayoutGrid, "Grid view"],
-          ] as const
-        ).map(([key, Icon, label]) => (
-          <button
-            key={key}
-            type="button"
-            aria-pressed={view === key}
-            aria-label={label}
-            onClick={() => onView(key)}
-            className={cn(
-              "grid size-10 place-items-center transition-colors",
-              view === key ? "bg-foreground text-background" : "hover:bg-muted",
-            )}
-          >
-            <Icon className="size-4" strokeWidth={1.75} aria-hidden />
-          </button>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

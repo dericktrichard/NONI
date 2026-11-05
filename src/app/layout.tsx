@@ -50,7 +50,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <Header />
-          {children}
+          <div className="pt-(--nav-space)">{children}</div>
         </ThemeProvider>
       </body>
     </html>

@@ -178,7 +178,12 @@ export function RankingBoard({ initial }: { initial: CharacterPage }) {
 
             {rest.length > 0 && (
               <>
-                {showPodium && <p className="eyebrow mt-8 mb-3">Ranks 04 onward</p>}
+                {showPodium && (
+                  <p className="eyebrow mt-10 mb-3 flex items-center gap-3">
+                    Ranks 04 onward
+                    <span className="h-px flex-1 bg-border" aria-hidden />
+                  </p>
+                )}
 
                 {view === "rows" ? (
                   <ul className="border-t">
