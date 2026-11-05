@@ -12,6 +12,9 @@
   --accent: #c8ff00;
   --accent-foreground: #0a0a0a;
   --danger: #dc143c;
+  --nav-height: 3.5rem;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --nav-space: calc(var(--nav-height) + 0.75rem + env(safe-area-inset-top));
 }
 
 .dark {
@@ -124,4 +127,76 @@
   &::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* Translucent surface for the floating nav and sticky bars. Solid fallback first. */
+@utility acrylic {
+  background-color: color-mix(in srgb, var(--background) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--foreground) 14%, transparent);
+
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    background-color: color-mix(in srgb, var(--background) 55%, transparent);
+    -webkit-backdrop-filter: blur(16px) saturate(1.6);
+    backdrop-filter: blur(16px) saturate(1.6);
+
+    &[data-scrolled="true"] {
+      background-color: color-mix(in srgb, var(--background) 80%, transparent);
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    background-color: var(--background);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* The only gradient in the design: the hero image dissolving into the page */
+@utility hero-fade {
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+}
+
+/* Monochrome art that shows its colour on hover (add `group` to the parent) */
+@utility art-mono {
+  filter: grayscale(1) contrast(1.1);
+  transition: filter 250ms var(--ease-out);
+
+  :where(.group:hover) & {
+    filter: none;
+  }
+}
+
+@keyframes hero-dim {
+  to {
+    opacity: 0.2;
+  }
+}
+
+/* Dims the hero image as the page scrolls past it. Optional extra: ignored where unsupported. */
+@utility hero-dim {
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: hero-dim linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 85svh;
+    }
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Staggered fade-up on load. Set --i on each element, for example style={{ "--i": 2 }} */
+@utility reveal {
+  animation: rise 600ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
 }

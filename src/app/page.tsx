@@ -1,30 +1,66 @@
-import { RankingBoard } from "@/components/characters/ranking-board";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
+import { HomeHero } from "@/components/home/home-hero";
+import { RailCard } from "@/components/home/rail-card";
+import { RailSection } from "@/components/home/rail";
 import { fetchCharacters } from "@/lib/data/characters";
 import { DEFAULT_PLAN } from "@/lib/data/query";
+import { fetchHero } from "@/lib/data/site-settings";
+import { fetchSiteStats } from "@/lib/data/site-stats";
+import { buildRails } from "@/lib/home/rails";
+import { currentDay, pickPair } from "@/lib/matchup/daily";
 
 /**
- * The first page is rendered on the server and cached for five minutes, so most
- * visitors are served a static page and cost no Firestore reads. Filters and
- * "load more" go through /api/characters, which is cached at the CDN.
+ * One query of the top 60 feeds the hero pair and every rail. Cached ten minutes,
+ * so the page costs at most about 9k reads a day however many people visit.
  */
-export const revalidate = 300;
+export const revalidate = 600;
+
+const POOL_SIZE = 60;
 
 export default async function Home() {
-  const initial = await fetchCharacters(DEFAULT_PLAN);
+  const [pool, stats, hero] = await Promise.all([
+    fetchCharacters({ ...DEFAULT_PLAN, limit: POOL_SIZE, fetch: POOL_SIZE + 1 }),
+    fetchSiteStats(),
+    fetchHero(),
+  ]);
+
+  const items = pool.items;
+  const pair = pickPair(items, currentDay());
+  const rails = buildRails(items);
 
   return (
-    <main className="mx-auto max-w-6xl px-4 pt-8 pb-24 sm:pt-12">
-      <p className="eyebrow">Global ranking</p>
-      <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight sm:text-6xl">
-        Evidence decides.
-      </h1>
-      <p className="mt-4 max-w-xl text-muted-foreground">
-        Every ranking on NONI traces back to a cited feat. No proof, no points.
-      </p>
+    <>
+      <HomeHero hero={hero} top={items[0] ?? null} pair={pair} stats={stats} />
 
-      <div className="mt-8">
-        <RankingBoard initial={initial} />
-      </div>
-    </main>
+      <main className="mx-auto max-w-6xl px-4 pb-24">
+        {rails.map((rail) => (
+          <RailSection key={rail.id} eyebrow={rail.eyebrow} title={rail.title} href="/ranking">
+            {rail.items.map(({ c, position }) => (
+              <RailCard key={c.id} c={c} position={position} />
+            ))}
+          </RailSection>
+        ))}
+
+        <section className="pt-14">
+          <Link
+            href="/ranking"
+            className="group flex items-center justify-between gap-6 border p-5 transition-colors hover:bg-muted"
+          >
+            <span>
+              <span className="eyebrow block">Everything in one place</span>
+              <span className="mt-1 block font-display text-2xl font-semibold">Explore the full ranking</span>
+              <span className="mt-1 block text-sm text-muted-foreground">
+                Search every character and filter by medium and power tier.
+              </span>
+            </span>
+            <ArrowUpRight
+              className="size-7 shrink-0 transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1"
+              aria-hidden
+            />
+          </Link>
+        </section>
+      </main>
+    </>
   );
 }

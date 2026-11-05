@@ -8,7 +8,10 @@ import { TierBadge } from "./tier-badge";
 export function RankingCard({ c, position }: { c: CharacterSummary; position: number }) {
   return (
     <li>
-      <Link href={`/characters/${c.id}`} className="group block">
+      <Link
+        href={`/characters/${c.id}`}
+        className="group block border bg-background transition-colors hover:border-foreground"
+      >
         <div className="relative">
           <Portrait
             name={c.name}
@@ -24,13 +27,10 @@ export function RankingCard({ c, position }: { c: CharacterSummary; position: nu
           </span>
         </div>
 
-        {/* Flat accent bar that wipes in on hover */}
         <span className="block h-1 w-0 bg-accent transition-[width] duration-200 group-hover:w-full" />
 
-        <div className="border-b pt-3 pb-3">
-          <p className="truncate font-display font-semibold group-hover:underline group-hover:underline-offset-4">
-            {c.name}
-          </p>
+        <div className="p-3">
+          <p className="truncate font-display font-semibold underline-offset-4 group-hover:underline">{c.name}</p>
           <p className="eyebrow truncate">{c.verse}</p>
           <div className="mt-2 flex items-center justify-between">
             <span className="tabular font-semibold">{formatScore(c.score)}</span>
