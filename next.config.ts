@@ -14,7 +14,10 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   images: {
     remotePatterns: imageHost
-      ? [{ protocol: "https", hostname: imageHost.hostname, pathname: "/characters/**" }]
+      ? [
+          { protocol: "https", hostname: imageHost.hostname, pathname: "/characters/**" },
+          { protocol: "https", hostname: imageHost.hostname, pathname: "/site/**" },
+        ]
       : [],
   },
   async headers() {
