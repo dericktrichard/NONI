@@ -10,6 +10,7 @@ export interface Rail {
   id: string;
   eyebrow: string;
   title: string;
+  href: string;
   items: RailItem[];
 }
 
@@ -40,8 +41,9 @@ export function buildRails(pool: readonly CharacterSummary[], options: RailOptio
       id: `media-${type}`,
       eyebrow: "By medium",
       title: MEDIA_LABELS[type],
+      href: `/ranking/${type}`,
       items: items.slice(0, limit),
     }));
 
-  return [{ id: "top", eyebrow: "Overall", title: "Top ranked", items: ranked.slice(0, limit) }, ...mediaRails];
+  return [{ id: "top", eyebrow: "Overall", title: "Top ranked", href: "/ranking", items: ranked.slice(0, limit) }, ...mediaRails];
 }

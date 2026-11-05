@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
+import { CharacterAside } from "@/components/characters/character-aside";
 import { CharacterHero } from "@/components/characters/character-hero";
 import { PowerProfileCard } from "@/components/characters/power-profile";
 import { FeatSection } from "@/components/feats/feat-section";
@@ -31,8 +32,14 @@ export default async function CharacterPage({ params }: Props) {
   return (
     <div className="mx-auto max-w-6xl px-4 pt-8 pb-24">
       <CharacterHero c={data.character} />
-      <PowerProfileCard profile={data.character.profile} />
-      <FeatSection characterId={data.character.id} initialFeats={data.feats} />
+
+      <div className="mt-12 grid gap-10 lg:grid-cols-[1fr_18rem]">
+        <div className="min-w-0">
+          <PowerProfileCard profile={data.character.profile} />
+          <FeatSection characterId={data.character.id} initialFeats={data.feats} />
+        </div>
+        <CharacterAside c={data.character} />
+      </div>
     </div>
   );
 }

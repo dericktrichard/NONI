@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { HomeHero } from "@/components/home/home-hero";
-import { RailCard } from "@/components/home/rail-card";
 import { RailSection } from "@/components/home/rail";
+import { RailCard, RailMore } from "@/components/home/rail-card";
 import { fetchCharacters } from "@/lib/data/characters";
 import { DEFAULT_PLAN } from "@/lib/data/query";
 import { fetchHero } from "@/lib/data/site-settings";
@@ -35,10 +35,11 @@ export default async function Home() {
 
       <main className="mx-auto max-w-6xl px-4 pb-24">
         {rails.map((rail) => (
-          <RailSection key={rail.id} eyebrow={rail.eyebrow} title={rail.title} href="/ranking">
+          <RailSection key={rail.id} eyebrow={rail.eyebrow} title={rail.title} href={rail.href}>
             {rail.items.map(({ c, position }) => (
               <RailCard key={c.id} c={c} position={position} />
             ))}
+            <RailMore href={rail.href} label={rail.id === "top" ? "Full ranking" : `All ${rail.title}`} />
           </RailSection>
         ))}
 

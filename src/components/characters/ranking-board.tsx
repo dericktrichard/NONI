@@ -34,8 +34,8 @@ function facetLabel(facet: Facet): string {
   }
 }
 
-export function RankingBoard({ initial }: { initial: CharacterPage }) {
-  const [facet, setFacet] = useState<Facet>({ kind: "all" });
+export function RankingBoard({ initial, initialFacet }: { initial: CharacterPage; initialFacet?: Facet }) {
+  const [facet, setFacet] = useState<Facet>(initialFacet ?? { kind: "all" });
   const [searchText, setSearchText] = useState("");
   const [view, setView] = useState<View>("rows");
   const [page, setPage] = useState<CharacterPage>(initial);
