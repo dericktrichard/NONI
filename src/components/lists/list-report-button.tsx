@@ -5,8 +5,6 @@ import { controlClass } from "@/components/ui/fields";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import { LIST_REPORT_LABELS, LIST_REPORT_REASONS } from "@/lib/lists/moderation";
 
-const plainButton = "min-h-11 border px-4 text-sm hover:bg-foreground/5 disabled:opacity-50";
-
 export function ListReportButton({ listId }: { listId: string }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
@@ -44,18 +42,28 @@ export function ListReportButton({ listId }: { listId: string }) {
     }
   }
 
-  if (done) return <p role="status" className="text-sm">Thanks. A moderator will review it.</p>;
+  if (done) {
+    return (
+      <p role="status" className="text-sm text-muted-foreground">
+        Thanks. A moderator will review it.
+      </p>
+    );
+  }
 
   if (!open) {
     return (
-      <button type="button" className="min-h-11 text-sm underline underline-offset-4" onClick={() => setOpen(true)}>
+      <button
+        type="button"
+        className="eyebrow min-h-11 underline underline-offset-4 transition-colors hover:text-foreground"
+        onClick={() => setOpen(true)}
+      >
         Report
       </button>
     );
   }
 
   return (
-    <form onSubmit={submit} className="w-full max-w-sm space-y-3 border p-3">
+    <form onSubmit={submit} className="w-full max-w-sm space-y-3 border bg-background p-3">
       <select
         value={reason}
         onChange={(event) => setReason(event.target.value)}
@@ -79,10 +87,10 @@ export function ListReportButton({ listId }: { listId: string }) {
         className={controlClass}
       />
       <div className="flex gap-2">
-        <button type="submit" className={plainButton} disabled={busy || reason === ""}>
+        <button type="submit" className="btn btn-solid btn-sm" disabled={busy || reason === ""}>
           Send report
         </button>
-        <button type="button" className={plainButton} onClick={() => setOpen(false)} disabled={busy}>
+        <button type="button" className="btn btn-quiet btn-sm" onClick={() => setOpen(false)} disabled={busy}>
           Cancel
         </button>
       </div>

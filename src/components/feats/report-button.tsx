@@ -56,16 +56,14 @@ export function ReportButton({ endpoint, target }: ReportButtonProps) {
             setOpen(true);
             setMessage(null);
           }}
-          className="eyebrow min-h-11 underline underline-offset-4"
+          className="eyebrow min-h-11 underline underline-offset-4 transition-colors hover:text-foreground"
         >
           Report
         </button>
-      ) : null}
-
-      {open ? (
-        <form onSubmit={submit} className="mt-2 w-full max-w-sm space-y-2 border p-3">
+      ) : (
+        <form onSubmit={submit} className="mt-2 w-full max-w-sm space-y-3 border p-3">
           <label className="block">
-            <span className="eyebrow">Reason</span>
+            <span className="eyebrow mb-1 block">Reason</span>
             <select
               value={reason}
               onChange={(event) => setReason(event.target.value as ReportReason)}
@@ -79,28 +77,28 @@ export function ReportButton({ endpoint, target }: ReportButtonProps) {
             </select>
           </label>
           <label className="block">
-            <span className="eyebrow">Details (optional)</span>
+            <span className="eyebrow mb-1 block">Details (optional)</span>
             <textarea
               value={note}
               onChange={(event) => setNote(event.target.value)}
               maxLength={300}
               rows={3}
-              className={controlClass}
+              className={`${controlClass} h-auto py-2`}
             />
           </label>
           <div className="flex gap-2">
-            <button type="submit" disabled={busy} className="min-h-11 border px-4 hover:bg-muted disabled:opacity-40">
+            <button type="submit" disabled={busy} className="btn btn-solid btn-sm">
               Send report
             </button>
-            <button type="button" onClick={() => setOpen(false)} className="min-h-11 px-4 hover:bg-muted">
+            <button type="button" onClick={() => setOpen(false)} className="btn btn-quiet btn-sm">
               Cancel
             </button>
           </div>
         </form>
-      ) : null}
+      )}
 
       {message ? (
-        <p role="status" className="mt-1 text-foreground/70">
+        <p role="status" className="mt-1 text-muted-foreground">
           {message}
         </p>
       ) : null}

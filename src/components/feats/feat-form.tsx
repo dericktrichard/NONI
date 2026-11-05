@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Plus, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Loader2, X } from "lucide-react";
+import { controlClass } from "@/components/ui/fields";
 import { HAX_KIND_LIST, HAX_KINDS, type HaxKind } from "@/config/combat";
 import { LIMITS } from "@/config/limits";
 import { PROOF } from "@/config/ranking";
@@ -32,15 +32,26 @@ const blankProof = (source: ProofSource = "primary"): ProofRow => ({
 });
 const blankClaim: ClaimFields = { category: "attackPotency", tier: "", level: "", dimension: 0, kind: "", power: "" };
 
-const control =
-  "h-11 w-full rounded-sm border bg-background px-3 text-sm text-foreground outline-none focus:border-foreground";
+const control = controlClass;
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block text-sm">
-      <span className="mb-1 block font-medium">{label}</span>
+      <span className="eyebrow mb-1 block">{label}</span>
       {children}
     </label>
+  );
+}
+
+function Group({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <fieldset className="space-y-4 border-t pt-5">
+      <legend className="float-left mb-3 w-full">
+        <span className="font-display text-lg font-semibold tracking-tight">{title}</span>
+        {hint ? <span className="mt-1 block text-sm font-normal text-muted-foreground">{hint}</span> : null}
+      </legend>
+      <div className="clear-both space-y-4">{children}</div>
+    </fieldset>
   );
 }
 
@@ -150,22 +161,19 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
   const canAddProof = proofs.length < LIMITS.proofsPerFeat;
 
   return (
-    <form onSubmit={submit} className="space-y-5 border p-4 sm:p-6">
-      <div className="flex items-start justify-between">
-        <h3 className="font-display text-xl font-semibold tracking-tight">Submit a feat</h3>
-        <button type="button" onClick={onCancel} aria-label="Close form" className="-m-2 p-2 hover:bg-muted">
+    <form onSubmit={submit} className="space-y-6 border p-4 sm:p-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="eyebrow">New feat</p>
+          <h3 className="mt-1 font-display text-2xl font-semibold tracking-tight">Submit a feat</h3>
+        </div>
+        <button type="button" onClick={onCancel} aria-label="Close form" className="-m-2 grid size-11 place-items-center hover:bg-muted">
           <X className="size-5" />
         </button>
       </div>
 
       <Field label="Title">
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          maxLength={LIMITS.featTitle}
-          required
-          className={control}
-        />
+        <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={LIMITS.featTitle} required className={control} />
       </Field>
 
       <Field label="What happens, in your own words">
@@ -179,8 +187,7 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
         />
       </Field>
 
-      <fieldset className="space-y-4">
-        <legend className="eyebrow mb-2">What it shows</legend>
+      <Group title="What it shows">
         <Field label="Category">
           <select
             value={claim.category}
@@ -248,15 +255,12 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
             <TierSelect label="Power level" value={claim.power} onChange={(power) => patchClaim({ power })} />
           </>
         )}
-      </fieldset>
+      </Group>
 
-      <fieldset className="space-y-4">
-        <legend className="eyebrow mb-2">Proof from the source material</legend>
-        <p className="text-sm text-foreground/70">
-          At least one proof must come from the original work. Wiki pages, videos and threads can be added as
-          secondary references.
-        </p>
-
+      <Group
+        title="Proof from the source material"
+        hint="At least one proof must come from the original work. Wiki pages, videos and threads can be added as secondary references."
+      >
         {featIssues.map((issue) => (
           <p key={issue.code} role="alert" className="text-sm font-medium">
             {issue.message}
@@ -264,8 +268,19 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
         ))}
 
         {proofs.map((row, index) => (
-          <div key={row.key} className="space-y-3 border p-3">
-            {row.source === "secondary" ? <p className="eyebrow">Secondary reference</p> : null}
+          <div key={row.key} className="space-y-3 border bg-muted/40 p-3 sm:p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="eyebrow">{row.source === "secondary" ? "Secondary reference" : "Primary source"}</p>
+              {proofs.length > 1 ? (
+                <button
+                  type="button"
+                  onClick={() => setProofs((rows) => rows.filter((r) => r.key !== row.key))}
+                  className="min-h-9 text-sm underline underline-offset-4"
+                >
+                  Remove
+                </button>
+              ) : null}
+            </div>
 
             <div className="grid gap-3 sm:grid-cols-[10rem_1fr]">
               <Field label="Type">
@@ -323,53 +338,41 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
                   {issue.message}
                 </p>
               ))}
-
-            {proofs.length > 1 && (
-              <button
-                type="button"
-                onClick={() => setProofs((rows) => rows.filter((r) => r.key !== row.key))}
-                className="text-sm underline underline-offset-4"
-              >
-                Remove this proof
-              </button>
-            )}
           </div>
         ))}
 
         <div className="flex flex-wrap gap-2">
-          {canAddProof && (
-            <Button variant="outline" size="sm" onClick={() => setProofs((rows) => [...rows, blankProof()])}>
-              <Plus className="size-4" aria-hidden />
+          {canAddProof ? (
+            <button type="button" className="btn btn-line btn-sm" onClick={() => setProofs((rows) => [...rows, blankProof()])}>
               Add proof
-            </Button>
-          )}
-          {canAddProof && secondaryCount < PROOF.maxSecondary && (
-            <Button
-              variant="outline"
-              size="sm"
+            </button>
+          ) : null}
+          {canAddProof && secondaryCount < PROOF.maxSecondary ? (
+            <button
+              type="button"
+              className="btn btn-line btn-sm"
               onClick={() => setProofs((rows) => [...rows, blankProof("secondary")])}
             >
-              <Plus className="size-4" aria-hidden />
               Add secondary reference
-            </Button>
-          )}
+            </button>
+          ) : null}
         </div>
-      </fieldset>
+      </Group>
 
       {error ? (
-        <p role="alert" className="text-sm font-medium">
+        <p role="alert" className="border-l-2 border-foreground pl-3 text-sm font-medium">
           {error}
         </p>
       ) : null}
 
-      <div className="flex gap-3">
-        <Button type="submit" variant="primary" disabled={busy}>
+      <div className="flex flex-wrap gap-3 border-t pt-5">
+        <button type="submit" className="btn btn-solid" disabled={busy}>
           {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
           Submit feat
-        </Button>
-        <Button variant="ghost" onClick={onCancel}>
+        </button>
+        <button type="button" className="btn btn-quiet" onClick={onCancel}>
           Cancel
-        </Button>
+        </button>
       </div>
     </form>
   );

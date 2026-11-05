@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import { getProfileByHandle } from "@/lib/data/profile";
+import { SectionHeading } from "@/components/home/section-heading";
 import { ListReportButton } from "@/components/lists/list-report-button";
+import { getProfileByHandle } from "@/lib/data/profile";
 
 export const revalidate = 300;
 
@@ -24,44 +25,62 @@ export default async function ProfilePage({ params }: Props) {
   if (!profile) notFound();
 
   return (
-    <div className="mx-auto max-w-3xl px-4 pt-8 pb-24">
-      <p className="eyebrow">Profile</p>
-      <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight sm:text-6xl">@{profile.handle}</h1>
-      {profile.bio ? <p className="mt-4 max-w-xl whitespace-pre-line text-sm">{profile.bio}</p> : null}
-
-      <dl className="mt-8 grid grid-cols-2 gap-px border bg-border sm:max-w-md">
-        <div className="bg-background p-4">
-          <dt className="eyebrow">Member since</dt>
-          <dd className="mt-1 font-display text-xl font-semibold">{profile.createdAt.slice(0, 10) || "--"}</dd>
+    <div className="mx-auto max-w-3xl px-4 pt-8 pb-24 sm:pt-12">
+      <div className="flex items-start gap-4 sm:gap-6">
+        <span
+          aria-hidden
+          className="grid size-16 shrink-0 place-items-center border bg-muted font-display text-3xl font-semibold uppercase sm:size-24 sm:text-5xl"
+        >
+          {profile.handle.slice(0, 1)}
+        </span>
+        <div className="min-w-0">
+          <p className="eyebrow">Profile</p>
+          <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight wrap-break-word sm:text-5xl">
+            @{profile.handle}
+          </h1>
+          {profile.bio ? <p className="mt-3 max-w-xl text-sm whitespace-pre-line">{profile.bio}</p> : null}
         </div>
-        <div className="bg-background p-4">
-          <dt className="eyebrow">Feats submitted</dt>
-          <dd className="tabular mt-1 font-display text-xl font-semibold">{profile.featsSubmitted}</dd>
+      </div>
+
+      <dl className="mt-8 grid grid-cols-3 gap-px border bg-border">
+        <div className="bg-background p-3 sm:p-4">
+          <dt className="eyebrow">Member since</dt>
+          <dd className="mt-1 font-display text-base font-semibold sm:text-xl">{profile.createdAt.slice(0, 10) || "--"}</dd>
+        </div>
+        <div className="bg-background p-3 sm:p-4">
+          <dt className="eyebrow">Feats</dt>
+          <dd className="tabular mt-1 font-display text-base font-semibold sm:text-xl">{profile.featsSubmitted}</dd>
+        </div>
+        <div className="bg-background p-3 sm:p-4">
+          <dt className="eyebrow">Lists</dt>
+          <dd className="tabular mt-1 font-display text-base font-semibold sm:text-xl">{profile.lists.length}</dd>
         </div>
       </dl>
 
       {profile.lists.length > 0 ? (
         <section className="mt-12">
-          <h2 className="eyebrow">Lists</h2>
-          <div className="mt-4 space-y-10">
+          <SectionHeading title="Lists" />
+          <div className="mt-6 space-y-6">
             {profile.lists.map((list) => (
-              <article key={list.id}>
-                <div className="flex flex-wrap items-baseline justify-between gap-3">
-                  <h3 className="font-display text-2xl font-semibold tracking-tight">{list.title}</h3>
+              <article key={list.id} className="border">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b bg-muted/50 px-4">
+                  <h3 className="py-3 font-display text-xl font-semibold tracking-tight">{list.title}</h3>
                   <ListReportButton listId={list.id} />
                 </div>
-                <ol className="mt-4 border-t">
+                <ol className="divide-y">
                   {list.items.map((item, index) => (
-                    <li key={item.characterId} className="grid grid-cols-[2rem_1fr] gap-3 border-b py-4">
-                      <span className="tabular text-sm text-muted-foreground">{index + 1}</span>
-                      <div>
+                    <li key={item.characterId} className="grid grid-cols-[2.5rem_1fr] gap-3 p-4">
+                      <span className="tabular font-display text-2xl leading-none font-semibold text-muted-foreground">
+                        {index + 1}
+                      </span>
+                      <div className="min-w-0">
                         <Link
                           href={`/characters/${item.characterId}`}
                           className="font-medium underline underline-offset-4"
                         >
                           {item.name}
                         </Link>
-                        <p className="mt-1 whitespace-pre-line text-sm">{item.reason}</p>
+                        <p className="mt-1 text-sm whitespace-pre-line">{item.reason}</p>
                       </div>
                     </li>
                   ))}
@@ -70,7 +89,9 @@ export default async function ProfilePage({ params }: Props) {
             ))}
           </div>
         </section>
-      ) : null}
+      ) : (
+        <p className="mt-12 border p-4 text-sm text-muted-foreground">No public lists yet.</p>
+      )}
     </div>
   );
 }

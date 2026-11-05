@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { SectionHeading } from "@/components/home/section-heading";
 import { MatchupPicker } from "@/components/matchups/matchup-picker";
 import { fetchCharacterOptions } from "@/lib/data/matchup-page";
 
@@ -13,9 +15,8 @@ export default async function MatchupsPage() {
   const options = await fetchCharacterOptions();
 
   return (
-    <div className="mx-auto max-w-4xl px-4 pt-8 pb-24">
-      <p className="eyebrow">Matchups</p>
-      <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight">Who wins?</h1>
+    <div className="mx-auto max-w-4xl px-4 pt-8 pb-24 sm:pt-12">
+      <SectionHeading index="01" title="Who wins?" aside="Head to head" />
       <p className="mt-3 max-w-xl text-sm text-muted-foreground">
         Pick two characters. The result comes from verified feats and fixed rules, and every verdict shows its reasons.
       </p>
@@ -24,7 +25,9 @@ export default async function MatchupsPage() {
         {options.length < 2 ? (
           <p className="text-sm text-muted-foreground">At least two characters are needed to compare.</p>
         ) : (
-          <MatchupPicker options={options} />
+          <Suspense fallback={<div className="h-56 border" aria-hidden />}>
+            <MatchupPicker options={options} />
+          </Suspense>
         )}
       </div>
     </div>

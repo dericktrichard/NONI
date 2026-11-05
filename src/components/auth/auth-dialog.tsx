@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Loader2, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { controlClass } from "@/components/ui/fields";
 import { describeAuthError } from "@/lib/auth/errors";
 import {
   requestPasswordReset,
@@ -10,6 +10,7 @@ import {
   signInWithGoogle,
   signUpWithEmail,
 } from "@/lib/auth/client";
+import { cn } from "@/lib/utils";
 import { emailSchema, signInSchema, signUpSchema } from "@/lib/validation/auth";
 
 type Mode = "signin" | "signup";
@@ -20,8 +21,6 @@ interface AuthDialogProps {
   onClose: () => void;
   onSignedIn: () => void | Promise<void>;
 }
-
-const inputClass = "h-11 w-full rounded-sm border bg-transparent px-3 text-sm outline-none focus:border-foreground";
 
 export function AuthDialog({ open, onClose, onSignedIn }: AuthDialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -98,6 +97,11 @@ export function AuthDialog({ open, onClose, onSignedIn }: AuthDialogProps) {
     }
   }
 
+  function switchMode(next: Mode) {
+    setMode(next);
+    setMessage(null);
+  }
+
   const signup = mode === "signup";
 
   return (
@@ -105,92 +109,111 @@ export function AuthDialog({ open, onClose, onSignedIn }: AuthDialogProps) {
       ref={ref}
       onClose={handleClose}
       aria-labelledby="auth-title"
-      className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-sm border bg-background p-6 text-foreground backdrop:bg-black/60"
+      className="m-auto w-[calc(100%-2rem)] max-w-sm border bg-background p-0 text-foreground backdrop:bg-black/60 backdrop:backdrop-blur-sm"
     >
-      <div className="flex items-start justify-between">
-        <h2 id="auth-title" className="font-display text-xl font-semibold tracking-tight">
-          {signup ? "Create account" : "Sign in"}
-        </h2>
+      <div className="flex items-center justify-between border-b pl-5">
+        <p className="eyebrow">Account</p>
         <button
           type="button"
           onClick={() => ref.current?.close()}
           aria-label="Close"
-          className="-m-2 p-2 hover:bg-muted"
+          className="grid size-11 place-items-center hover:bg-muted"
         >
           <X className="size-5" />
         </button>
       </div>
 
-      <Button
-        variant="outline"
-        className="mt-6 w-full"
-        disabled={busy}
-        onClick={() => void run(signInWithGoogle)}
-      >
-        Continue with Google
-      </Button>
+      <div className="p-5">
+        <div className="grid grid-cols-2 border" role="group" aria-label="Choose an option">
+          {(
+            [
+              ["signin", "Sign in"],
+              ["signup", "Create account"],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={mode === value}
+              onClick={() => switchMode(value)}
+              className={cn(
+                "min-h-10 text-sm font-medium transition-colors",
+                mode === value ? "bg-foreground text-background" : "hover:bg-muted",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
-      <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-widest text-foreground/60">
-        <span className="h-px flex-1 bg-foreground/20" />
-        or
-        <span className="h-px flex-1 bg-foreground/20" />
-      </div>
+        <h2 id="auth-title" className="mt-6 font-display text-2xl font-semibold tracking-tight">
+          {signup ? "Join NONI" : "Welcome back"}
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {signup
+            ? "Verified accounts can submit feats, vote and make lists."
+            : "Sign in to submit feats, vote and make lists."}
+        </p>
 
-      <form onSubmit={submit} className="space-y-4">
-        <label className="block text-sm">
-          <span className="mb-1 block font-medium">Email</span>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
-            maxLength={254}
-            required
-            className={inputClass}
-          />
-        </label>
-        <label className="block text-sm">
-          <span className="mb-1 block font-medium">Password</span>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete={signup ? "new-password" : "current-password"}
-            maxLength={128}
-            required
-            className={inputClass}
-          />
-          {signup && <span className="mt-1 block text-xs text-foreground/60">At least 10 characters.</span>}
-        </label>
-
-        {message && (
-          <p role="alert" className={message.kind === "error" ? "text-sm font-medium" : "text-sm text-foreground/70"}>
-            {message.text}
-          </p>
-        )}
-
-        <Button type="submit" variant="primary" className="w-full" disabled={busy}>
-          {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
-          {signup ? "Create account" : "Sign in"}
-        </Button>
-      </form>
-
-      <div className="mt-5 flex items-center justify-between text-sm">
-        <button
-          type="button"
-          className="underline underline-offset-4"
-          onClick={() => {
-            setMode(signup ? "signin" : "signup");
-            setMessage(null);
-          }}
-        >
-          {signup ? "Have an account? Sign in" : "New here? Create account"}
+        <button type="button" className="btn btn-line mt-5 w-full" disabled={busy} onClick={() => void run(signInWithGoogle)}>
+          Continue with Google
         </button>
-        {!signup && (
-          <button type="button" className="underline underline-offset-4" onClick={() => void reset()} disabled={busy}>
+
+        <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-widest text-foreground/60">
+          <span className="h-px flex-1 bg-foreground/20" />
+          or
+          <span className="h-px flex-1 bg-foreground/20" />
+        </div>
+
+        <form onSubmit={submit} className="space-y-4">
+          <label className="block text-sm">
+            <span className="eyebrow mb-1 block">Email</span>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              maxLength={254}
+              required
+              className={controlClass}
+            />
+          </label>
+          <label className="block text-sm">
+            <span className="eyebrow mb-1 block">Password</span>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete={signup ? "new-password" : "current-password"}
+              maxLength={128}
+              required
+              className={controlClass}
+            />
+            {signup ? <span className="mt-1 block text-xs text-muted-foreground">At least 10 characters.</span> : null}
+          </label>
+
+          {message ? (
+            <p role="alert" className={message.kind === "error" ? "text-sm font-medium" : "text-sm text-muted-foreground"}>
+              {message.text}
+            </p>
+          ) : null}
+
+          <button type="submit" className="btn btn-solid w-full" disabled={busy}>
+            {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
+            {signup ? "Create account" : "Sign in"}
+          </button>
+        </form>
+
+        {!signup ? (
+          <button
+            type="button"
+            className="mt-4 min-h-11 text-sm underline underline-offset-4"
+            onClick={() => void reset()}
+            disabled={busy}
+          >
             Forgot password
           </button>
-        )}
+        ) : null}
       </div>
     </dialog>
   );

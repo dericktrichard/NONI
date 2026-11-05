@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { controlClass } from "@/components/ui/fields";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import type { OwnProfile } from "@/lib/data/profile";
@@ -63,13 +62,15 @@ export function ProfileForm({ initial, verified }: ProfileFormProps) {
   return (
     <form onSubmit={submit} className="mt-8 max-w-xl space-y-6">
       {!verified ? (
-        <p className="border p-3 text-sm">Verify your email and sign in again before saving your profile.</p>
+        <p className="border-l-2 border-foreground bg-muted p-3 text-sm">
+          Verify your email and sign in again before saving your profile.
+        </p>
       ) : null}
 
       <label className="block text-sm">
-        <span className="mb-1 block font-medium">Handle</span>
-        <div className="flex items-center">
-          <span className="grid h-11 place-items-center border border-r-0 px-3 text-muted-foreground">@</span>
+        <span className="eyebrow mb-1 block">Handle</span>
+        <div className="flex items-stretch">
+          <span className="grid w-11 place-items-center border border-r-0 bg-muted text-muted-foreground">@</span>
           <input
             value={handle}
             onChange={(event) => setHandle(event.target.value)}
@@ -80,16 +81,19 @@ export function ProfileForm({ initial, verified }: ProfileFormProps) {
             className={controlClass}
           />
         </div>
-        {issue ? <span className="mt-1 block text-foreground/70">{HANDLE_MESSAGES[issue]}</span> : null}
+        {issue ? <span className="mt-1 block text-muted-foreground">{HANDLE_MESSAGES[issue]}</span> : null}
         {locked ? (
-          <span className="mt-1 block text-foreground/70">
+          <span className="mt-1 block text-muted-foreground">
             You can change your handle again in {initial.cooldownDays} {initial.cooldownDays === 1 ? "day" : "days"}.
           </span>
         ) : null}
       </label>
 
       <label className="block text-sm">
-        <span className="mb-1 block font-medium">Bio (up to 200 characters)</span>
+        <span className="eyebrow mb-1 flex justify-between">
+          <span>Bio</span>
+          <span className="tabular">{bio.length} / 200</span>
+        </span>
         <textarea
           value={bio}
           onChange={(event) => setBio(event.target.value)}
@@ -99,10 +103,10 @@ export function ProfileForm({ initial, verified }: ProfileFormProps) {
         />
       </label>
 
-      <div className="flex flex-wrap items-center gap-4">
-        <Button type="submit" variant="primary" disabled={busy || issue !== null || normalized === "" || locked}>
+      <div className="flex flex-wrap items-center gap-4 border-t pt-5">
+        <button type="submit" className="btn btn-solid" disabled={busy || issue !== null || normalized === "" || locked}>
           Save profile
-        </Button>
+        </button>
         {message && saved ? (
           <p role="status" className="text-sm">
             {message}{" "}

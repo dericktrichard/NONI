@@ -1,12 +1,12 @@
 "use client";
 
-import { ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ReportButton } from "@/components/feats/report-button";
+import { Tri } from "@/components/ui/tri";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import type { ArgumentView } from "@/lib/data/matchup-page";
 import { cn } from "@/lib/utils";
-import { ReportButton } from "@/components/feats/report-button";
 
 interface ArgumentListProps {
   items: ArgumentView[];
@@ -17,8 +17,7 @@ interface ArgumentListProps {
 type Tally = { upvotes: number; downvotes: number };
 type Mine = Record<string, 1 | -1>;
 
-const voteButton =
-  "grid size-11 place-items-center border border-transparent transition-colors hover:bg-muted disabled:opacity-40";
+const voteButton = "grid size-11 place-items-center transition-colors hover:bg-muted disabled:opacity-40";
 
 export function ArgumentList({ items, names, slugs }: ArgumentListProps) {
   const [overrides, setOverrides] = useState<Record<string, Tally>>({});
@@ -81,28 +80,28 @@ export function ArgumentList({ items, names, slugs }: ArgumentListProps) {
   }
 
   if (items.length === 0) {
-    return <p className="mt-4 text-sm text-muted-foreground">No arguments yet. Be the first to make a case.</p>;
+    return <p className="mt-6 border p-4 text-sm text-muted-foreground">No arguments yet. Be the first to make a case.</p>;
   }
 
   return (
     <div>
-      <ul className="mt-2 divide-y border-y">
+      <ul className="mt-6 space-y-3">
         {items.map((item) => {
           const tally = overrides[item.id] ?? { upvotes: item.upvotes, downvotes: item.downvotes };
           const picked = mine[item.id] ?? 0;
 
           return (
-            <li key={item.id} className="flex gap-4 py-5">
-              <div className="flex w-11 shrink-0 flex-col items-center">
+            <li key={item.id} className="flex border">
+              <div className="flex w-12 shrink-0 flex-col items-center border-r py-1">
                 <button
                   type="button"
                   aria-label="Upvote"
                   aria-pressed={picked === 1}
                   disabled={busyId === item.id}
                   onClick={() => void vote(item.id, 1)}
-                  className={cn(voteButton, picked === 1 && "bg-accent text-accent-foreground")}
+                  className={cn(voteButton, picked === 1 && "text-accent-foreground bg-accent")}
                 >
-                  <ChevronUp className="size-5" aria-hidden />
+                  <Tri dir="up" />
                 </button>
                 <span className="tabular py-1 text-sm font-semibold">{tally.upvotes - tally.downvotes}</span>
                 <button
@@ -113,11 +112,11 @@ export function ArgumentList({ items, names, slugs }: ArgumentListProps) {
                   onClick={() => void vote(item.id, -1)}
                   className={cn(voteButton, picked === -1 && "bg-foreground text-background")}
                 >
-                  <ChevronDown className="size-5" aria-hidden />
+                  <Tri dir="down" />
                 </button>
               </div>
 
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 p-4">
                 <p className="eyebrow">
                   Argues for {names[item.side]} / {item.authorName} / {item.createdAt.slice(0, 10)}
                 </p>

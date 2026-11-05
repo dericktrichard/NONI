@@ -200,3 +200,61 @@
   animation: rise 600ms var(--ease-out) both;
   animation-delay: calc(var(--i, 0) * 70ms);
 }
+
+@utility btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--btn-h, 2.75rem);
+  padding-inline: var(--btn-px, 1.25rem);
+  font-size: var(--btn-fs, 0.875rem);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  transition:
+    background-color 150ms,
+    color 150ms,
+    border-color 150ms,
+    opacity 150ms;
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+}
+
+@utility btn-sm {
+  --btn-h: 2.5rem;
+  --btn-px: 0.875rem;
+  --btn-fs: 0.8125rem;
+}
+
+@utility btn-solid {
+  border-color: var(--color-foreground);
+  background: var(--color-foreground);
+  color: var(--color-background);
+  &:enabled:hover {
+    opacity: 0.85;
+  }
+}
+
+@utility btn-line {
+  border-color: var(--color-border);
+  color: var(--color-foreground);
+  &:enabled:hover {
+    border-color: var(--color-foreground);
+    background: var(--color-muted);
+  }
+}
+
+@utility btn-quiet {
+  color: var(--color-foreground);
+  &:enabled:hover {
+    background: var(--color-muted);
+  }
+}

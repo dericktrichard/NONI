@@ -13,6 +13,7 @@ import {
   argumentNeedsNote,
   type ArgumentAction,
 } from "@/lib/moderation/argument-actions";
+import { cn } from "@/lib/utils";
 
 export function ArgumentQueueItem({ item }: { item: QueueArgument }) {
   const router = useRouter();
@@ -112,7 +113,7 @@ export function ArgumentQueueItem({ item }: { item: QueueArgument }) {
             type="button"
             disabled={busy}
             onClick={() => run(action)}
-            className="min-h-11 border px-4 text-sm hover:bg-muted disabled:opacity-40"
+            className={cn("btn btn-sm", action === "hide" ? "btn-solid" : "btn-line")}
           >
             {ARGUMENT_ACTION_LABELS[action]}
           </button>
