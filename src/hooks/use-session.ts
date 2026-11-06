@@ -1,11 +1,27 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 
-export type SessionUser = { uid: string; verified: boolean; role: "user" | "moderator" | "admin" };
-type State = { status: "loading" } | { status: "ready"; user: SessionUser | null };
+export type SessionUser = {
+  uid: string;
+  verified: boolean;
+  role: "user" | "moderator" | "admin";
+  handle: string | null;
+};
+export type SessionState = { status: "loading" } | { status: "ready"; user: SessionUser | null };
 
-async function request(): Promise<State> {
+const LOADING: SessionState = { status: "loading" };
+
+let current: SessionState = LOADING;
+let started = false;
+const listeners = new Set<() => void>();
+
+function publish(next: SessionState) {
+  current = next;
+  listeners.forEach((listener) => listener());
+}
+
+async function request(): Promise<SessionState> {
   try {
     const response = await fetch("/api/auth/me", { cache: "no-store" });
     const user = response.ok ? ((await response.json()) as SessionUser | null) : null;
@@ -15,30 +31,26 @@ async function request(): Promise<State> {
   }
 }
 
-let inflight: Promise<State> | null = null;
-
-function load(): Promise<State> {
-  inflight ??= request().finally(() => {
-    inflight = null;
-  });
-  return inflight;
-}
+const subscribe = (listener: () => void) => {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+};
+const getSnapshot = () => current;
+const getServerSnapshot = () => LOADING;
 
 export function useSession() {
-  const [state, setState] = useState<State>({ status: "loading" });
+  const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   useEffect(() => {
-    let active = true;
-    void load().then((next) => {
-      if (active) setState(next);
-    });
-    return () => {
-      active = false;
-    };
+    if (started) return;
+    started = true;
+    void request().then(publish);
   }, []);
 
   const refresh = useCallback(async () => {
-    setState(await request());
+    publish(await request());
   }, []);
 
   return { state, refresh };

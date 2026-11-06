@@ -1,4 +1,5 @@
 import { MEDIA_LABELS } from "@/config/media";
+import { exploreHref } from "@/lib/explore/params";
 import type { CharacterSummary, MediaType } from "@/types/character";
 
 export interface RailItem {
@@ -41,9 +42,12 @@ export function buildRails(pool: readonly CharacterSummary[], options: RailOptio
       id: `media-${type}`,
       eyebrow: "By medium",
       title: MEDIA_LABELS[type],
-      href: `/ranking/${type}`,
+      href: exploreHref({ media: type }),
       items: items.slice(0, limit),
     }));
 
-  return [{ id: "top", eyebrow: "Overall", title: "Top ranked", href: "/ranking", items: ranked.slice(0, limit) }, ...mediaRails];
+  return [
+    { id: "top", eyebrow: "Overall", title: "Top ranked", href: exploreHref({ all: true }), items: ranked.slice(0, limit) },
+    ...mediaRails,
+  ];
 }

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NewMatchupButton } from "@/components/matchups/matchup-actions";
 import type { CharacterView } from "@/types/character-page";
 import { EvidenceMeter } from "./evidence-meter";
 
@@ -18,9 +18,12 @@ export function CharacterAside({ c }: { c: CharacterView }) {
         </p>
       </div>
 
-      <Link href={`/matchups?a=${c.id}`} className="btn btn-solid h-auto w-full py-3 text-center whitespace-normal">
+      <NewMatchupButton
+        preset={{ id: c.id, name: c.name, verse: c.verse, imageUrl: c.imageUrl, tier: c.tier }}
+        className="btn btn-solid h-auto w-full py-3 text-center whitespace-normal"
+      >
         Compare with another character
-      </Link>
+      </NewMatchupButton>
     </aside>
   );
 }

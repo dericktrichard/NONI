@@ -20,6 +20,12 @@ const nextConfig: NextConfig = {
         ]
       : [],
   },
+  async redirects() {
+    return [
+      { source: "/ranking", destination: "/?all=1", permanent: true },
+      { source: "/ranking/:media", destination: "/?media=:media", permanent: true },
+    ];
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

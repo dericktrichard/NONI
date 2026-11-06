@@ -3,10 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { SectionHeading } from "@/components/home/section-heading";
+import { PageTop } from "@/components/layout/page-top";
 import { ListReportButton } from "@/components/lists/list-report-button";
 import { OwnerTools } from "@/components/profile/owner-tools";
 import { getOwnLists, listCharacterOptions } from "@/lib/data/lists";
 import { getOwnProfile, getProfileByHandle } from "@/lib/data/profile";
+import { roleOf } from "@/lib/security/roles";
 import { getSessionUser } from "@/lib/security/session";
 
 const load = cache(getProfileByHandle);
@@ -32,7 +34,9 @@ export default async function ProfilePage({ params }: Props) {
     isOwner && viewer ? await Promise.all([getOwnLists(viewer.uid), listCharacterOptions()]) : [[], []];
 
   return (
-    <div className="mx-auto max-w-3xl px-4 pt-8 pb-24 sm:pt-12">
+    <div className="mx-auto max-w-3xl px-4 pt-6 pb-24">
+      <PageTop back={{ href: "/", label: "Explore" }} trail={[{ label: "Explore", href: "/" }, { label: `@${profile.handle}` }]} />
+
       <div className="flex items-start gap-4 sm:gap-6">
         <span
           aria-hidden
@@ -46,16 +50,18 @@ export default async function ProfilePage({ params }: Props) {
             @{profile.handle}
           </h1>
           {profile.bio ? <p className="mt-3 max-w-xl text-sm whitespace-pre-line">{profile.bio}</p> : null}
-          {isOwner && own ? (
-            <OwnerTools
-              profile={own}
-              verified={viewer?.email_verified === true}
-              lists={ownLists}
-              options={options}
-            />
-          ) : null}
         </div>
       </div>
+
+      {isOwner && own && viewer ? (
+        <OwnerTools
+          profile={own}
+          verified={viewer.email_verified === true}
+          staff={roleOf(viewer) !== "user"}
+          lists={ownLists}
+          options={options}
+        />
+      ) : null}
 
       <dl className="mt-8 grid grid-cols-3 gap-px border bg-border">
         <div className="bg-background p-3 sm:p-4">
@@ -93,10 +99,7 @@ export default async function ProfilePage({ params }: Props) {
                         {index + 1}
                       </span>
                       <div className="min-w-0">
-                        <Link
-                          href={`/characters/${item.characterId}`}
-                          className="font-medium underline underline-offset-4"
-                        >
+                        <Link href={`/characters/${item.characterId}`} className="font-medium underline underline-offset-4">
                           {item.name}
                         </Link>
                         <p className="mt-1 text-sm whitespace-pre-line">{item.reason}</p>

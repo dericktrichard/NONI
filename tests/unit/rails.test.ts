@@ -54,8 +54,8 @@ describe("buildRails", () => {
 
   it("links each rail to the right ranking page", () => {
     const rails = buildRails(pool);
-    expect(rails[0]?.href).toBe("/ranking");
-    expect(rails[1]?.href).toBe("/ranking/anime");
-    expect(rails[2]?.href).toBe("/ranking/manga");
+    expect(rails[0]?.href).toBe("/?all=1");
+    expect(rails[1]?.href).toBe("/?media=anime");
+    expect(rails[2]?.href).toBe("/?media=manga");
   });
 });
