@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { NavAvatar } from "@/components/auth/nav-avatar";
 import { useSession } from "@/hooks/use-session";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import { OPEN_PROFILE_SETUP, OPEN_SEARCH } from "@/lib/ui/events";
@@ -18,7 +19,7 @@ export function TabBar() {
   const { state } = useSession();
   const user = state.status === "ready" ? state.user : null;
 
-  const exploreActive = pathname === "/" || pathname.startsWith("/ranking") || pathname.startsWith("/characters");
+  const exploreActive = pathname === "/" || pathname.startsWith("/characters");
   const matchupsActive = pathname.startsWith("/matchups");
   const meActive = user?.handle ? pathname === `/u/${user.handle}` : false;
 
@@ -45,19 +46,30 @@ export function TabBar() {
         </button>
 
         {state.status === "loading" ? (
-          <span className={TAB}>Me</span>
+          <span className={TAB} aria-hidden />
         ) : !user ? (
           <button type="button" className={TAB} onClick={() => window.dispatchEvent(new Event(OPEN_SIGN_IN))}>
             Sign in
           </button>
         ) : user.handle ? (
-          <Link href={`/u/${user.handle}`} aria-current={meActive ? "page" : undefined} className={cn(TAB, meActive && "text-foreground")}>
+          <Link
+            href={`/u/${user.handle}`}
+            aria-label="Your profile"
+            aria-current={meActive ? "page" : undefined}
+            className={cn(TAB, meActive && "text-foreground")}
+          >
             {meActive ? <Mark /> : null}
-            Me
+            {user.avatarUrl ? (
+              <span className="relative block size-8 overflow-hidden border bg-muted">
+                <NavAvatar user={user} />
+              </span>
+            ) : (
+              "Me"
+            )}
           </Link>
         ) : (
           <button type="button" className={TAB} onClick={() => window.dispatchEvent(new Event(OPEN_PROFILE_SETUP))}>
-            Me
+            Set up
           </button>
         )}
       </div>

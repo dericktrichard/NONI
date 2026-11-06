@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { NavAvatar } from "@/components/auth/nav-avatar";
 import { useSession } from "@/hooks/use-session";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import { OPEN_PROFILE_SETUP } from "@/lib/ui/events";
@@ -33,9 +34,9 @@ export function AccountButton() {
           href={`/u/${user.handle}`}
           aria-label="Your profile"
           title={`@${user.handle}`}
-          className="grid size-10 place-items-center border bg-muted font-display text-base font-semibold uppercase transition-colors hover:border-foreground"
+          className="relative block size-10 overflow-hidden border bg-muted transition-colors hover:border-foreground"
         >
-          {user.handle.slice(0, 1)}
+          <NavAvatar user={user} />
         </Link>
       ) : (
         <button
