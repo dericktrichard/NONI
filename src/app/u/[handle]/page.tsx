@@ -6,8 +6,10 @@ import { Portrait } from "@/components/characters/portrait";
 import { SectionHeading } from "@/components/home/section-heading";
 import { PageTop } from "@/components/layout/page-top";
 import { ListReportButton } from "@/components/lists/list-report-button";
-import { OwnerTools } from "@/components/profile/owner-tools";
 import { ProfileAvatar, ProfileBanner } from "@/components/profile/banner";
+import { OwnFeats } from "@/components/profile/own-feats";
+import { OwnerTools } from "@/components/profile/owner-tools";
+import { getActivityStats, listOwnFeats, uidForHandle } from "@/lib/data/activity";
 import { getOwnLists, listCharacterOptions } from "@/lib/data/lists";
 import { getOwnProfile, getProfileByHandle } from "@/lib/data/profile";
 import { roleOf } from "@/lib/security/roles";
@@ -33,6 +35,8 @@ function Stat({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
+const shown = (value: number | null) => (value === null ? "--" : value);
+
 export default async function ProfilePage({ params }: Props) {
   const { handle } = await params;
   const profile = await load(handle);
@@ -41,8 +45,14 @@ export default async function ProfilePage({ params }: Props) {
   const viewer = await getSessionUser();
   const own = viewer ? await getOwnProfile(viewer.uid) : null;
   const isOwner = viewer !== null && own !== null && own.handle === profile.handle;
-  const [ownLists, options] =
-    isOwner && viewer ? await Promise.all([getOwnLists(viewer.uid), listCharacterOptions()]) : [[], []];
+
+  const uid = isOwner && viewer ? viewer.uid : await uidForHandle(profile.handle);
+  const [stats, ownLists, options, ownFeats] = await Promise.all([
+    uid ? getActivityStats(uid) : Promise.resolve({ votes: null, arguments: null }),
+    isOwner && viewer ? getOwnLists(viewer.uid) : Promise.resolve([]),
+    isOwner ? listCharacterOptions() : Promise.resolve([]),
+    isOwner && viewer ? listOwnFeats(viewer.uid) : Promise.resolve([]),
+  ]);
 
   return (
     <div className="mx-auto max-w-3xl px-4 pt-6 pb-24">
@@ -76,15 +86,20 @@ export default async function ProfilePage({ params }: Props) {
         ) : null}
       </header>
 
-      <dl className="mt-8 grid grid-cols-2 gap-px border bg-border sm:grid-cols-4">
+      <dl className="mt-8 grid grid-cols-2 gap-px border bg-border sm:grid-cols-3">
         <Stat label="Member since">{profile.createdAt.slice(0, 10) || "--"}</Stat>
         <Stat label="Feats">{profile.featsSubmitted}</Stat>
+        <Stat label="Arguments">{shown(stats.arguments)}</Stat>
+        <Stat label="Votes cast">{shown(stats.votes)}</Stat>
         <Stat label="Lists">{profile.lists.length}</Stat>
         <Stat label="Favourites">{profile.favouriteCount}</Stat>
       </dl>
 
       <section className="mt-12">
-        <SectionHeading title="Favourite characters" aside={profile.favouriteCount > 0 ? `${profile.favouriteCount} total` : undefined} />
+        <SectionHeading
+          title="Favourite characters"
+          aside={profile.favouriteCount > 0 ? `${profile.favouriteCount} total` : undefined}
+        />
         {profile.favourites.length === 0 ? (
           <p className="mt-6 border p-4 text-sm text-muted-foreground">
             {isOwner
@@ -96,7 +111,12 @@ export default async function ProfilePage({ params }: Props) {
             {profile.favourites.map((f) => (
               <li key={f.id}>
                 <Link href={`/characters/${f.id}`} className="group block">
-                  <Portrait name={f.name} src={f.imageUrl} sizes="(min-width: 768px) 112px, 30vw" className="aspect-2/3 w-full border" />
+                  <Portrait
+                    name={f.name}
+                    src={f.imageUrl}
+                    sizes="(min-width: 768px) 112px, 30vw"
+                    className="aspect-2/3 w-full border"
+                  />
                   <p className="mt-1.5 truncate text-sm font-medium group-hover:underline">{f.name}</p>
                   <p className="eyebrow truncate">{f.verse}</p>
                 </Link>
@@ -140,6 +160,13 @@ export default async function ProfilePage({ params }: Props) {
           </div>
         )}
       </section>
+
+      {isOwner ? (
+        <section className="mt-12">
+          <SectionHeading title="Your feats" />
+          <OwnFeats feats={ownFeats} />
+        </section>
+      ) : null}
     </div>
   );
 }
