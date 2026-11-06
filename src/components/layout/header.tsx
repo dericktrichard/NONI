@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AccountButton } from "@/components/auth/account-button";
 import { AuthHost } from "@/components/auth/auth-host";
+import { MatchupMaker } from "@/components/matchups/matchup-maker";
 import { GlobalSearch } from "@/components/layout/global-search";
 import { LogoMark } from "@/components/layout/logo-mark";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
@@ -38,6 +39,7 @@ export function Header() {
   return (
     <>
       <AuthHost />
+      <MatchupMaker />
       <div ref={sentinel} aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-6" />
       <header className="pointer-events-none fixed inset-x-0 top-0 z-40 pt-[calc(0.75rem+env(safe-area-inset-top))]">
         <div className="mx-auto max-w-6xl px-4">

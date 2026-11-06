@@ -6,66 +6,19 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Portrait } from "@/components/characters/portrait";
 import { TierBadge } from "@/components/characters/tier-badge";
-import { facetQueryString, searchTerm } from "@/lib/data/query";
-import type { CharacterPage } from "@/lib/data/summary";
+import { useCharacterSearch } from "@/hooks/use-character-search";
 import { OPEN_SEARCH } from "@/lib/ui/events";
 import { cn } from "@/lib/utils";
-import type { CharacterSummary } from "@/types/character";
 
 function SearchPanel({ onDone }: { onDone: () => void }) {
   const router = useRouter();
-  const [text, setText] = useState("");
-  const [results, setResults] = useState<CharacterSummary[] | null>(null);
-  const [popular, setPopular] = useState<CharacterSummary[]>([]);
+  const { text, change, results, list, failed } = useCharacterSearch();
   const [active, setActive] = useState(0);
-  const [failed, setFailed] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const latest = useRef(0);
 
-  useEffect(() => {
-    let live = true;
-    fetch("/api/characters?limit=6")
-      .then((response) => (response.ok ? response.json() : null))
-      .then((page: CharacterPage | null) => {
-        if (live && page) setPopular(page.items);
-      })
-      .catch(() => undefined);
-    return () => {
-      live = false;
-    };
-  }, []);
-
-  function change(value: string) {
-    setText(value);
+  function onChange(value: string) {
     setActive(0);
-    clearTimeout(timer.current);
-
-    const term = searchTerm(value);
-    if (!term) {
-      latest.current += 1;
-      setResults(null);
-      return;
-    }
-
-    const ticket = ++latest.current;
-    timer.current = setTimeout(async () => {
-      try {
-        const response = await fetch(`/api/characters?${facetQueryString({ kind: "search", term }, null, 12)}`);
-        if (!response.ok) throw new Error("search failed");
-        const page = (await response.json()) as CharacterPage;
-        if (ticket !== latest.current) return;
-        const words = value.toLowerCase().split(/\s+/).filter(Boolean);
-        setResults(page.items.filter((item) => words.every((word) => `${item.name} ${item.verse}`.toLowerCase().includes(word))));
-        setFailed(false);
-      } catch {
-        if (ticket !== latest.current) return;
-        setFailed(true);
-        setResults([]);
-      }
-    }, 220);
+    change(value);
   }
-
-  const list = results ?? popular;
 
   function onKeyDown(event: React.KeyboardEvent) {
     if (event.key === "ArrowDown") {
@@ -91,7 +44,7 @@ function SearchPanel({ onDone }: { onDone: () => void }) {
         <input
           autoFocus
           value={text}
-          onChange={(event) => change(event.target.value)}
+          onChange={(event) => onChange(event.target.value)}
           onKeyDown={onKeyDown}
           maxLength={60}
           placeholder="Search characters or verses"
