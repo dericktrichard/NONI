@@ -1,6 +1,7 @@
 import { NewMatchupButton } from "@/components/matchups/matchup-actions";
 import type { CharacterView } from "@/types/character-page";
 import { EvidenceMeter } from "./evidence-meter";
+import { FavouriteButton } from "./favourite-button";
 
 export function CharacterAside({ c }: { c: CharacterView }) {
   return (
@@ -24,6 +25,8 @@ export function CharacterAside({ c }: { c: CharacterView }) {
       >
         Compare with another character
       </NewMatchupButton>
+
+      <FavouriteButton characterId={c.id} />
     </aside>
   );
 }

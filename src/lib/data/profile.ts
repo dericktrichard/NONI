@@ -1,16 +1,21 @@
 import "server-only";
 import { Timestamp } from "firebase-admin/firestore";
 import { HttpError } from "@/lib/data/feats";
+import { listFavourites, type FavouriteCard } from "@/lib/data/favourites";
+import { getPublicLists, type UserList } from "@/lib/data/lists";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL } from "@/lib/firebase/paths";
 import { HANDLE_MESSAGES, checkHandle, handleCooldownDays, normalizeHandle } from "@/lib/profile/handle";
-import { getPublicLists, type UserList } from "@/lib/data/lists";
+import { readLook, type Look } from "@/lib/profile/look";
 
 export interface PublicProfile {
   handle: string;
   bio: string;
   createdAt: string;
   featsSubmitted: number;
+  favouriteCount: number;
+  look: Look;
+  favourites: FavouriteCard[];
   lists: UserList[];
 }
 
@@ -97,12 +102,17 @@ export async function getProfileByHandle(raw: string): Promise<PublicProfile | n
   const user = await db.collection(COL.users).doc(uid).get();
   if (!user.exists || user.get("handle") !== handle) return null;
 
+  const [lists, favourites] = await Promise.all([getPublicLists(uid), listFavourites(uid)]);
   const created = millis(user.get("createdAt"));
+
   return {
     handle,
     bio: String(user.get("bio") ?? ""),
     createdAt: created === null ? "" : new Date(created).toISOString(),
     featsSubmitted: Number(user.get("featsSubmitted")) || 0,
-    lists: await getPublicLists(uid),
+    favouriteCount: Number(user.get("favouriteCount")) || 0,
+    look: readLook(user.data() ?? {}),
+    favourites,
+    lists,
   };
 }
