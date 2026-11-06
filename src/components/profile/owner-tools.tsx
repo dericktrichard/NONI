@@ -81,7 +81,14 @@ export function OwnerTools({ profile, look, verified, staff, lists, options }: O
       </Modal>
 
       <Modal wide open={open === "look"} onClose={close} eyebrow="Profile" title="Appearance">
-        <LookForm initial={look} handle={profile.handle ?? "you"} onSaved={close} />
+        <LookForm
+          initial={look}
+          handle={profile.handle ?? "you"}
+          onSaved={() => {
+            close();
+            void refresh();
+          }}
+        />
       </Modal>
 
       <Modal wide open={open === "lists"} onClose={close} eyebrow="Profile" title="Your lists">

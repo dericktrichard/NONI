@@ -7,6 +7,8 @@ export type SessionUser = {
   verified: boolean;
   role: "user" | "moderator" | "admin";
   handle: string | null;
+  avatarUrl: string | null;
+  avatarName: string | null;
 };
 export type SessionState = { status: "loading" } | { status: "ready"; user: SessionUser | null };
 
