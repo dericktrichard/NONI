@@ -115,7 +115,7 @@ export function ListsManager({ lists, options }: ListsManagerProps) {
   }
 
   return (
-    <div className="mt-8 max-w-2xl space-y-6">
+    <div className="space-y-6">
       <div className="flex items-baseline justify-between">
         <p className="eyebrow">
           {lists.length} of {MAX_LISTS} lists

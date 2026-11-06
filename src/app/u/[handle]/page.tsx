@@ -4,9 +4,10 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { SectionHeading } from "@/components/home/section-heading";
 import { ListReportButton } from "@/components/lists/list-report-button";
-import { getProfileByHandle } from "@/lib/data/profile";
-
-export const revalidate = 300;
+import { OwnerTools } from "@/components/profile/owner-tools";
+import { getOwnLists, listCharacterOptions } from "@/lib/data/lists";
+import { getOwnProfile, getProfileByHandle } from "@/lib/data/profile";
+import { getSessionUser } from "@/lib/security/session";
 
 const load = cache(getProfileByHandle);
 
@@ -24,6 +25,12 @@ export default async function ProfilePage({ params }: Props) {
   const profile = await load(handle);
   if (!profile) notFound();
 
+  const viewer = await getSessionUser();
+  const own = viewer ? await getOwnProfile(viewer.uid) : null;
+  const isOwner = viewer !== null && own !== null && own.handle === profile.handle;
+  const [ownLists, options] =
+    isOwner && viewer ? await Promise.all([getOwnLists(viewer.uid), listCharacterOptions()]) : [[], []];
+
   return (
     <div className="mx-auto max-w-3xl px-4 pt-8 pb-24 sm:pt-12">
       <div className="flex items-start gap-4 sm:gap-6">
@@ -34,11 +41,19 @@ export default async function ProfilePage({ params }: Props) {
           {profile.handle.slice(0, 1)}
         </span>
         <div className="min-w-0">
-          <p className="eyebrow">Profile</p>
+          <p className="eyebrow">{isOwner ? "Your profile" : "Profile"}</p>
           <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight wrap-break-word sm:text-5xl">
             @{profile.handle}
           </h1>
           {profile.bio ? <p className="mt-3 max-w-xl text-sm whitespace-pre-line">{profile.bio}</p> : null}
+          {isOwner && own ? (
+            <OwnerTools
+              profile={own}
+              verified={viewer?.email_verified === true}
+              lists={ownLists}
+              options={options}
+            />
+          ) : null}
         </div>
       </div>
 
@@ -57,15 +72,19 @@ export default async function ProfilePage({ params }: Props) {
         </div>
       </dl>
 
-      {profile.lists.length > 0 ? (
-        <section className="mt-12">
-          <SectionHeading title="Lists" />
+      <section className="mt-12">
+        <SectionHeading title="Lists" />
+        {profile.lists.length === 0 ? (
+          <p className="mt-6 border p-4 text-sm text-muted-foreground">
+            {isOwner ? "You have no public lists yet. Use Edit lists above to make one." : "No public lists yet."}
+          </p>
+        ) : (
           <div className="mt-6 space-y-6">
             {profile.lists.map((list) => (
               <article key={list.id} className="border">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b bg-muted/50 px-4">
                   <h3 className="py-3 font-display text-xl font-semibold tracking-tight">{list.title}</h3>
-                  <ListReportButton listId={list.id} />
+                  {isOwner ? null : <ListReportButton listId={list.id} />}
                 </div>
                 <ol className="divide-y">
                   {list.items.map((item, index) => (
@@ -88,10 +107,8 @@ export default async function ProfilePage({ params }: Props) {
               </article>
             ))}
           </div>
-        </section>
-      ) : (
-        <p className="mt-12 border p-4 text-sm text-muted-foreground">No public lists yet.</p>
-      )}
+        )}
+      </section>
     </div>
   );
 }

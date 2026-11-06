@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { controlClass } from "@/components/ui/fields";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
@@ -10,19 +10,19 @@ import { HANDLE_MAX, HANDLE_MESSAGES, checkHandle, normalizeHandle } from "@/lib
 interface ProfileFormProps {
   initial: OwnProfile;
   verified: boolean;
+  onSaved?: () => void;
 }
 
-export function ProfileForm({ initial, verified }: ProfileFormProps) {
+export function ProfileForm({ initial, verified, onSaved }: ProfileFormProps) {
+  const router = useRouter();
   const [handle, setHandle] = useState(initial.handle ?? "");
   const [bio, setBio] = useState(initial.bio);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState<string | null>(initial.handle);
 
   const normalized = normalizeHandle(handle);
   const issue = normalized === "" ? null : checkHandle(normalized);
-  const locked = saved !== null && initial.cooldownDays > 0 && normalized !== saved;
+  const locked = initial.handle !== null && initial.cooldownDays > 0 && normalized !== initial.handle;
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -32,7 +32,6 @@ export function ProfileForm({ initial, verified }: ProfileFormProps) {
     }
     setBusy(true);
     setError(null);
-    setMessage(null);
     try {
       const response = await fetch("/api/profile", {
         method: "PUT",
@@ -46,9 +45,9 @@ export function ProfileForm({ initial, verified }: ProfileFormProps) {
       }
       const data = (await response.json().catch(() => null)) as { handle?: string; error?: string } | null;
       if (response.ok && data?.handle) {
-        setSaved(data.handle);
-        setHandle(data.handle);
-        setMessage("Saved.");
+        onSaved?.();
+        router.replace(`/u/${data.handle}`);
+        router.refresh();
         return;
       }
       setError(data?.error ?? "Could not save your profile.");
@@ -60,7 +59,7 @@ export function ProfileForm({ initial, verified }: ProfileFormProps) {
   }
 
   return (
-    <form onSubmit={submit} className="mt-8 max-w-xl space-y-6">
+    <form onSubmit={submit} className="space-y-6">
       {!verified ? (
         <p className="border-l-2 border-foreground bg-muted p-3 text-sm">
           Verify your email and sign in again before saving your profile.
@@ -103,25 +102,17 @@ export function ProfileForm({ initial, verified }: ProfileFormProps) {
         />
       </label>
 
-      <div className="flex flex-wrap items-center gap-4 border-t pt-5">
-        <button type="submit" className="btn btn-solid" disabled={busy || issue !== null || normalized === "" || locked}>
-          Save profile
-        </button>
-        {message && saved ? (
-          <p role="status" className="text-sm">
-            {message}{" "}
-            <Link href={`/u/${saved}`} className="underline underline-offset-4">
-              View your page
-            </Link>
-          </p>
-        ) : null}
-      </div>
-
       {error ? (
         <p role="alert" className="text-sm font-medium">
           {error}
         </p>
       ) : null}
+
+      <div className="border-t pt-5">
+        <button type="submit" className="btn btn-solid" disabled={busy || issue !== null || normalized === "" || locked}>
+          Save profile
+        </button>
+      </div>
     </form>
   );
 }

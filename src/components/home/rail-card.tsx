@@ -4,7 +4,6 @@ import { RankMovement } from "@/components/characters/rank-movement";
 import { TierBadge } from "@/components/characters/tier-badge";
 import { cn, formatScore, pad2 } from "@/lib/utils";
 import type { CharacterSummary } from "@/types/character";
-import { ArrowUpRight } from "lucide-react";
 
 export function RailCard({ c, position }: { c: CharacterSummary; position: number }) {
   return (
@@ -45,16 +44,11 @@ export function RailMore({ href, label }: { href: string; label: string }) {
     <li className="w-36 shrink-0 snap-start sm:w-40 lg:w-44">
       <Link
         href={href}
-        className="group flex aspect-2/3 w-full flex-col justify-between border p-3 transition-colors hover:bg-muted"
+        className="group flex aspect-2/3 w-full flex-col justify-end border p-3 transition-colors hover:bg-muted"
       >
-        <ArrowUpRight
-          className="size-6 transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1"
-          aria-hidden
-        />
-        <span>
-          <span className="eyebrow block">Browse</span>
-          <span className="mt-1 block font-display text-xl leading-tight font-semibold">{label}</span>
-        </span>
+        <span className="eyebrow block">Browse</span>
+        <span className="mt-1 block font-display text-xl leading-tight font-semibold">{label}</span>
+        <span aria-hidden className="mt-3 block h-px w-6 bg-foreground transition-[width] duration-200 group-hover:w-14" />
       </Link>
     </li>
   );

@@ -14,6 +14,8 @@ const TIER_OPTIONS = Object.entries(TIER_GROUPS)
   .map(([group, name]) => ({ group: Number(group), name }))
   .sort((a, b) => a.group - b.group);
 
+const ACTIVE = "border-foreground bg-foreground text-background [box-shadow:inset_0_-2px_0_var(--color-accent)]";
+
 interface ToolbarProps {
   searchText: string;
   tier: number | null;
@@ -40,14 +42,14 @@ export function RankingToolbar({ searchText, tier, onSearchText, onTier }: Toolb
           autoComplete="off"
           spellCheck={false}
           enterKeyHint="search"
-          className="h-11 w-full rounded-sm border bg-transparent pr-11 pl-9 text-sm placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:appearance-none"
+          className="h-11 w-full border bg-transparent pr-11 pl-9 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground [&::-webkit-search-cancel-button]:appearance-none"
         />
         {searchText.length > 0 && (
           <button
             type="button"
             aria-label="Clear search"
             onClick={() => onSearchText("")}
-            className="absolute top-1/2 right-1 grid size-9 -translate-y-1/2 place-items-center rounded-sm hover:bg-muted"
+            className="absolute top-1/2 right-1 grid size-9 -translate-y-1/2 place-items-center hover:bg-muted"
           >
             <X className="size-4" aria-hidden />
           </button>
@@ -58,7 +60,7 @@ export function RankingToolbar({ searchText, tier, onSearchText, onTier }: Toolb
         value={tier === null ? "" : String(tier)}
         onChange={(event) => onTier(event.target.value === "" ? null : Number(event.target.value))}
         aria-label="Filter by power scale"
-        className="h-11 rounded-sm border bg-background px-3 text-sm sm:w-56"
+        className="h-11 border bg-background px-3 text-sm outline-none focus:border-foreground sm:w-56"
       >
         <option value="">All power scales</option>
         {TIER_OPTIONS.map(({ group, name }) => (
@@ -78,7 +80,7 @@ interface FilterBarProps {
   onView: (view: View) => void;
 }
 
-/** Floats just under the nav: media chips and the list/grid switch. Green marks the active choice. */
+/** Floats just under the nav: media chips and the list/grid switch. */
 export function RankingFilterBar({ media, view, onMedia, onView }: FilterBarProps) {
   const chips: Array<{ key: MediaType | null; label: string }> = [
     { key: null, label: "All" },
@@ -87,7 +89,7 @@ export function RankingFilterBar({ media, view, onMedia, onView }: FilterBarProp
 
   return (
     <div className="sticky top-[calc(var(--nav-space)+0.5rem)] z-30">
-      <div className="acrylic flex items-center gap-3 rounded-sm px-3 py-2">
+      <div className="acrylic flex items-center gap-3 px-3 py-2">
         <div className="no-scrollbar flex min-w-0 flex-1 gap-2 overflow-x-auto">
           {chips.map((chip) => {
             const active = media === chip.key;
@@ -98,10 +100,8 @@ export function RankingFilterBar({ media, view, onMedia, onView }: FilterBarProp
                 aria-pressed={active}
                 onClick={() => onMedia(chip.key)}
                 className={cn(
-                  "inline-flex h-10 shrink-0 items-center rounded-sm border px-3 text-sm font-medium transition-colors",
-                  active
-                    ? "border-accent bg-accent text-accent-foreground"
-                    : "bg-transparent hover:bg-foreground/10",
+                  "inline-flex h-10 shrink-0 items-center border px-3 text-sm font-medium transition-colors",
+                  active ? ACTIVE : "border-border bg-transparent hover:bg-foreground/10",
                 )}
               >
                 {chip.label}
@@ -125,7 +125,7 @@ export function RankingFilterBar({ media, view, onMedia, onView }: FilterBarProp
               onClick={() => onView(key)}
               className={cn(
                 "grid size-10 place-items-center transition-colors",
-                view === key ? "bg-accent text-accent-foreground" : "hover:bg-foreground/10",
+                view === key ? "bg-foreground text-background" : "hover:bg-foreground/10",
               )}
             >
               <Icon className="size-4" strokeWidth={1.75} aria-hidden />
