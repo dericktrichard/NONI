@@ -1,17 +1,19 @@
-import Link from "next/link";
+import { Suspense } from "react";
+import { Explore } from "@/components/characters/explore";
 import { HomeHero } from "@/components/home/home-hero";
 import { RailSection } from "@/components/home/rail";
 import { RailCard, RailMore } from "@/components/home/rail-card";
 import { fetchCharacters } from "@/lib/data/characters";
-import { DEFAULT_PLAN } from "@/lib/data/query";
+import { DEFAULT_PLAN, PAGE } from "@/lib/data/query";
 import { fetchHero } from "@/lib/data/site-settings";
 import { fetchSiteStats } from "@/lib/data/site-stats";
+import type { CharacterPage } from "@/lib/data/summary";
 import { buildRails } from "@/lib/home/rails";
 import { currentDay, pickPair } from "@/lib/matchup/daily";
 
 /**
- * One query of the top 60 feeds the hero pair and every rail. Cached ten minutes,
- * so the page costs at most about 9k reads a day however many people visit.
+ * One query of the top 60 feeds the hero pair, every rail and the first page of the full list.
+ * Cached ten minutes, so the page costs at most about 9k reads a day however many people visit.
  */
 export const revalidate = 600;
 
@@ -28,35 +30,36 @@ export default async function Home() {
   const pair = pickPair(items, currentDay());
   const rails = buildRails(items);
 
-  return (
+  const initial: CharacterPage = {
+    items: items.slice(0, PAGE.default),
+    next: items.length > PAGE.default || pool.next !== null ? PAGE.default : null,
+  };
+
+  const heroNode = <HomeHero hero={hero} top={items[0] ?? null} pair={pair} stats={stats} />;
+
+  const overviewNode = (
     <>
-      <HomeHero hero={hero} top={items[0] ?? null} pair={pair} stats={stats} />
-
-      <main className="mx-auto max-w-6xl px-4 pb-24">
-        {rails.map((rail) => (
-          <RailSection key={rail.id} eyebrow={rail.eyebrow} title={rail.title} href={rail.href}>
-            {rail.items.map(({ c, position }) => (
-              <RailCard key={c.id} c={c} position={position} />
-            ))}
-            <RailMore href={rail.href} label={rail.id === "top" ? "Full ranking" : `All ${rail.title}`} />
-          </RailSection>
-        ))}
-
-        <section className="pt-14">
-          <div className="flex flex-col gap-4 border p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-            <div>
-              <p className="eyebrow">Everything in one place</p>
-              <p className="mt-1 font-display text-2xl font-semibold">Explore the full ranking</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Search every character and filter by medium and power tier.
-              </p>
-            </div>
-            <Link href="/ranking" className="btn btn-solid shrink-0">
-              Open the ranking
-            </Link>
-          </div>
-        </section>
-      </main>
+      {rails.map((rail) => (
+        <RailSection key={rail.id} eyebrow={rail.eyebrow} title={rail.title} href={rail.href}>
+          {rail.items.map(({ c, position }) => (
+            <RailCard key={c.id} c={c} position={position} />
+          ))}
+          <RailMore href={rail.href} label={rail.id === "top" ? "Full ranking" : `All ${rail.title}`} />
+        </RailSection>
+      ))}
     </>
+  );
+
+  return (
+    <Suspense
+      fallback={
+        <>
+          {heroNode}
+          <main className="mx-auto max-w-6xl px-4 pt-6 pb-24">{overviewNode}</main>
+        </>
+      }
+    >
+      <Explore hero={heroNode} overview={overviewNode} initial={initial} />
+    </Suspense>
   );
 }
