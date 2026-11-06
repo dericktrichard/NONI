@@ -2,7 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
+import { NavTracker } from "@/components/layout/nav-tracker";
 
 const display = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -49,8 +51,12 @@ export default function RootLayout({
     >
       <body>
         <ThemeProvider>
+          <NavTracker />
           <Header />
-          <div className="pt-(--nav-space)">{children}</div>
+          <div className="flex min-h-svh flex-col">
+            <div className="flex-1 pt-(--nav-space)">{children}</div>
+            <Footer />
+          </div>
         </ThemeProvider>
       </body>
     </html>

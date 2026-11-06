@@ -4,12 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AccountMenu } from "@/components/auth/account-menu";
+import { LogoMark } from "@/components/layout/logo-mark";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
-  { href: "/matchups", label: "Matchups", active: (path: string) => path.startsWith("/matchups"), hideOnPhone: false },
-  { href: "/ranking", label: "Rankings", active: (path: string) => path.startsWith("/ranking"), hideOnPhone: true },
+  {
+    href: "/",
+    label: "Explore",
+    match: (path: string) => path === "/" || path.startsWith("/ranking") || path.startsWith("/characters"),
+  },
+  { href: "/matchups", label: "Matchups", match: (path: string) => path.startsWith("/matchups") },
 ];
 
 export function Header() {
@@ -35,16 +40,16 @@ export function Header() {
         <div className="mx-auto max-w-6xl px-4">
           <div
             data-scrolled={scrolled}
-            className="acrylic pointer-events-auto flex h-(--nav-height) items-center rounded-sm px-4 transition-[background-color] duration-200"
+            className="acrylic pointer-events-auto flex h-(--nav-height) items-center px-4 transition-[background-color] duration-200"
           >
             <Link href="/" className="flex items-center gap-2" aria-label="NONI home">
-              <span className="size-3 bg-accent" aria-hidden />
+              <LogoMark className="size-7" />
               <span className="font-display text-lg font-semibold tracking-tight">NONI</span>
             </Link>
 
             <nav aria-label="Primary" className="mr-auto ml-4 flex items-center">
               {LINKS.map((link) => {
-                const active = link.active(pathname);
+                const active = link.match(pathname);
                 return (
                   <Link
                     key={link.href}
@@ -52,8 +57,7 @@ export function Header() {
                     aria-current={active ? "page" : undefined}
                     className={cn(
                       "eyebrow px-2 py-3 hover:underline",
-                      link.hideOnPhone && "hidden sm:inline",
-                      active && "underline decoration-accent decoration-2 underline-offset-10",
+                      active && "text-foreground underline decoration-accent decoration-2 underline-offset-10",
                     )}
                   >
                     {link.label}
@@ -63,8 +67,8 @@ export function Header() {
             </nav>
 
             <div className="flex items-center gap-2">
-              <AccountMenu />
               <ThemeToggle />
+              <AccountMenu />
             </div>
           </div>
         </div>
