@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { NavTracker } from "@/components/layout/nav-tracker";
+import { TabBar } from "@/components/layout/tab-bar";
 
 const display = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -55,8 +56,11 @@ export default function RootLayout({
           <Header />
           <div className="flex min-h-svh flex-col">
             <div className="flex-1 pt-(--nav-space)">{children}</div>
-            <Footer />
+            <div className="pb-[calc(5rem+env(safe-area-inset-bottom))] sm:pb-0">
+              <Footer />
+            </div>
           </div>
+          <TabBar />
         </ThemeProvider>
       </body>
     </html>

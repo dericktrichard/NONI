@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { AccountMenu } from "@/components/auth/account-menu";
+import { AccountButton } from "@/components/auth/account-button";
+import { AuthHost } from "@/components/auth/auth-host";
+import { GlobalSearch } from "@/components/layout/global-search";
 import { LogoMark } from "@/components/layout/logo-mark";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { cn } from "@/lib/utils";
@@ -35,6 +37,7 @@ export function Header() {
 
   return (
     <>
+      <AuthHost />
       <div ref={sentinel} aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-6" />
       <header className="pointer-events-none fixed inset-x-0 top-0 z-40 pt-[calc(0.75rem+env(safe-area-inset-top))]">
         <div className="mx-auto max-w-6xl px-4">
@@ -47,7 +50,7 @@ export function Header() {
               <span className="font-display text-lg font-semibold tracking-tight">NONI</span>
             </Link>
 
-            <nav aria-label="Primary" className="mr-auto ml-4 flex items-center">
+            <nav aria-label="Primary" className="mr-auto ml-4 hidden items-center sm:flex">
               {LINKS.map((link) => {
                 const active = link.match(pathname);
                 return (
@@ -66,9 +69,12 @@ export function Header() {
               })}
             </nav>
 
-            <div className="flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-2 sm:ml-0">
               <ThemeToggle />
-              <AccountMenu />
+              <GlobalSearch />
+              <div className="hidden sm:block">
+                <AccountButton />
+              </div>
             </div>
           </div>
         </div>

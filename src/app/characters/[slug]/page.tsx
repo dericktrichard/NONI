@@ -5,6 +5,7 @@ import { CharacterAside } from "@/components/characters/character-aside";
 import { CharacterHero } from "@/components/characters/character-hero";
 import { PowerProfileCard } from "@/components/characters/power-profile";
 import { FeatSection } from "@/components/feats/feat-section";
+import { PageTop } from "@/components/layout/page-top";
 import { fetchCharacterPage } from "@/lib/data/character-page";
 
 export const revalidate = 60;
@@ -30,7 +31,12 @@ export default async function CharacterPage({ params }: Props) {
   if (!data) notFound();
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-8 pb-24">
+    <div className="mx-auto max-w-6xl px-4 pt-6 pb-24">
+      <PageTop
+        back={{ href: "/", label: "Explore" }}
+        trail={[{ label: "Explore", href: "/" }, { label: data.character.verse }, { label: data.character.name }]}
+      />
+
       <CharacterHero c={data.character} />
 
       <div className="mt-12 grid gap-10 lg:grid-cols-[1fr_18rem]">
