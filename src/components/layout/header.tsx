@@ -8,7 +8,6 @@ import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
-  { href: "/", label: "Rankings", active: (path: string) => path === "/", hideOnPhone: true },
   { href: "/matchups", label: "Matchups", active: (path: string) => path.startsWith("/matchups"), hideOnPhone: false },
   { href: "/ranking", label: "Rankings", active: (path: string) => path.startsWith("/ranking"), hideOnPhone: true },
 ];

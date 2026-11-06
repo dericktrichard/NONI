@@ -38,3 +38,18 @@ export function RailCard({ c, position }: { c: CharacterSummary; position: numbe
     </li>
   );
 }
+
+export function RailMore({ href, label }: { href: string; label: string }) {
+  return (
+    <li className="w-36 shrink-0 snap-start sm:w-40 lg:w-44">
+      <Link
+        href={href}
+        className="group flex aspect-2/3 w-full flex-col justify-end border p-3 transition-colors hover:bg-muted"
+      >
+        <span className="eyebrow block">Browse</span>
+        <span className="mt-1 block font-display text-xl leading-tight font-semibold">{label}</span>
+        <span aria-hidden className="mt-3 block h-px w-6 bg-foreground transition-[width] duration-200 group-hover:w-14" />
+      </Link>
+    </li>
+  );
+}

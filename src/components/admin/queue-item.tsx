@@ -8,6 +8,7 @@ import { controlClass } from "@/components/ui/fields";
 import { claimLabel } from "@/lib/feats/labels";
 import { MOD_ACTION_LABELS, REPORT_REASON_LABELS, needsNote, type ModAction } from "@/lib/moderation/actions";
 import type { QueueFeat } from "@/lib/data/mod-queue";
+import { cn } from "@/lib/utils";
 
 export function QueueItem({ feat }: { feat: QueueFeat }) {
   const router = useRouter();
@@ -106,7 +107,7 @@ export function QueueItem({ feat }: { feat: QueueFeat }) {
             type="button"
             disabled={busy}
             onClick={() => run(action)}
-            className="min-h-11 border px-4 text-sm hover:bg-muted disabled:opacity-40"
+            className={cn("btn btn-sm", action === "verify" ? "btn-solid" : "btn-line")}
           >
             {MOD_ACTION_LABELS[action]}
           </button>

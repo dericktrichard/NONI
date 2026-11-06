@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import { HomeHero } from "@/components/home/home-hero";
-import { RailCard } from "@/components/home/rail-card";
 import { RailSection } from "@/components/home/rail";
+import { RailCard, RailMore } from "@/components/home/rail-card";
 import { fetchCharacters } from "@/lib/data/characters";
 import { DEFAULT_PLAN } from "@/lib/data/query";
 import { fetchHero } from "@/lib/data/site-settings";
@@ -35,30 +34,27 @@ export default async function Home() {
 
       <main className="mx-auto max-w-6xl px-4 pb-24">
         {rails.map((rail) => (
-          <RailSection key={rail.id} eyebrow={rail.eyebrow} title={rail.title} href="/ranking">
+          <RailSection key={rail.id} eyebrow={rail.eyebrow} title={rail.title} href={rail.href}>
             {rail.items.map(({ c, position }) => (
               <RailCard key={c.id} c={c} position={position} />
             ))}
+            <RailMore href={rail.href} label={rail.id === "top" ? "Full ranking" : `All ${rail.title}`} />
           </RailSection>
         ))}
 
         <section className="pt-14">
-          <Link
-            href="/ranking"
-            className="group flex items-center justify-between gap-6 border p-5 transition-colors hover:bg-muted"
-          >
-            <span>
-              <span className="eyebrow block">Everything in one place</span>
-              <span className="mt-1 block font-display text-2xl font-semibold">Explore the full ranking</span>
-              <span className="mt-1 block text-sm text-muted-foreground">
+          <div className="flex flex-col gap-4 border p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+            <div>
+              <p className="eyebrow">Everything in one place</p>
+              <p className="mt-1 font-display text-2xl font-semibold">Explore the full ranking</p>
+              <p className="mt-1 text-sm text-muted-foreground">
                 Search every character and filter by medium and power tier.
-              </span>
-            </span>
-            <ArrowUpRight
-              className="size-7 shrink-0 transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1"
-              aria-hidden
-            />
-          </Link>
+              </p>
+            </div>
+            <Link href="/ranking" className="btn btn-solid shrink-0">
+              Open the ranking
+            </Link>
+          </div>
         </section>
       </main>
     </>

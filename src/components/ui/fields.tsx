@@ -1,8 +1,8 @@
 import { AP_TIERS } from "@/config/scales";
 
 export const controlClass =
-  "h-11 w-full rounded-sm border bg-background px-3 text-sm text-foreground outline-none focus:border-foreground";
-
+  "h-11 w-full border bg-background px-3 text-sm text-foreground outline-none focus:border-foreground";
+  
 export function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block text-sm">

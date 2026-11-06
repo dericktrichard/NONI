@@ -94,6 +94,19 @@ export function CommunityVote({ a, b, initial }: CommunityVoteProps) {
         ))}
       </div>
 
+      {total === 0 ? (
+        <div className="mt-3 h-2 border bg-muted" aria-hidden />
+      ) : (
+        <div
+          role="img"
+          aria-label={`${a.name} ${sharePercent(tally.a, total)} percent, ${b.name} ${sharePercent(tally.b, total)} percent`}
+          className="mt-3 flex h-2 border"
+        >
+          <div className="bg-foreground transition-[width] duration-300" style={{ width: `${sharePercent(tally.a, total)}%` }} />
+          <div className="flex-1 bg-accent" />
+        </div>
+      )}
+      
       <p className="eyebrow mt-3">{total === 0 ? "No votes yet" : `${total} ${total === 1 ? "vote" : "votes"} in total`}</p>
 
       {message ? (

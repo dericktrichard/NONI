@@ -52,7 +52,7 @@ export function FeatCard({ feat, characterId, mine, busy, onVote }: FeatCardProp
   const secondary = feat.proofs.filter((proof) => proof.source === "secondary");
 
   return (
-    <li className="flex gap-4 border-b py-6">
+    <li className={cn("flex gap-3 border p-4 sm:gap-4 sm:p-5", verified && "border-l-[3px] border-l-accent")}>
       <div className="flex w-11 shrink-0 flex-col items-center">
         <button
           type="button"

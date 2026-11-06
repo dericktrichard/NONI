@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
+import { SectionHeading } from "@/components/home/section-heading";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/use-session";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import type { VoteValue } from "@/lib/ranking/vote";
+import { cn } from "@/lib/utils";
 import type { FeatView } from "@/types/character-page";
 import type { FeatStatus } from "@/types/domain";
 import { FeatCard } from "./feat-card";
@@ -19,6 +21,14 @@ interface VoteResponse {
   value?: VoteValue;
 }
 
+type Filter = "all" | "verified" | "pending";
+
+const FILTERS: Array<{ key: Filter; label: string }> = [
+  { key: "all", label: "All" },
+  { key: "verified", label: "Verified" },
+  { key: "pending", label: "Pending" },
+];
+
 export function FeatSection({ characterId, initialFeats }: { characterId: string; initialFeats: FeatView[] }) {
   const { state } = useSession();
   const user = state.status === "ready" ? state.user : null;
@@ -29,6 +39,7 @@ export function FeatSection({ characterId, initialFeats }: { characterId: string
   const [busyId, setBusyId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
+  const [filter, setFilter] = useState<Filter>("all");
 
   const ids = initialFeats.map((feat) => feat.id).join(",");
 
@@ -47,6 +58,7 @@ export function FeatSection({ characterId, initialFeats }: { characterId: string
   }, [uid, characterId, ids]);
 
   const myVotes = uid ? mine : {};
+  const visible = filter === "all" ? feats : feats.filter((feat) => feat.status === filter);
 
   function askToSignIn() {
     window.dispatchEvent(new Event(OPEN_SIGN_IN));
@@ -101,11 +113,27 @@ export function FeatSection({ characterId, initialFeats }: { characterId: string
   }
 
   return (
-    <section aria-labelledby="feats-heading" className="mt-12">
-      <div className="flex items-center justify-between gap-4">
-        <h2 id="feats-heading" className="eyebrow">
-          Feats / {feats.length}
-        </h2>
+    <section aria-label="Feats" className="mt-14">
+      <SectionHeading index="02" title="Feats" aside={`${visible.length} shown`} />
+
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+        <div role="group" aria-label="Filter feats" className="flex border">
+          {FILTERS.map(({ key, label }) => (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={filter === key}
+              onClick={() => setFilter(key)}
+              className={cn(
+                "h-10 px-4 text-sm font-medium transition-colors",
+                filter === key ? "bg-accent text-accent-foreground" : "hover:bg-muted",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         {!formOpen && (
           <Button variant="primary" size="sm" onClick={openForm}>
             <Plus className="size-4" aria-hidden />
@@ -132,13 +160,15 @@ export function FeatSection({ characterId, initialFeats }: { characterId: string
         </div>
       )}
 
-      {feats.length === 0 ? (
-        <p className="mt-6 border-y py-10 text-center text-muted-foreground">
-          No feats yet. Be the first to submit one with proof.
+      {visible.length === 0 ? (
+        <p className="mt-4 border p-10 text-center text-muted-foreground">
+          {feats.length === 0
+            ? "No feats yet. Be the first to submit one with proof."
+            : "No feats in this filter."}
         </p>
       ) : (
-        <ul className="mt-2 border-t">
-          {feats.map((feat) => (
+        <ul className="mt-4 space-y-3">
+          {visible.map((feat) => (
             <FeatCard
               key={feat.id}
               feat={feat}

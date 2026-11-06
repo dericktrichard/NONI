@@ -51,4 +51,11 @@ describe("buildRails", () => {
     expect(rails[1]?.items.map((item) => item.position)).toEqual([1, 3, 6]);
     expect(rails[2]?.items.map((item) => item.position)).toEqual([2, 5]);
   });
+
+  it("links each rail to the right ranking page", () => {
+    const rails = buildRails(pool);
+    expect(rails[0]?.href).toBe("/ranking");
+    expect(rails[1]?.href).toBe("/ranking/anime");
+    expect(rails[2]?.href).toBe("/ranking/manga");
+  });
 });
