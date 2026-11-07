@@ -29,6 +29,9 @@ export const metadata: Metadata = {
   title: { default: "NONI", template: "%s | NONI" },
   description: "Cross-media powerscaling, backed by evidence.",
   applicationName: "NONI",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  openGraph: { siteName: "NONI", type: "website" },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {

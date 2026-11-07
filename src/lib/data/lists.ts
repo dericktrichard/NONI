@@ -4,7 +4,7 @@ import { HttpError } from "@/lib/data/feats";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL } from "@/lib/firebase/paths";
 import type { ListInput } from "@/lib/validation/list";
-import { withoutCharacter, MAX_LISTS } from "@/lib/lists/rules";
+import { MAX_LISTS, visibilityOf, withoutCharacter, type Visibility } from "@/lib/lists/rules";
 import type { ListStatus } from "@/lib/lists/moderation";
 
 export interface ListItem {
@@ -13,19 +13,22 @@ export interface ListItem {
   reason: string;
 }
 
+export interface UserListItem extends ListItem {
+  imageUrl: string | null;
+}
+
 export interface UserList {
   id: string;
   title: string;
-  items: ListItem[];
+  items: UserListItem[];
   status: ListStatus;
+  visibility: Visibility;
 }
 
-export interface CharacterOption {
-  id: string;
-  name: string;
-}
+const image = (value: unknown): string | null =>
+  typeof value === "string" && value.startsWith("https://") ? value : null;
 
-async function resolveItems(db: Firestore, input: ListInput): Promise<ListItem[]> {
+async function resolveItems(db: Firestore, input: ListInput): Promise<UserListItem[]> {
   const refs = input.items.map((item) => db.collection(COL.characters).doc(item.characterId));
   const snaps = await db.getAll(...refs);
   return input.items.map((item, index) => {
@@ -35,6 +38,7 @@ async function resolveItems(db: Firestore, input: ListInput): Promise<ListItem[]
       characterId: item.characterId,
       name: String(snap.get("name") ?? item.characterId),
       reason: item.reason,
+      imageUrl: image(snap.get("imageUrl")),
     };
   });
 }
@@ -56,6 +60,7 @@ export async function createList(uid: string, input: ListInput): Promise<{ id: s
     tx.create(listRef, {
       ownerUid: uid,
       title: input.title,
+      visibility: input.visibility,
       items,
       characterIds: items.map((item) => item.characterId),
       status: "visible",
@@ -83,6 +88,7 @@ export async function updateList(uid: string, listId: string, input: ListInput):
 
     tx.update(listRef, {
       title: input.title,
+      visibility: input.visibility,
       items,
       characterIds: items.map((item) => item.characterId),
       updatedAt: Timestamp.now(),
@@ -121,30 +127,25 @@ async function loadLists(uid: string, publicOnly: boolean): Promise<UserList[]> 
     .get();
 
   return snap.docs
-    .filter((doc) => !publicOnly || doc.get("status") === "visible")
+    .filter((doc) => !publicOnly || (doc.get("status") === "visible" && visibilityOf(doc.get("visibility")) === "public"))
     .sort((a, b) => createdMillis(a.get("createdAt")) - createdMillis(b.get("createdAt")))
     .slice(0, MAX_LISTS)
     .map((doc) => ({
       id: doc.id,
       title: String(doc.get("title") ?? ""),
       status: (doc.get("status") === "hidden" ? "hidden" : "visible") as ListStatus,
-      items: ((doc.get("items") as ListItem[] | undefined) ?? []).map((item) => ({
+      visibility: visibilityOf(doc.get("visibility")),
+      items: ((doc.get("items") as Array<Partial<UserListItem>> | undefined) ?? []).map((item) => ({
         characterId: String(item.characterId),
         name: String(item.name),
         reason: String(item.reason),
+        imageUrl: image(item.imageUrl),
       })),
     }));
 }
 
 export const getOwnLists = (uid: string) => loadLists(uid, false);
 export const getPublicLists = (uid: string) => loadLists(uid, true);
-
-export async function listCharacterOptions(): Promise<CharacterOption[]> {
-  const snap = await adminDb().collection(COL.characters).select("name").limit(500).get();
-  return snap.docs
-    .map((doc) => ({ id: doc.id, name: String(doc.get("name") ?? doc.id) }))
-    .sort((a, b) => a.name.localeCompare(b.name));
-}
 
 export async function removeCharacterFromLists(characterId: string): Promise<void> {
   const db = adminDb();

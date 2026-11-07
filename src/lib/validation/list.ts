@@ -6,6 +6,7 @@ import {
   REASON_MIN,
   TITLE_MAX,
   TITLE_MIN,
+  VISIBILITIES,
   hasDuplicates,
 } from "@/lib/lists/rules";
 import { hasHiddenChars } from "@/lib/validation/text";
@@ -25,6 +26,7 @@ const itemSchema = z
 export const listSchema = z
   .object({
     title: z.string().trim().min(TITLE_MIN).max(TITLE_MAX).refine(clean, "Invalid characters."),
+    visibility: z.enum(VISIBILITIES),
     items: z
       .array(itemSchema)
       .min(MIN_ITEMS)

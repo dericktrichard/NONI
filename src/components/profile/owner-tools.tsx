@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ListsManager } from "@/components/lists/lists-manager";
+import { ListBuilder } from "@/components/lists/list-builder";
 import { LookForm } from "@/components/profile/look-form";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { Modal } from "@/components/ui/modal";
 import { useSession } from "@/hooks/use-session";
 import { signOutEverywhere } from "@/lib/auth/client";
-import type { CharacterOption, UserList } from "@/lib/data/lists";
+import type { UserList } from "@/lib/data/lists";
 import type { OwnProfile } from "@/lib/data/profile";
 import type { Look } from "@/lib/profile/look";
 
@@ -19,10 +19,9 @@ interface OwnerToolsProps {
   verified: boolean;
   staff: boolean;
   lists: UserList[];
-  options: CharacterOption[];
 }
 
-export function OwnerTools({ profile, look, verified, staff, lists, options }: OwnerToolsProps) {
+export function OwnerTools({ profile, look, verified, staff, lists }: OwnerToolsProps) {
   const router = useRouter();
   const { refresh } = useSession();
   const [open, setOpen] = useState<"profile" | "look" | "lists" | null>(null);
@@ -92,7 +91,7 @@ export function OwnerTools({ profile, look, verified, staff, lists, options }: O
       </Modal>
 
       <Modal wide open={open === "lists"} onClose={close} eyebrow="Profile" title="Your lists">
-        <ListsManager lists={lists} options={options} />
+        <ListBuilder lists={lists} />
       </Modal>
     </>
   );

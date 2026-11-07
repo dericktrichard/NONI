@@ -6,6 +6,14 @@ export const TITLE_MAX = 60;
 export const REASON_MIN = 3;
 export const REASON_MAX = 200;
 
+export const VISIBILITIES = ["public", "private"] as const;
+export type Visibility = (typeof VISIBILITIES)[number];
+
+/** Lists saved before the switch existed have no value and stay public */
+export function visibilityOf(value: unknown): Visibility {
+  return value === "private" ? "private" : "public";
+}
+
 export function hasDuplicates(ids: readonly string[]): boolean {
   return new Set(ids).size !== ids.length;
 }

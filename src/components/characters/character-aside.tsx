@@ -1,4 +1,5 @@
 import { NewMatchupButton } from "@/components/matchups/matchup-actions";
+import { ShareButton } from "@/components/share/share-button";
 import type { CharacterView } from "@/types/character-page";
 import { EvidenceMeter } from "./evidence-meter";
 import { FavouriteButton } from "./favourite-button";
@@ -27,6 +28,12 @@ export function CharacterAside({ c }: { c: CharacterView }) {
       </NewMatchupButton>
 
       <FavouriteButton characterId={c.id} />
+
+      <ShareButton
+        title={`${c.name} on NONI`}
+        text={`${c.name} is ranked ${c.rank ? `#${c.rank}` : "unranked"} on NONI.`}
+        className="btn btn-quiet h-auto w-full py-3"
+      />
     </aside>
   );
 }
