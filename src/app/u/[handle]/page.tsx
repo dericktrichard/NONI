@@ -5,12 +5,12 @@ import { cache } from "react";
 import { Portrait } from "@/components/characters/portrait";
 import { SectionHeading } from "@/components/home/section-heading";
 import { PageTop } from "@/components/layout/page-top";
-import { ListReportButton } from "@/components/lists/list-report-button";
+import { ListCard } from "@/components/lists/list-card";
 import { ProfileAvatar, ProfileBanner } from "@/components/profile/banner";
 import { OwnFeats } from "@/components/profile/own-feats";
 import { OwnerTools } from "@/components/profile/owner-tools";
 import { getActivityStats, listOwnFeats, uidForHandle } from "@/lib/data/activity";
-import { getOwnLists, listCharacterOptions } from "@/lib/data/lists";
+import { getOwnLists } from "@/lib/data/lists";
 import { getOwnProfile, getProfileByHandle } from "@/lib/data/profile";
 import { roleOf } from "@/lib/security/roles";
 import { getSessionUser } from "@/lib/security/session";
@@ -47,12 +47,13 @@ export default async function ProfilePage({ params }: Props) {
   const isOwner = viewer !== null && own !== null && own.handle === profile.handle;
 
   const uid = isOwner && viewer ? viewer.uid : await uidForHandle(profile.handle);
-  const [stats, ownLists, options, ownFeats] = await Promise.all([
+  const [stats, ownLists, ownFeats] = await Promise.all([
     uid ? getActivityStats(uid) : Promise.resolve({ votes: null, arguments: null }),
     isOwner && viewer ? getOwnLists(viewer.uid) : Promise.resolve([]),
-    isOwner ? listCharacterOptions() : Promise.resolve([]),
     isOwner && viewer ? listOwnFeats(viewer.uid) : Promise.resolve([]),
   ]);
+
+  const lists = isOwner ? ownLists.filter((list) => list.status === "visible") : profile.lists;
 
   return (
     <div className="mx-auto max-w-3xl px-4 pt-6 pb-24">
@@ -81,7 +82,6 @@ export default async function ProfilePage({ params }: Props) {
             verified={viewer.email_verified === true}
             staff={roleOf(viewer) !== "user"}
             lists={ownLists}
-            options={options}
           />
         ) : null}
       </header>
@@ -91,7 +91,7 @@ export default async function ProfilePage({ params }: Props) {
         <Stat label="Feats">{profile.featsSubmitted}</Stat>
         <Stat label="Arguments">{shown(stats.arguments)}</Stat>
         <Stat label="Votes cast">{shown(stats.votes)}</Stat>
-        <Stat label="Lists">{profile.lists.length}</Stat>
+        <Stat label="Public lists">{profile.lists.length}</Stat>
         <Stat label="Favourites">{profile.favouriteCount}</Stat>
       </dl>
 
@@ -128,34 +128,14 @@ export default async function ProfilePage({ params }: Props) {
 
       <section className="mt-12">
         <SectionHeading title="Lists" />
-        {profile.lists.length === 0 ? (
+        {lists.length === 0 ? (
           <p className="mt-6 border p-4 text-sm text-muted-foreground">
-            {isOwner ? "You have no public lists yet. Use Edit lists above to make one." : "No public lists yet."}
+            {isOwner ? "No lists yet. Use Edit lists above to make one." : "No public lists yet."}
           </p>
         ) : (
           <div className="mt-6 space-y-6">
-            {profile.lists.map((list) => (
-              <article key={list.id} className="border">
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b bg-muted/50 px-4">
-                  <h3 className="py-3 font-display text-xl font-semibold tracking-tight">{list.title}</h3>
-                  {isOwner ? null : <ListReportButton listId={list.id} />}
-                </div>
-                <ol className="divide-y">
-                  {list.items.map((item, index) => (
-                    <li key={item.characterId} className="grid grid-cols-[2.5rem_1fr] gap-3 p-4">
-                      <span className="tabular font-display text-2xl leading-none font-semibold text-muted-foreground">
-                        {index + 1}
-                      </span>
-                      <div className="min-w-0">
-                        <Link href={`/characters/${item.characterId}`} className="font-medium underline underline-offset-4">
-                          {item.name}
-                        </Link>
-                        <p className="mt-1 text-sm whitespace-pre-line">{item.reason}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              </article>
+            {lists.map((list) => (
+              <ListCard key={list.id} list={list} isOwner={isOwner} />
             ))}
           </div>
         )}
