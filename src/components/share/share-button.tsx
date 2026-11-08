@@ -16,22 +16,26 @@ export function ShareButton({ title, text, className }: ShareButtonProps) {
     setTimeout(() => setNote(null), 2500);
   }
 
+  async function copy(message: string) {
+    await navigator.clipboard.writeText(message);
+    flash("Copied");
+  }
+
   async function share() {
     const url = `${window.location.origin}${window.location.pathname}`;
+    const message = `${text}\n${url}`;
     try {
       if (typeof navigator.share === "function") {
         await navigator.share({ title, text, url });
         return;
       }
-      await navigator.clipboard.writeText(url);
-      flash("Link copied");
+      await copy(message);
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       try {
-        await navigator.clipboard.writeText(url);
-        flash("Link copied");
+        await copy(message);
       } catch {
-        flash("Copy the address from your browser");
+        flash("Copy it from your browser");
       }
     }
   }
