@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { NavAvatar } from "@/components/auth/nav-avatar";
 import { useSession } from "@/hooks/use-session";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
-import { OPEN_PROFILE_SETUP, OPEN_SEARCH } from "@/lib/ui/events";
+import { OPEN_PROFILE_SETUP } from "@/lib/ui/events";
 import { cn } from "@/lib/utils";
 
 const TAB = "eyebrow relative grid h-14 place-items-center transition-colors";
@@ -21,6 +21,7 @@ export function TabBar() {
 
   const exploreActive = pathname === "/" || pathname.startsWith("/characters");
   const matchupsActive = pathname.startsWith("/matchups");
+  const playActive = pathname.startsWith("/play");
   const meActive = user?.handle ? pathname === `/u/${user.handle}` : false;
 
   return (
@@ -41,9 +42,10 @@ export function TabBar() {
           {matchupsActive ? <Mark /> : null}
           Matchups
         </Link>
-        <button type="button" className={TAB} onClick={() => window.dispatchEvent(new Event(OPEN_SEARCH))}>
-          Search
-        </button>
+        <Link href="/play" aria-current={playActive ? "page" : undefined} className={cn(TAB, playActive && "text-foreground")}>
+          {playActive ? <Mark /> : null}
+          Play
+        </Link>
 
         {state.status === "loading" ? (
           <span className={TAB} aria-hidden />

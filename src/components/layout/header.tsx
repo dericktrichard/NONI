@@ -1,23 +1,23 @@
 "use client";
 
+import { Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AccountButton } from "@/components/auth/account-button";
 import { AuthHost } from "@/components/auth/auth-host";
-import { MatchupMaker } from "@/components/matchups/matchup-maker";
 import { GlobalSearch } from "@/components/layout/global-search";
 import { LogoMark } from "@/components/layout/logo-mark";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { MatchupMaker } from "@/components/matchups/matchup-maker";
+import { OPEN_SEARCH } from "@/lib/ui/events";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
-  {
-    href: "/",
-    label: "Explore",
-    match: (path: string) => path === "/" || path.startsWith("/ranking") || path.startsWith("/characters"),
-  },
+  { href: "/", label: "Explore", match: (path: string) => path === "/" || path.startsWith("/characters") },
   { href: "/matchups", label: "Matchups", match: (path: string) => path.startsWith("/matchups") },
+  { href: "/play", label: "Play", match: (path: string) => path.startsWith("/play") },
+  { href: "/battle", label: "Battle", match: (path: string) => path.startsWith("/battle") },
 ];
 
 export function Header() {
@@ -72,8 +72,16 @@ export function Header() {
             </nav>
 
             <div className="ml-auto flex items-center gap-2 sm:ml-0">
-              <ThemeToggle />
               <GlobalSearch />
+              <button
+                type="button"
+                aria-label="Search characters"
+                onClick={() => window.dispatchEvent(new Event(OPEN_SEARCH))}
+                className="grid size-10 place-items-center border transition-colors hover:border-foreground sm:hidden"
+              >
+                <Search className="size-4" aria-hidden />
+              </button>
+              <ThemeToggle />
               <div className="hidden sm:block">
                 <AccountButton />
               </div>

@@ -23,6 +23,9 @@ export function Footer() {
           <Link href="/matchups" className="underline-offset-4 hover:underline">
             Matchups
           </Link>
+          <Link href="/play" className="underline-offset-4 hover:underline">
+            Play
+          </Link>
         </nav>
       </div>
     </footer>
