@@ -19,9 +19,11 @@ export function TabBar() {
   const { state } = useSession();
   const user = state.status === "ready" ? state.user : null;
 
-  const exploreActive = pathname === "/" || pathname.startsWith("/characters");
-  const matchupsActive = pathname.startsWith("/matchups");
-  const playActive = pathname.startsWith("/play");
+  const tabs = [
+    { href: "/", label: "Explore", active: pathname === "/" || pathname.startsWith("/characters") },
+    { href: "/play", label: "Play", active: pathname.startsWith("/play") || pathname.startsWith("/matchups") },
+    { href: "/battle", label: "Battle", active: pathname.startsWith("/battle") },
+  ];
   const meActive = user?.handle ? pathname === `/u/${user.handle}` : false;
 
   return (
@@ -30,22 +32,12 @@ export function TabBar() {
       className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:hidden"
     >
       <div className="acrylic grid grid-cols-4">
-        <Link href="/" aria-current={exploreActive ? "page" : undefined} className={cn(TAB, exploreActive && "text-foreground")}>
-          {exploreActive ? <Mark /> : null}
-          Explore
-        </Link>
-        <Link
-          href="/matchups"
-          aria-current={matchupsActive ? "page" : undefined}
-          className={cn(TAB, matchupsActive && "text-foreground")}
-        >
-          {matchupsActive ? <Mark /> : null}
-          Matchups
-        </Link>
-        <Link href="/play" aria-current={playActive ? "page" : undefined} className={cn(TAB, playActive && "text-foreground")}>
-          {playActive ? <Mark /> : null}
-          Play
-        </Link>
+        {tabs.map(({ href, label, active }) => (
+          <Link key={href} href={href} aria-current={active ? "page" : undefined} className={cn(TAB, active && "text-foreground")}>
+            {active ? <Mark /> : null}
+            {label}
+          </Link>
+        ))}
 
         {state.status === "loading" ? (
           <span className={TAB} aria-hidden />

@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   if (!guarded.ok) return guarded.response;
 
   try {
-    return reply(await playClash(guarded.user.uid, guarded.body.teamA, guarded.body.teamB));
+    return reply(await playClash(guarded.user.uid, guarded.body.teamA, guarded.body.teamB, guarded.body.stake));
   } catch (error) {
     if (error instanceof HttpError) return reply({ error: error.message }, error.status);
     console.error("battle-clash failed", error);

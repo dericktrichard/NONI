@@ -2,14 +2,16 @@ import "server-only";
 import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL } from "@/lib/firebase/paths";
-import { GLAZE, dayKey, grantable } from "@/lib/glaze/rules";
+import { HttpError } from "@/lib/data/feats";
+import { GLAZE, dayKey, grantable, type Settlement } from "@/lib/glaze/rules";
 
 const LEDGER = "ledger";
 
-export interface GlazeGrant {
-  granted: number;
+export interface GlazeChange {
+  /** Applied change to the balance, negative when a stake was lost */
+  change: number;
   balance: number;
-  /** Part or all of the reward was held back by the daily cap */
+  /** Part of a free-play reward was held back by the daily cap */
   capped: boolean;
 }
 
@@ -20,10 +22,11 @@ export async function getBalance(uid: string): Promise<number> {
 }
 
 /**
- * Adds earned Glaze under the daily cap. The ledger entry is named after `ref`, so
- * repeating the same reference can never pay twice.
+ * Applies a battle result to the balance in one transaction. The ledger entry is named after
+ * `ref`, so repeating the same reference can never pay or charge twice. A stake larger than
+ * the balance is refused, and the balance never goes below zero.
  */
-export async function grantGlaze(uid: string, amount: number, reason: string, ref: string): Promise<GlazeGrant> {
+export async function settleGlaze(uid: string, settlement: Settlement, stake: number, reason: string, ref: string): Promise<GlazeChange> {
   const db = adminDb();
   const userRef = db.collection(COL.users).doc(uid);
   const entryRef = userRef.collection(LEDGER).doc(ref);
@@ -34,19 +37,25 @@ export async function grantGlaze(uid: string, amount: number, reason: string, re
     const stored = user.get("glaze");
     const balance = typeof stored === "number" ? stored : GLAZE.start;
 
-    if (entry.exists) return { granted: 0, balance, capped: false };
+    if (entry.exists) return { change: 0, balance, capped: false };
+    if (stake > balance) throw new HttpError(409, "Not enough Glaze for that stake.");
 
     const earnedToday = user.get("glazeDay") === today ? Number(user.get("glazeEarned")) || 0 : 0;
-    const granted = grantable(earnedToday, amount);
-    const next = balance + granted;
+    const wanted = settlement.delta;
+    const applied = settlement.earned ? grantable(earnedToday, wanted) : wanted;
+    const next = Math.max(0, balance + applied);
 
     tx.set(
       userRef,
-      { glaze: next, glazeDay: today, glazeEarned: earnedToday + granted, updatedAt: FieldValue.serverTimestamp() },
+      {
+        glaze: next,
+        ...(settlement.earned ? { glazeDay: today, glazeEarned: earnedToday + applied } : {}),
+        updatedAt: FieldValue.serverTimestamp(),
+      },
       { merge: true },
     );
-    tx.set(entryRef, { amount: granted, wanted: amount, reason, balanceAfter: next, createdAt: FieldValue.serverTimestamp() });
+    tx.set(entryRef, { amount: next - balance, wanted, stake, reason, balanceAfter: next, createdAt: FieldValue.serverTimestamp() });
 
-    return { granted, balance: next, capped: granted < amount };
+    return { change: next - balance, balance: next, capped: settlement.earned && applied < wanted };
   });
 }

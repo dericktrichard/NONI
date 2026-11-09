@@ -40,7 +40,6 @@ function parse(slug: string, data: FirebaseFirestore.DocumentData): Loaded | nul
         name,
         verse,
         imageUrl: typeof data.imageUrl === "string" ? data.imageUrl : null,
-        rank: typeof data.rank === "number" ? data.rank : null,
       },
     };
   } catch {

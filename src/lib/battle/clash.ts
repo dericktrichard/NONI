@@ -25,6 +25,10 @@ export interface ClashFight {
   verdict: Verdict;
   /** Null for a stalemate: neither can hurt the other, so both withdraw */
   winner: Side | null;
+  /** The winner's chance going into the fight */
+  winnerChance: number;
+  /** The less likely fighter won */
+  upset: boolean;
   /** Wounds changed the result the engine would give at full health */
   worn: boolean;
   fallen: string[];
@@ -38,6 +42,14 @@ export interface ClashResult {
   fights: ClashFight[];
   survivorsA: Survivor[];
   survivorsB: Survivor[];
+}
+
+export type Resolver = (a: CombatProfile, b: CombatProfile) => MatchupResult;
+
+export interface ClashOptions {
+  /** With a random source each fight is sampled from its odds, so upsets happen. Without one the favourite always wins. */
+  rng?: () => number;
+  resolve?: Resolver;
 }
 
 export type TeamIssue = "empty" | "size" | "duplicate" | "overlap";
@@ -71,6 +83,21 @@ export function woundFor(lead: number): number {
   return Math.min(BATTLE.woundMax, Math.max(BATTLE.woundMin, (1 - lead) * BATTLE.woundScale));
 }
 
+export const clampChance = (p: number): number => Math.min(1 - BATTLE.upsetFloor, Math.max(BATTLE.upsetFloor, p));
+
+export function memoResolver(): Resolver {
+  const cache = new Map<string, MatchupResult>();
+  return (a, b) => {
+    const key = `${a.slug}|${b.slug}`;
+    let hit = cache.get(key);
+    if (!hit) {
+      hit = resolveMatchup(a, b);
+      cache.set(key, hit);
+    }
+    return hit;
+  };
+}
+
 const REASON_ORDER: ReasonCode[] = ["hax_lands", "hax_blocked", "dimension", "damage", "speed"];
 
 /** The most telling engine reason that favours one side, or a fallback line */
@@ -102,9 +129,10 @@ function slimmestEdge(a: CombatProfile, b: CombatProfile): Side {
 
 /**
  * Fighters meet in line-up order. The winner of a duel stays on, wounded according to how
- * narrow the win was, and meets the next fighter. A loser falls. Pure: same teams, same story.
+ * narrow the win was, and meets the next fighter. A loser falls.
  */
-export function simulateClash(teamA: readonly CombatProfile[], teamB: readonly CombatProfile[]): ClashResult {
+export function simulateClash(teamA: readonly CombatProfile[], teamB: readonly CombatProfile[], options: ClashOptions = {}): ClashResult {
+  const { rng, resolve = resolveMatchup } = options;
   const queueA: Fighter[] = teamA.map((profile) => ({ profile, vitality: 1 }));
   const queueB: Fighter[] = teamB.map((profile) => ({ profile, vitality: 1 }));
   const fights: ClashFight[] = [];
@@ -114,19 +142,21 @@ export function simulateClash(teamA: readonly CombatProfile[], teamB: readonly C
   while (ia < queueA.length && ib < queueB.length) {
     const fa = queueA[ia]!;
     const fb = queueB[ib]!;
-    const result = resolveMatchup(fa.profile, fb.profile);
+    const result = resolve(fa.profile, fb.profile);
     const stalemate = result.verdict === "stalemate";
 
     const effective = stalemate ? 0.5 : effectiveProbability(result.probabilityA, fa.vitality, fb.vitality);
+    const favourite: Side | null = effective > 0.5 ? "a" : effective < 0.5 ? "b" : null;
     const winner: Side | null = stalemate
       ? null
-      : effective > 0.5
-        ? "a"
-        : effective < 0.5
-          ? "b"
-          : slimmestEdge(fa.profile, fb.profile);
+      : rng
+        ? rng() < clampChance(effective)
+          ? "a"
+          : "b"
+        : (favourite ?? slimmestEdge(fa.profile, fb.profile));
 
-    const worn = !stalemate && result.winner !== winner && fa.vitality !== fb.vitality;
+    const upset = winner !== null && favourite !== null && winner !== favourite;
+    const worn = !stalemate && !upset && result.winner !== winner && fa.vitality !== fb.vitality;
     const before = { a: fa.vitality, b: fb.vitality };
 
     let note: string;
@@ -143,14 +173,16 @@ export function simulateClash(teamA: readonly CombatProfile[], teamB: readonly C
       const losing = winner === "a" ? fb : fa;
       const lead = winner === "a" ? effective : 1 - effective;
 
-      if (worn) {
+      if (upset) {
+        note = `${winning.profile.name} pulls off the upset over ${losing.profile.name}.`;
+      } else if (worn) {
         note = `${winning.profile.name} takes it because ${losing.profile.name} is worn down (${Math.round(
           (winner === "a" ? before.b : before.a) * 100,
         )}% left).`;
       } else if (result.winner === null) {
         note = `${winning.profile.name} takes it by the slimmest margin.`;
       } else {
-        note = reasonFor(result, winner);
+        note = reasonFor(result, winner) || `${winning.profile.name} comes out on top.`;
       }
 
       winning.vitality = Math.max(BATTLE.minVitality, winning.vitality - woundFor(lead));
@@ -172,6 +204,8 @@ export function simulateClash(teamA: readonly CombatProfile[], teamB: readonly C
       effectiveProbabilityA: effective,
       verdict: result.verdict,
       winner,
+      winnerChance: winner === null ? 0.5 : winner === "a" ? effective : 1 - effective,
+      upset,
       worn,
       fallen,
       vitalityAfterA: fa.vitality,
@@ -188,4 +222,20 @@ export function simulateClash(teamA: readonly CombatProfile[], teamB: readonly C
   const winner: Side | "draw" = survivorsA.length > 0 ? "a" : survivorsB.length > 0 ? "b" : "draw";
 
   return { winner, fights, survivorsA, survivorsB };
+}
+
+/** Team A's chance to win, from many sampled battles. A draw counts as half. */
+export function estimateWin(
+  teamA: readonly CombatProfile[],
+  teamB: readonly CombatProfile[],
+  runs: number,
+  rngFor: (run: number) => () => number,
+): number {
+  const resolve = memoResolver();
+  let score = 0;
+  for (let run = 0; run < runs; run += 1) {
+    const { winner } = simulateClash(teamA, teamB, { rng: rngFor(run), resolve });
+    score += winner === "a" ? 1 : winner === "draw" ? 0.5 : 0;
+  }
+  return score / runs;
 }

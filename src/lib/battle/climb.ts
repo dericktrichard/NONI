@@ -1,6 +1,6 @@
 import { resolveMatchup, winProbability } from "@/lib/ranking/matchup";
+import { reasonFor, clampChance } from "./clash";
 import { CLIMB } from "./config";
-import { reasonFor } from "./clash";
 import { cmp, shuffled, type Difficulty, type Entrant } from "./types";
 
 export type ClimbMode = "counters" | "random";
@@ -13,6 +13,8 @@ export interface ClimbMatch {
   bName: string;
   winner: string;
   probabilityA: number;
+  /** The less likely fighter won */
+  upset: boolean;
   note: string;
 }
 
@@ -29,12 +31,23 @@ export interface ClimbResult {
 
 export const isBracketSize = (n: number): boolean => Number.isInteger(n) && n >= 2 && (n & (n - 1)) === 0;
 
-function decide(a: Entrant, b: Entrant): { winner: Entrant; probabilityA: number; note: string } {
+function decide(a: Entrant, b: Entrant, rng?: () => number): { winner: Entrant; probabilityA: number; upset: boolean; note: string } {
   const result = resolveMatchup(a.profile, b.profile);
+  const p = result.probabilityA;
+  const favourite = p > 0.5 ? "a" : p < 0.5 ? "b" : null;
+
   let side = result.winner;
-  if (side === null) side = a.score !== b.score ? (a.score > b.score ? "a" : "b") : cmp(a.profile.slug, b.profile.slug) <= 0 ? "a" : "b";
-  const note = result.winner === null ? "Too close to call, the higher ranked fighter advances." : reasonFor(result, side);
-  return { winner: side === "a" ? a : b, probabilityA: result.probabilityA, note };
+  if (rng && result.verdict !== "stalemate") side = rng() < clampChance(p) ? "a" : "b";
+  else if (side === null) side = a.score !== b.score ? (a.score > b.score ? "a" : "b") : cmp(a.profile.slug, b.profile.slug) <= 0 ? "a" : "b";
+
+  const winner = side === "a" ? a : b;
+  const upset = favourite !== null && side !== favourite;
+  const note = upset
+    ? `${winner.profile.name} pulls off the upset.`
+    : result.winner === null
+      ? "Too close to call, the higher ranked fighter advances."
+      : reasonFor(result, side);
+  return { winner, probabilityA: p, upset, note };
 }
 
 function closest<T>(items: readonly T[], target: number, measure: (item: T) => number, slugOf: (item: T) => string): T | undefined {
@@ -45,6 +58,7 @@ function closest<T>(items: readonly T[], target: number, measure: (item: T) => n
  * Seats the hero at slot 0. In counters mode the strongest rival of each round is chosen to
  * answer the hero and placed where the hero will meet them. Other seats hold fillers that
  * lose to that rival. Everything is then simulated, so the report is the truth, not the plan.
+ * With `sample` every match is a weighted dice roll, so upsets can happen.
  */
 export function buildClimb(
   pool: readonly Entrant[],
@@ -53,6 +67,7 @@ export function buildClimb(
   mode: ClimbMode,
   difficulty: Difficulty,
   rng: () => number = Math.random,
+  sample = false,
 ): ClimbResult | null {
   if (!isBracketSize(size) || size < 4) return null;
   const others = pool.filter((e) => e.profile.slug !== hero.profile.slug).sort((x, y) => cmp(x.profile.slug, y.profile.slug));
@@ -99,7 +114,7 @@ export function buildClimb(
     for (let i = 0; i < field.length; i += 2) {
       const a = field[i]!;
       const b = field[i + 1]!;
-      const out = decide(a, b);
+      const out = decide(a, b, sample ? rng : undefined);
       next.push(out.winner);
       matches.push({
         round: r + 1,
@@ -109,6 +124,7 @@ export function buildClimb(
         bName: b.profile.name,
         winner: out.winner.profile.slug,
         probabilityA: out.probabilityA,
+        upset: out.upset,
         note: out.note,
       });
       if (alive && (a === hero || b === hero)) {
