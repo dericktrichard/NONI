@@ -21,6 +21,10 @@ export const BATTLE = {
   maxPerVerse: 2,
   /** A candidate "covers" an opponent when it wins at least this often against them */
   coverAt: 0.6,
+  /** Least chance either side keeps in a sampled fight, so an upset is always possible */
+  upsetFloor: 0.06,
+  /** Simulated battles used to estimate a team win chance */
+  simRuns: 400,
 } as const;
 
 export const CLIMB = {

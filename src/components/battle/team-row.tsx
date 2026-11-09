@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Portrait } from "@/components/characters/portrait";
 import type { BattleCard } from "@/lib/battle/view";
 import { cn } from "@/lib/utils";
@@ -15,41 +15,42 @@ interface TeamRowProps {
   actions: React.ReactNode;
 }
 
+const Slot = ({ n }: { n: number }) => (
+  <span className="tabular absolute top-0.5 left-0.5 z-10 grid size-4 place-items-center bg-background/90 text-[10px] font-semibold">{n}</span>
+);
+
 export function TeamRow({ title, size, team, active, onActivate, onRemove, actions }: TeamRowProps) {
   return (
-    <section aria-label={title} className={cn("border p-3 sm:p-4", active && "border-foreground")}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="eyebrow">{title}</h2>
-        <div className="flex gap-2">{actions}</div>
+    <section aria-label={title} className={cn("border p-2 transition-colors", active && "border-foreground")}>
+      <div className="flex items-center justify-between gap-2">
+        <button type="button" onClick={onActivate} className="flex items-center gap-1.5 font-display text-base font-semibold">
+          {active ? <span className="size-1.5 bg-accent" aria-hidden /> : null}
+          {title}
+        </button>
+        <div className="flex gap-1">{actions}</div>
       </div>
 
-      <ul className={cn("mt-3 grid gap-2", size === 3 ? "grid-cols-3" : "grid-cols-5")}>
+      <ul className={cn("mt-2 grid gap-1.5", size === 3 ? "grid-cols-3" : "grid-cols-5")}>
         {Array.from({ length: size }, (_, index) => {
           const card = team[index];
           return (
-            <li key={card?.slug ?? `empty-${index}`}>
+            <li key={card?.slug ?? `empty-${index}`} className="relative">
+              <Slot n={index + 1} />
               {card ? (
-                <button
-                  type="button"
-                  onClick={() => onRemove(card.slug)}
-                  aria-label={`Remove ${card.name}`}
-                  className="group relative block w-full text-left"
-                >
-                  <Portrait name={card.name} src={card.imageUrl} sizes="120px" className="aspect-2/3 w-full" />
-                  <span className="absolute top-1 right-1 grid size-5 place-items-center bg-background/90 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                <button type="button" onClick={() => onRemove(card.slug)} aria-label={`Remove ${card.name}`} className="group relative block w-full text-left">
+                  <Portrait name={card.name} src={card.imageUrl} sizes="96px" className="aspect-square w-full" />
+                  <span className="absolute top-0.5 right-0.5 grid size-4 place-items-center bg-background/90 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
                     <X className="size-3" aria-hidden />
                   </span>
-                  <span className="mt-1 block truncate text-xs font-medium">{card.name}</span>
+                  <span className="mt-0.5 hidden truncate text-[10px] font-medium sm:block">{card.name}</span>
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={onActivate}
                   aria-label={`Add to ${title}`}
-                  className="grid aspect-2/3 w-full place-items-center border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
-                >
-                  <Plus className="size-4" aria-hidden />
-                </button>
+                  className="block aspect-square w-full border border-dashed text-muted-foreground transition-colors hover:border-foreground"
+                />
               )}
             </li>
           );

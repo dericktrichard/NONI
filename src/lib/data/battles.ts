@@ -1,33 +1,38 @@
 import "server-only";
 import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase/admin";
+import { BATTLE } from "@/lib/battle/config";
 import { counterTeam, randomTeam } from "@/lib/battle/counter";
-import { TEAM_MESSAGES, checkTeams, simulateClash, teamEdge, type ClashResult } from "@/lib/battle/clash";
+import { TEAM_MESSAGES, checkTeams, estimateWin, simulateClash, teamEdge, type ClashResult } from "@/lib/battle/clash";
 import { buildClimb, type ClimbMode, type ClimbResult } from "@/lib/battle/climb";
 import type { Difficulty } from "@/lib/battle/types";
 import type { BattleCard } from "@/lib/battle/view";
-import { clashReward, climbReward } from "@/lib/glaze/rules";
+import { clashSettlement, climbSettlement } from "@/lib/glaze/rules";
 import { HttpError } from "@/lib/data/feats";
+import { mulberry32 } from "@/lib/play/game";
 import { loadEntrants, loadPool } from "./battle-pool";
-import { grantGlaze, type GlazeGrant } from "./glaze";
+import { settleGlaze, type GlazeChange } from "./glaze";
 
 const BATTLES = "battles";
+const newSeed = () => Math.floor(Math.random() * 2 ** 32);
 
 export interface ClashOutcome {
   id: string;
   result: ClashResult;
   teamA: BattleCard[];
   teamB: BattleCard[];
-  /** The player's average win chance across every pairing, 0 to 1 */
-  edge: number;
-  reward: GlazeGrant;
+  stake: number;
+  /** Team A's chance to win, estimated before the battle was played */
+  chance: number;
+  settlement: GlazeChange;
 }
 
 export interface ClimbOutcome {
   id: string;
   result: ClimbResult;
   cards: Record<string, BattleCard>;
-  reward: GlazeGrant;
+  stake: number;
+  settlement: GlazeChange;
 }
 
 export async function suggestTeam(input: {
@@ -56,7 +61,7 @@ export async function suggestTeam(input: {
   return team.map((entrant) => cards.get(entrant.profile.slug)!);
 }
 
-export async function playClash(uid: string, slugsA: string[], slugsB: string[]): Promise<ClashOutcome> {
+export async function playClash(uid: string, slugsA: string[], slugsB: string[], stake: number): Promise<ClashOutcome> {
   const [loadedA, loadedB] = await Promise.all([loadEntrants(slugsA), loadEntrants(slugsB)]);
   if (!loadedA || !loadedB) throw new HttpError(400, "One of the characters does not exist.");
 
@@ -65,24 +70,35 @@ export async function playClash(uid: string, slugsA: string[], slugsB: string[])
   const issue = checkTeams(profilesA, profilesB);
   if (issue) throw new HttpError(400, TEAM_MESSAGES[issue]);
 
-  const result = simulateClash(profilesA, profilesB);
-  const edge = teamEdge(profilesA, profilesB);
-  const amount = clashReward({ won: result.winner === "a", survivors: result.survivorsA.length, edge });
+  const seed = newSeed();
+  const result = simulateClash(profilesA, profilesB, { rng: mulberry32(seed) });
+  const chance = estimateWin(profilesA, profilesB, BATTLE.simRuns, (run) => mulberry32(seed + run + 1));
+  const settlement = clashSettlement({
+    stake,
+    chance,
+    outcome: result.winner === "a" ? "win" : result.winner === "b" ? "loss" : "draw",
+    survivors: result.survivorsA.length,
+    edge: teamEdge(profilesA, profilesB),
+  });
 
   const ref = adminDb().collection(BATTLES).doc();
+  const change = await settleGlaze(uid, settlement, stake, "clash", ref.id);
   await ref.set({
     uid,
     kind: "clash",
+    seed,
+    stake,
+    chance,
     teamA: slugsA,
     teamB: slugsB,
     winner: result.winner,
     survivorsA: result.survivorsA.length,
     survivorsB: result.survivorsB.length,
+    change: change.change,
     createdAt: FieldValue.serverTimestamp(),
   });
-  const reward = await grantGlaze(uid, amount, "clash", ref.id);
 
-  return { id: ref.id, result, teamA: loadedA.map((i) => i.card), teamB: loadedB.map((i) => i.card), edge, reward };
+  return { id: ref.id, result, teamA: loadedA.map((i) => i.card), teamB: loadedB.map((i) => i.card), stake, chance, settlement: change };
 }
 
 export async function playClimb(
@@ -91,6 +107,7 @@ export async function playClimb(
   size: number,
   mode: ClimbMode,
   difficulty: Difficulty,
+  stake: number,
 ): Promise<ClimbOutcome> {
   const loadedHero = await loadEntrants([hero]);
   if (!loadedHero) throw new HttpError(400, "That character does not exist.");
@@ -102,16 +119,18 @@ export async function playClimb(
     size,
     mode,
     difficulty,
+    Math.random,
+    true,
   );
   if (!result) throw new HttpError(409, "Not enough characters to fill that bracket yet.");
 
-  const cards: Record<string, BattleCard> = { [hero]: loadedHero[0]!.card };
-  for (const item of pool) cards[item.card.slug] = item.card;
   const used = new Set(result.rounds[0]!.flatMap((match) => [match.a, match.b]));
-  for (const slug of Object.keys(cards)) if (!used.has(slug)) delete cards[slug];
+  const cards: Record<string, BattleCard> = {};
+  for (const item of [...pool, loadedHero[0]!]) if (used.has(item.card.slug)) cards[item.card.slug] = item.card;
 
-  const amount = climbReward({ wins: result.wins, rounds: result.rounds.length, mode, difficulty });
+  const settlement = climbSettlement({ stake, wins: result.wins, rounds: result.rounds.length, mode, strength: difficulty });
   const ref = adminDb().collection(BATTLES).doc();
+  const change = await settleGlaze(uid, settlement, stake, "climb", ref.id);
   await ref.set({
     uid,
     kind: "climb",
@@ -119,12 +138,13 @@ export async function playClimb(
     size,
     mode,
     difficulty,
+    stake,
     wins: result.wins,
     champion: result.champion,
+    change: change.change,
     result: JSON.stringify(result),
     createdAt: FieldValue.serverTimestamp(),
   });
-  const reward = await grantGlaze(uid, amount, "climb", ref.id);
 
-  return { id: ref.id, result, cards, reward };
+  return { id: ref.id, result, cards, stake, settlement: change };
 }

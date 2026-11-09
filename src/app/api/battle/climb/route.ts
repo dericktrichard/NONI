@@ -16,8 +16,8 @@ export async function POST(request: Request) {
   if (!guarded.ok) return guarded.response;
 
   try {
-    const { hero, size, mode, difficulty } = guarded.body;
-    return reply(await playClimb(guarded.user.uid, hero, size, mode, difficulty));
+    const { hero, size, mode, difficulty, stake } = guarded.body;
+    return reply(await playClimb(guarded.user.uid, hero, size, mode, difficulty, stake));
   } catch (error) {
     if (error instanceof HttpError) return reply({ error: error.message }, error.status);
     console.error("battle-climb failed", error);
