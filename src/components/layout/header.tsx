@@ -22,7 +22,10 @@ const LINKS = [
   {
     href: "/play",
     label: "Play",
-    match: (path: string) => path.startsWith("/play") || path.startsWith("/matchups"),
+    match: (path: string) =>
+      path.startsWith("/play") ||
+      path.startsWith("/matchups") ||
+      path.startsWith("/leaderboard"),
   },
   {
     href: "/battle",
