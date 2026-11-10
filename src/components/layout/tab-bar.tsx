@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 const TAB = "eyebrow relative grid h-14 place-items-center transition-colors";
 
 function Mark() {
-  return <span className="absolute inset-x-5 top-0 h-0.5 bg-accent" aria-hidden />;
+  return <span className="bg-accent absolute inset-x-5 top-0 h-0.5" aria-hidden />;
 }
 
 export function TabBar() {
@@ -20,8 +20,19 @@ export function TabBar() {
   const user = state.status === "ready" ? state.user : null;
 
   const tabs = [
-    { href: "/", label: "Explore", active: pathname === "/" || pathname.startsWith("/characters") },
-    { href: "/play", label: "Play", active: pathname.startsWith("/play") || pathname.startsWith("/matchups") },
+    {
+      href: "/",
+      label: "Explore",
+      active: pathname === "/" || pathname.startsWith("/characters"),
+    },
+    {
+      href: "/play",
+      label: "Play",
+      active:
+        pathname.startsWith("/play") ||
+        pathname.startsWith("/matchups") ||
+        pathname.startsWith("/leaderboard"),
+    },
     { href: "/battle", label: "Battle", active: pathname.startsWith("/battle") },
   ];
   const meActive = user?.handle ? pathname === `/u/${user.handle}` : false;
@@ -33,7 +44,12 @@ export function TabBar() {
     >
       <div className="acrylic grid grid-cols-4">
         {tabs.map(({ href, label, active }) => (
-          <Link key={href} href={href} aria-current={active ? "page" : undefined} className={cn(TAB, active && "text-foreground")}>
+          <Link
+            key={href}
+            href={href}
+            aria-current={active ? "page" : undefined}
+            className={cn(TAB, active && "text-foreground")}
+          >
             {active ? <Mark /> : null}
             {label}
           </Link>
@@ -42,7 +58,11 @@ export function TabBar() {
         {state.status === "loading" ? (
           <span className={TAB} aria-hidden />
         ) : !user ? (
-          <button type="button" className={TAB} onClick={() => window.dispatchEvent(new Event(OPEN_SIGN_IN))}>
+          <button
+            type="button"
+            className={TAB}
+            onClick={() => window.dispatchEvent(new Event(OPEN_SIGN_IN))}
+          >
             Sign in
           </button>
         ) : user.handle ? (
@@ -54,7 +74,7 @@ export function TabBar() {
           >
             {meActive ? <Mark /> : null}
             {user.avatarUrl ? (
-              <span className="relative block size-8 overflow-hidden border bg-muted">
+              <span className="bg-muted relative block size-8 overflow-hidden border">
                 <NavAvatar user={user} />
               </span>
             ) : (
@@ -62,7 +82,11 @@ export function TabBar() {
             )}
           </Link>
         ) : (
-          <button type="button" className={TAB} onClick={() => window.dispatchEvent(new Event(OPEN_PROFILE_SETUP))}>
+          <button
+            type="button"
+            className={TAB}
+            onClick={() => window.dispatchEvent(new Event(OPEN_PROFILE_SETUP))}
+          >
             Set up
           </button>
         )}

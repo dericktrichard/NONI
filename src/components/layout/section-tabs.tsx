@@ -7,12 +7,13 @@ import { cn } from "@/lib/utils";
 const TABS = [
   { href: "/play", label: "Higher or lower" },
   { href: "/matchups", label: "Matchups" },
+  { href: "/leaderboard", label: "Leaderboard" },
 ];
 
 export function SectionTabs() {
   const pathname = usePathname();
   return (
-    <nav aria-label="Play sections" className="flex border-b">
+    <nav aria-label="Play sections" className="flex overflow-x-auto border-b">
       {TABS.map(({ href, label }) => {
         const active = pathname.startsWith(href);
         return (
@@ -21,7 +22,7 @@ export function SectionTabs() {
             href={href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex h-11 items-center border-b-2 border-transparent px-4 text-sm font-medium transition-colors hover:bg-muted sm:px-5",
+              "hover:bg-muted flex h-11 shrink-0 items-center border-b-2 border-transparent px-3 text-sm font-medium whitespace-nowrap transition-colors sm:px-5",
               active && "border-b-accent",
             )}
           >

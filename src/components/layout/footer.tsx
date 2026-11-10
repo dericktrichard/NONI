@@ -8,11 +8,13 @@ export function Footer() {
         <div className="max-w-sm">
           <div className="flex items-center gap-2">
             <LogoMark className="size-6" />
-            <span className="font-display text-lg font-semibold tracking-tight">NONI</span>
+            <span className="font-display text-lg font-semibold tracking-tight">
+              NONI
+            </span>
           </div>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Fictional powerscaling backed by cited evidence. Rankings come from verified feats and fixed rules, not
-            opinion.
+          <p className="text-muted-foreground mt-3 text-sm">
+            Fictional powerscaling backed by cited evidence. Rankings come from verified
+            feats and fixed rules, not opinion.
           </p>
         </div>
 

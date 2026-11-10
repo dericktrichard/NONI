@@ -40,7 +40,7 @@ function SearchPanel({ onDone }: { onDone: () => void }) {
   return (
     <div>
       <div className="flex items-center gap-3 border-b px-4">
-        <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+        <Search className="text-muted-foreground size-4 shrink-0" aria-hidden />
         <input
           autoFocus
           value={text}
@@ -52,9 +52,13 @@ function SearchPanel({ onDone }: { onDone: () => void }) {
           autoComplete="off"
           spellCheck={false}
           enterKeyHint="search"
-          className="h-14 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
+          className="placeholder:text-muted-foreground h-14 min-w-0 flex-1 bg-transparent text-base outline-none"
         />
-        <button type="button" onClick={onDone} className="eyebrow border px-2 py-1 hover:bg-muted">
+        <button
+          type="button"
+          onClick={onDone}
+          className="eyebrow hover:bg-muted border px-2 py-1"
+        >
           Esc
         </button>
       </div>
@@ -62,7 +66,7 @@ function SearchPanel({ onDone }: { onDone: () => void }) {
       <p className="eyebrow border-b px-4 py-2">{results ? "Results" : "Top ranked"}</p>
 
       {results && results.length === 0 ? (
-        <p className="p-4 text-sm text-muted-foreground">
+        <p className="text-muted-foreground p-4 text-sm">
           {failed ? "Search is unavailable right now." : "No character matches that."}
         </p>
       ) : (
@@ -73,11 +77,21 @@ function SearchPanel({ onDone }: { onDone: () => void }) {
                 href={`/characters/${c.id}`}
                 onClick={onDone}
                 onMouseEnter={() => setActive(index)}
-                className={cn("flex items-center gap-3 p-3", index === active && "bg-muted")}
+                className={cn(
+                  "flex items-center gap-3 p-3",
+                  index === active && "bg-muted",
+                )}
               >
-                <Portrait name={c.name} src={c.imageUrl} sizes="40px" className="aspect-2/3 w-9 shrink-0" />
+                <Portrait
+                  name={c.name}
+                  src={c.imageUrl}
+                  sizes="40px"
+                  className="aspect-2/3 w-9 shrink-0"
+                />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-display text-base font-semibold">{c.name}</span>
+                  <span className="font-display block truncate text-base font-semibold">
+                    {c.name}
+                  </span>
                   <span className="eyebrow block truncate">{c.verse}</span>
                 </span>
                 <TierBadge tier={c.tier} />
@@ -88,7 +102,9 @@ function SearchPanel({ onDone }: { onDone: () => void }) {
       )}
 
       {!results && text.trim().length > 0 ? (
-        <p className="border-t p-3 text-xs text-muted-foreground">Type at least 2 letters to search.</p>
+        <p className="text-muted-foreground border-t p-3 text-xs">
+          Type at least 2 letters to search.
+        </p>
       ) : null}
     </div>
   );
@@ -115,7 +131,9 @@ export function GlobalSearch() {
           target.tagName === "TEXTAREA" ||
           target.tagName === "SELECT" ||
           target.isContentEditable);
-      const shortcut = (event.key === "/" && !typing) || ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k");
+      const shortcut =
+        (event.key === "/" && !typing) ||
+        ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k");
       if (shortcut) {
         event.preventDefault();
         setOpen(true);
@@ -135,7 +153,7 @@ export function GlobalSearch() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Search characters"
-        className="hidden h-10 items-center gap-3 border px-3 text-sm text-muted-foreground transition-colors hover:border-foreground hover:text-foreground sm:flex"
+        className="text-muted-foreground hover:border-foreground hover:text-foreground hidden h-10 items-center gap-3 border px-3 text-sm transition-colors sm:flex"
       >
         <Search className="size-4" aria-hidden />
         <span>Search</span>
@@ -146,7 +164,7 @@ export function GlobalSearch() {
         ref={ref}
         onClose={() => setOpen(false)}
         aria-label="Search characters"
-        className="mx-auto mt-[12svh] mb-auto w-[calc(100%-2rem)] max-w-xl border bg-background p-0 text-foreground backdrop:bg-black/60 backdrop:backdrop-blur-sm"
+        className="bg-background text-foreground mx-auto mt-[12svh] mb-auto w-[calc(100%-2rem)] max-w-xl border p-0 backdrop:bg-black/60 backdrop:backdrop-blur-sm"
       >
         {open ? <SearchPanel onDone={() => ref.current?.close()} /> : null}
       </dialog>
