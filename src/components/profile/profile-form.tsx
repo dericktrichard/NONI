@@ -5,7 +5,12 @@ import { useState } from "react";
 import { controlClass } from "@/components/ui/fields";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import type { OwnProfile } from "@/lib/data/profile";
-import { HANDLE_MAX, HANDLE_MESSAGES, checkHandle, normalizeHandle } from "@/lib/profile/handle";
+import {
+  HANDLE_MAX,
+  HANDLE_MESSAGES,
+  checkHandle,
+  normalizeHandle,
+} from "@/lib/profile/handle";
 
 interface ProfileFormProps {
   initial: OwnProfile;
@@ -22,7 +27,8 @@ export function ProfileForm({ initial, verified, onSaved }: ProfileFormProps) {
 
   const normalized = normalizeHandle(handle);
   const issue = normalized === "" ? null : checkHandle(normalized);
-  const locked = initial.handle !== null && initial.cooldownDays > 0 && normalized !== initial.handle;
+  const locked =
+    initial.handle !== null && initial.cooldownDays > 0 && normalized !== initial.handle;
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -43,7 +49,10 @@ export function ProfileForm({ initial, verified, onSaved }: ProfileFormProps) {
         setError("Sign in to save your profile.");
         return;
       }
-      const data = (await response.json().catch(() => null)) as { handle?: string; error?: string } | null;
+      const data = (await response.json().catch(() => null)) as {
+        handle?: string;
+        error?: string;
+      } | null;
       if (response.ok && data?.handle) {
         onSaved?.();
         router.replace(`/u/${data.handle}`);
@@ -61,7 +70,7 @@ export function ProfileForm({ initial, verified, onSaved }: ProfileFormProps) {
   return (
     <form onSubmit={submit} className="space-y-6">
       {!verified ? (
-        <p className="border-l-2 border-foreground bg-muted p-3 text-sm">
+        <p className="border-foreground bg-muted border-l-2 p-3 text-sm">
           Verify your email and sign in again before saving your profile.
         </p>
       ) : null}
@@ -69,7 +78,9 @@ export function ProfileForm({ initial, verified, onSaved }: ProfileFormProps) {
       <label className="block text-sm">
         <span className="eyebrow mb-1 block">Handle</span>
         <div className="flex items-stretch">
-          <span className="grid w-11 place-items-center border border-r-0 bg-muted text-muted-foreground">@</span>
+          <span className="bg-muted text-muted-foreground grid w-11 place-items-center border border-r-0">
+            @
+          </span>
           <input
             value={handle}
             onChange={(event) => setHandle(event.target.value)}
@@ -80,10 +91,15 @@ export function ProfileForm({ initial, verified, onSaved }: ProfileFormProps) {
             className={controlClass}
           />
         </div>
-        {issue ? <span className="mt-1 block text-muted-foreground">{HANDLE_MESSAGES[issue]}</span> : null}
+        {issue ? (
+          <span className="text-muted-foreground mt-1 block">
+            {HANDLE_MESSAGES[issue]}
+          </span>
+        ) : null}
         {locked ? (
-          <span className="mt-1 block text-muted-foreground">
-            You can change your handle again in {initial.cooldownDays} {initial.cooldownDays === 1 ? "day" : "days"}.
+          <span className="text-muted-foreground mt-1 block">
+            You can change your handle again in {initial.cooldownDays}{" "}
+            {initial.cooldownDays === 1 ? "day" : "days"}.
           </span>
         ) : null}
       </label>
@@ -109,7 +125,11 @@ export function ProfileForm({ initial, verified, onSaved }: ProfileFormProps) {
       ) : null}
 
       <div className="border-t pt-5">
-        <button type="submit" className="btn btn-solid" disabled={busy || issue !== null || normalized === "" || locked}>
+        <button
+          type="submit"
+          className="btn btn-solid"
+          disabled={busy || issue !== null || normalized === "" || locked}
+        >
           Save profile
         </button>
       </div>
