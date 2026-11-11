@@ -285,3 +285,15 @@
   .anim-sweep { animation: noni-sweep 1.1s ease-in-out infinite; }
   .anim-pulse { animation: noni-pulse 1.2s ease-in-out infinite; }
 }
+
+@media (max-width: 639px), (pointer: coarse) {
+  * { scrollbar-width: none; }
+  *::-webkit-scrollbar { display: none; }
+}
+
+html { -webkit-tap-highlight-color: transparent; overscroll-behavior-x: none; }
+button, a, summary, [role="button"] { touch-action: manipulation; }
+
+@media (pointer: coarse) {
+  button, .btn { -webkit-user-select: none; user-select: none; }
+}
