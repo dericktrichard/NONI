@@ -58,8 +58,11 @@ export function ProfileBanner({ look, className }: { look: Look; className?: str
           src={look.bannerUrl}
           alt=""
           fill
-          sizes="(min-width: 768px) 768px, 100vw"
-          className="object-cover object-[50%_15%]"
+          sizes="100vw"
+          className={cn(
+            "object-cover",
+            look.bannerId ? "object-[50%_15%]" : "object-center",
+          )}
         />
       ) : null}
     </BannerSurface>

@@ -8,6 +8,8 @@ export const lookSchema = z
     avatarId: z.string().regex(CHARACTER_ID_RE).nullable(),
     bannerTheme: z.enum(BANNER_THEMES),
     bannerId: z.string().regex(CHARACTER_ID_RE).nullable(),
+    avatarUpload: z.boolean().default(false),
+    bannerUpload: z.boolean().default(false),
   })
   .strict();
 
