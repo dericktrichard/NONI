@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AuthDialog } from "@/components/auth/auth-dialog";
-import { ProfileForm } from "@/components/profile/profile-form";
-import { Modal } from "@/components/ui/modal";
+import { Onboarding } from "@/components/auth/onboarding";
+import { markWelcomed, useWelcomed } from "@/hooks/use-welcomed";
 import { useSession } from "@/hooks/use-session";
 import { signOutEverywhere } from "@/lib/auth/client";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
@@ -15,6 +15,7 @@ export function AuthHost() {
   const router = useRouter();
   const [signInOpen, setSignInOpen] = useState(false);
   const [setupOpen, setSetupOpen] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     const openSignIn = () => setSignInOpen(true);
@@ -28,6 +29,14 @@ export function AuthHost() {
   }, []);
 
   const user = state.status === "ready" ? state.user : null;
+  const welcomed = useWelcomed(user?.uid ?? null);
+  const pending = user !== null && (!user.handle || !welcomed);
+
+  function closeSetup() {
+    setSetupOpen(false);
+    setDismissed(true);
+    if (user?.handle) markWelcomed(user.uid);
+  }
 
   async function leave() {
     try {
@@ -52,26 +61,13 @@ export function AuthHost() {
         }}
       />
 
-      <Modal open={setupOpen && user !== null} onClose={() => setSetupOpen(false)} eyebrow="Welcome" title="Choose your handle">
-        {user ? (
-          <>
-            <p className="mb-5 text-sm text-muted-foreground">
-              This is your public name on NONI. Your profile page and lists live at it.
-            </p>
-            <ProfileForm
-              initial={{ handle: null, bio: "", cooldownDays: 0 }}
-              verified={user.verified}
-              onSaved={() => {
-                setSetupOpen(false);
-                void refresh();
-              }}
-            />
-            <button type="button" className="btn btn-quiet btn-sm mt-4" onClick={() => void leave()}>
-              Sign out
-            </button>
-          </>
-        ) : null}
-      </Modal>
+      <Onboarding
+        open={setupOpen || (pending && !dismissed)}
+        user={user}
+        onClose={closeSetup}
+        onSignOut={() => void leave()}
+        refresh={refresh}
+      />
     </>
   );
 }

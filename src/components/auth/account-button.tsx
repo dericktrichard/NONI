@@ -15,7 +15,11 @@ export function AccountButton() {
 
   if (!user) {
     return (
-      <button type="button" className="btn btn-line btn-sm" onClick={() => window.dispatchEvent(new Event(OPEN_SIGN_IN))}>
+      <button
+        type="button"
+        className="btn btn-line btn-sm"
+        onClick={() => window.dispatchEvent(new Event(OPEN_SIGN_IN))}
+      >
         Sign in
       </button>
     );
@@ -34,7 +38,7 @@ export function AccountButton() {
           href={`/u/${user.handle}`}
           aria-label="Your profile"
           title={`@${user.handle}`}
-          className="relative block size-10 overflow-hidden border bg-muted transition-colors hover:border-foreground"
+          className="bg-muted hover:border-foreground relative block size-10 overflow-hidden border transition-colors"
         >
           <NavAvatar user={user} />
         </Link>
