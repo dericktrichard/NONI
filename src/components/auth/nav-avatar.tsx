@@ -22,7 +22,10 @@ export function NavAvatar({ user, className }: Props) {
   return (
     <span
       aria-hidden
-      className={cn("grid size-full place-items-center font-display text-base font-semibold uppercase", className)}
+      className={cn(
+        "font-display grid size-full place-items-center text-base font-semibold uppercase",
+        className,
+      )}
     >
       {(user.handle ?? "?").slice(0, 1)}
     </span>

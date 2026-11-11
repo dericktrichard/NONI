@@ -89,7 +89,10 @@ export function AuthDialog({ open, onClose, onSignedIn }: AuthDialogProps) {
     setBusy(true);
     try {
       await requestPasswordReset(parsed.data);
-      setMessage({ kind: "info", text: "If that account exists, a reset link is on its way." });
+      setMessage({
+        kind: "info",
+        text: "If that account exists, a reset link is on its way.",
+      });
     } catch (error) {
       setMessage({ kind: "error", text: describeAuthError(error) });
     } finally {
@@ -109,7 +112,7 @@ export function AuthDialog({ open, onClose, onSignedIn }: AuthDialogProps) {
       ref={ref}
       onClose={handleClose}
       aria-labelledby="auth-title"
-      className="m-auto w-[calc(100%-2rem)] max-w-sm border bg-background p-0 text-foreground backdrop:bg-black/60 backdrop:backdrop-blur-sm"
+      className="bg-background text-foreground m-auto w-[calc(100%-2rem)] max-w-sm border p-0 backdrop:bg-black/60 backdrop:backdrop-blur-sm"
     >
       <div className="flex items-center justify-between border-b pl-5">
         <p className="eyebrow">Account</p>
@@ -117,14 +120,18 @@ export function AuthDialog({ open, onClose, onSignedIn }: AuthDialogProps) {
           type="button"
           onClick={() => ref.current?.close()}
           aria-label="Close"
-          className="grid size-11 place-items-center hover:bg-muted"
+          className="hover:bg-muted grid size-11 place-items-center"
         >
           <X className="size-5" />
         </button>
       </div>
 
       <div className="p-5">
-        <div className="grid grid-cols-2 border" role="group" aria-label="Choose an option">
+        <div
+          className="grid grid-cols-2 border"
+          role="group"
+          aria-label="Choose an option"
+        >
           {(
             [
               ["signin", "Sign in"],
@@ -146,23 +153,31 @@ export function AuthDialog({ open, onClose, onSignedIn }: AuthDialogProps) {
           ))}
         </div>
 
-        <h2 id="auth-title" className="mt-6 font-display text-2xl font-semibold tracking-tight">
+        <h2
+          id="auth-title"
+          className="font-display mt-6 text-2xl font-semibold tracking-tight"
+        >
           {signup ? "Join NONI" : "Welcome back"}
         </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-1 text-sm">
           {signup
             ? "Verified accounts can submit feats, vote and make lists."
             : "Sign in to submit feats, vote and make lists."}
         </p>
 
-        <button type="button" className="btn btn-line mt-5 w-full" disabled={busy} onClick={() => void run(signInWithGoogle)}>
+        <button
+          type="button"
+          className="btn btn-line mt-5 w-full"
+          disabled={busy}
+          onClick={() => void run(signInWithGoogle)}
+        >
           Continue with Google
         </button>
 
-        <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-widest text-foreground/60">
-          <span className="h-px flex-1 bg-foreground/20" />
+        <div className="text-foreground/60 my-5 flex items-center gap-3 text-xs tracking-widest uppercase">
+          <span className="bg-foreground/20 h-px flex-1" />
           or
-          <span className="h-px flex-1 bg-foreground/20" />
+          <span className="bg-foreground/20 h-px flex-1" />
         </div>
 
         <form onSubmit={submit} className="space-y-4">
@@ -189,11 +204,22 @@ export function AuthDialog({ open, onClose, onSignedIn }: AuthDialogProps) {
               required
               className={controlClass}
             />
-            {signup ? <span className="mt-1 block text-xs text-muted-foreground">At least 10 characters.</span> : null}
+            {signup ? (
+              <span className="text-muted-foreground mt-1 block text-xs">
+                At least 10 characters.
+              </span>
+            ) : null}
           </label>
 
           {message ? (
-            <p role="alert" className={message.kind === "error" ? "text-sm font-medium" : "text-sm text-muted-foreground"}>
+            <p
+              role="alert"
+              className={
+                message.kind === "error"
+                  ? "text-sm font-medium"
+                  : "text-muted-foreground text-sm"
+              }
+            >
               {message.text}
             </p>
           ) : null}
