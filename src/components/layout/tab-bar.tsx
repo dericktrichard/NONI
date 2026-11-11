@@ -21,19 +21,12 @@ export function TabBar() {
 
   const tabs = [
     {
-      href: "/",
-      label: "Explore",
-      active: pathname === "/" || pathname.startsWith("/characters"),
-    },
-    {
       href: "/play",
       label: "Play",
-      active:
-        pathname.startsWith("/play") ||
-        pathname.startsWith("/matchups") ||
-        pathname.startsWith("/leaderboard"),
+      active: pathname.startsWith("/play") || pathname.startsWith("/matchups"),
     },
     { href: "/battle", label: "Battle", active: pathname.startsWith("/battle") },
+    { href: "/leaderboard", label: "Board", active: pathname.startsWith("/leaderboard") },
   ];
   const meActive = user?.handle ? pathname === `/u/${user.handle}` : false;
 

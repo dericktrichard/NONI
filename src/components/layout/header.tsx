@@ -15,22 +15,19 @@ import { cn } from "@/lib/utils";
 
 const LINKS = [
   {
-    href: "/",
-    label: "Explore",
-    match: (path: string) => path === "/" || path.startsWith("/characters"),
-  },
-  {
     href: "/play",
     label: "Play",
-    match: (path: string) =>
-      path.startsWith("/play") ||
-      path.startsWith("/matchups") ||
-      path.startsWith("/leaderboard"),
+    match: (path: string) => path.startsWith("/play") || path.startsWith("/matchups"),
   },
   {
     href: "/battle",
     label: "Battle",
     match: (path: string) => path.startsWith("/battle"),
+  },
+  {
+    href: "/leaderboard",
+    label: "Leaderboard",
+    match: (path: string) => path.startsWith("/leaderboard"),
   },
 ];
 
