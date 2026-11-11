@@ -5,32 +5,53 @@ import { useState } from "react";
 import { CharacterFinder } from "@/components/characters/character-finder";
 import { BannerSurface, ProfileAvatar, ProfileBanner } from "@/components/profile/banner";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
-import { BANNER_THEMES, THEME_LABELS, type BannerTheme, type Look } from "@/lib/profile/look";
+import {
+  BANNER_THEMES,
+  THEME_LABELS,
+  type BannerTheme,
+  type Look,
+} from "@/lib/profile/look";
 import { cn } from "@/lib/utils";
 import type { CharacterSummary } from "@/types/character";
 
 interface LookFormProps {
   initial: Look;
   handle: string;
+  section: "avatar" | "banner";
   onSaved?: () => void;
 }
 
-type Tab = "avatar" | "banner";
-
-export function LookForm({ initial, handle, onSaved }: LookFormProps) {
+export function LookForm({ initial, handle, section, onSaved }: LookFormProps) {
   const router = useRouter();
   const [look, setLook] = useState<Look>(initial);
-  const [tab, setTab] = useState<Tab>("avatar");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const pickAvatar = (c: CharacterSummary) =>
-    setLook((current) => ({ ...current, avatarId: c.id, avatarName: c.name, avatarUrl: c.imageUrl }));
-  const clearAvatar = () => setLook((current) => ({ ...current, avatarId: null, avatarName: null, avatarUrl: null }));
-  const pickArt = (c: CharacterSummary) => setLook((current) => ({ ...current, bannerId: c.id, bannerUrl: c.imageUrl }));
-  const clearArt = () => setLook((current) => ({ ...current, bannerId: null, bannerUrl: null }));
+    setLook((current) => ({
+      ...current,
+      avatarId: c.id,
+      avatarName: c.name,
+      avatarUrl: c.imageUrl,
+    }));
+  const clearAvatar = () =>
+    setLook((current) => ({
+      ...current,
+      avatarId: null,
+      avatarName: null,
+      avatarUrl: null,
+    }));
+  const pickArt = (c: CharacterSummary) =>
+    setLook((current) => ({ ...current, bannerId: c.id, bannerUrl: c.imageUrl }));
+  const clearArt = () =>
+    setLook((current) => ({ ...current, bannerId: null, bannerUrl: null }));
   const pickTheme = (theme: BannerTheme) =>
-    setLook((current) => ({ ...current, bannerTheme: theme, bannerId: null, bannerUrl: null }));
+    setLook((current) => ({
+      ...current,
+      bannerTheme: theme,
+      bannerId: null,
+      bannerUrl: null,
+    }));
 
   async function save() {
     setBusy(true);
@@ -39,7 +60,11 @@ export function LookForm({ initial, handle, onSaved }: LookFormProps) {
       const response = await fetch("/api/profile/look", {
         method: "PUT",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ avatarId: look.avatarId, bannerTheme: look.bannerTheme, bannerId: look.bannerId }),
+        body: JSON.stringify({
+          avatarId: look.avatarId,
+          bannerTheme: look.bannerTheme,
+          bannerId: look.bannerId,
+        }),
       });
       if (response.status === 401) {
         window.dispatchEvent(new Event(OPEN_SIGN_IN));
@@ -64,29 +89,21 @@ export function LookForm({ initial, handle, onSaved }: LookFormProps) {
     <div className="space-y-6">
       <div>
         <ProfileBanner look={look} className="h-24 sm:h-32" />
-        <ProfileAvatar look={look} handle={handle} className="-mt-8 ml-4 size-16 sm:-mt-10 sm:size-20" />
+        <ProfileAvatar
+          look={look}
+          handle={handle}
+          className="-mt-8 ml-4 size-16 sm:-mt-10 sm:size-20"
+        />
       </div>
 
-      <div role="group" aria-label="What to change" className="flex border-b">
-        {(["avatar", "banner"] as const).map((key) => (
-          <button
-            key={key}
-            type="button"
-            aria-pressed={tab === key}
-            onClick={() => setTab(key)}
-            className={cn(
-              "h-10 border-b-2 border-transparent px-4 text-sm font-medium capitalize transition-colors hover:bg-muted",
-              tab === key && "border-b-accent",
-            )}
-          >
-            {key}
-          </button>
-        ))}
-      </div>
-
-      {tab === "avatar" ? (
+      {section === "avatar" ? (
         <div className="space-y-4">
-          <CharacterFinder key="avatar" label="Pick a character portrait" needArt onPick={pickAvatar} />
+          <CharacterFinder
+            key="avatar"
+            label="Pick a character portrait"
+            needArt
+            onPick={pickAvatar}
+          />
           {look.avatarId ? (
             <button type="button" className="btn btn-quiet btn-sm" onClick={clearAvatar}>
               Remove avatar
@@ -120,7 +137,12 @@ export function LookForm({ initial, handle, onSaved }: LookFormProps) {
             </ul>
           </div>
 
-          <CharacterFinder key="banner" label="Or use a character's art" needArt onPick={pickArt} />
+          <CharacterFinder
+            key="banner"
+            label="Or use a character's art"
+            needArt
+            onPick={pickArt}
+          />
           {look.bannerId ? (
             <button type="button" className="btn btn-quiet btn-sm" onClick={clearArt}>
               Remove art
@@ -136,8 +158,13 @@ export function LookForm({ initial, handle, onSaved }: LookFormProps) {
       ) : null}
 
       <div className="border-t pt-5">
-        <button type="button" className="btn btn-solid" disabled={busy} onClick={() => void save()}>
-          Save appearance
+        <button
+          type="button"
+          className="btn btn-solid"
+          disabled={busy}
+          onClick={() => void save()}
+        >
+          Save {section}
         </button>
       </div>
     </div>

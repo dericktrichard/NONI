@@ -12,14 +12,16 @@ const THEME_STYLES: Record<BannerTheme, CSSProperties> = {
     backgroundSize: "28px 28px",
   },
   stripes: {
-    backgroundImage: "repeating-linear-gradient(135deg, currentColor 0 1px, transparent 1px 14px)",
+    backgroundImage:
+      "repeating-linear-gradient(135deg, currentColor 0 1px, transparent 1px 14px)",
   },
   dots: {
     backgroundImage: "radial-gradient(currentColor 1.5px, transparent 2px)",
     backgroundSize: "16px 16px",
   },
   bars: {
-    backgroundImage: "repeating-linear-gradient(90deg, currentColor 0 6px, transparent 6px 12px)",
+    backgroundImage:
+      "repeating-linear-gradient(90deg, currentColor 0 6px, transparent 6px 12px)",
   },
   ink: {},
 };
@@ -64,15 +66,28 @@ export function ProfileBanner({ look, className }: { look: Look; className?: str
   );
 }
 
-export function ProfileAvatar({ look, handle, className }: { look: Look; handle: string; className?: string }) {
+export function ProfileAvatar({
+  look,
+  handle,
+  className,
+}: {
+  look: Look;
+  handle: string;
+  className?: string;
+}) {
   return (
-    <div className={cn("relative shrink-0 border bg-background p-1", className)}>
+    <div className={cn("bg-background relative shrink-0 border p-1", className)}>
       {look.avatarUrl ? (
-        <Portrait name={look.avatarName ?? handle} src={look.avatarUrl} sizes="112px" className="size-full" />
+        <Portrait
+          name={look.avatarName ?? handle}
+          src={look.avatarUrl}
+          sizes="112px"
+          className="size-full"
+        />
       ) : (
         <span
           aria-hidden
-          className="grid size-full place-items-center bg-muted font-display text-3xl font-semibold uppercase"
+          className="bg-muted font-display grid size-full place-items-center text-3xl font-semibold uppercase"
         >
           {handle.slice(0, 1)}
         </span>

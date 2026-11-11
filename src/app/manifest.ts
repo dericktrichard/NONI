@@ -19,8 +19,20 @@ export default function manifest(): MetadataRoute.Manifest {
       { src: "/icons/512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
     screenshots: [
-      { src: "/screenshots/wide.png", sizes: "1280x720", type: "image/png", form_factor: "wide", label: "How NONI ranks characters" },
-      { src: "/screenshots/narrow.png", sizes: "720x1280", type: "image/png", form_factor: "narrow", label: "How NONI ranks characters" },
+      {
+        src: "/screenshots/wide.png",
+        sizes: "1280x720",
+        type: "image/png",
+        form_factor: "wide",
+        label: "How NONI ranks characters",
+      },
+      {
+        src: "/screenshots/narrow.png",
+        sizes: "720x1280",
+        type: "image/png",
+        form_factor: "narrow",
+        label: "How NONI ranks characters",
+      },
     ],
     shortcuts: [
       { name: "Battle", url: "/battle", icons: icon96 },
