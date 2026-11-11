@@ -11,8 +11,10 @@ function Cell({ label, place, unit }: { label: string; place: Place; unit: strin
   return (
     <div className="bg-background p-3">
       <dt className="eyebrow">{label}</dt>
-      <dd className="tabular mt-1 font-display text-xl font-semibold">{place.rank === null ? "--" : `#${place.rank}`}</dd>
-      <p className="tabular text-xs text-muted-foreground">
+      <dd className="tabular font-display mt-1 text-xl font-semibold">
+        {place.rank === null ? "--" : `#${place.rank}`}
+      </dd>
+      <p className="tabular text-muted-foreground text-xs">
         {place.value.toLocaleString("en-US")} {unit}
       </p>
     </div>
@@ -46,7 +48,11 @@ export function MyStanding() {
     return (
       <div className={`${shell} flex flex-wrap items-center justify-between gap-3`}>
         <p className="text-sm">Sign in to get on the boards and earn fan badges.</p>
-        <button type="button" className="btn btn-solid btn-sm" onClick={() => window.dispatchEvent(new Event(OPEN_SIGN_IN))}>
+        <button
+          type="button"
+          className="btn btn-solid btn-sm"
+          onClick={() => window.dispatchEvent(new Event(OPEN_SIGN_IN))}
+        >
           Sign in
         </button>
       </div>
@@ -57,7 +63,11 @@ export function MyStanding() {
     return (
       <div className={`${shell} flex flex-wrap items-center justify-between gap-3`}>
         <p className="text-sm">Choose a handle to appear on the boards.</p>
-        <button type="button" className="btn btn-solid btn-sm" onClick={() => window.dispatchEvent(new Event(OPEN_PROFILE_SETUP))}>
+        <button
+          type="button"
+          className="btn btn-solid btn-sm"
+          onClick={() => window.dispatchEvent(new Event(OPEN_PROFILE_SETUP))}
+        >
           Set up profile
         </button>
       </div>
@@ -69,13 +79,15 @@ export function MyStanding() {
   return (
     <div className={shell}>
       {data.boards ? (
-        <dl className="mb-4 grid grid-cols-3 gap-px border bg-border">
+        <dl className="bg-border mb-4 grid grid-cols-3 gap-px border">
           <Cell label="Glaze" place={data.glaze} unit="Glaze" />
           <Cell label="This week" place={data.week} unit="net" />
           <Cell label="Titles" place={data.champions} unit="won" />
         </dl>
       ) : (
-        <p className="mb-4 text-sm">Turn this on to join the boards. Your rank appears here once you do.</p>
+        <p className="mb-4 text-sm">
+          Turn this on to join the boards. Your rank appears here once you do.
+        </p>
       )}
       <StandingToggle initial={data.boards} onChange={() => setVersion((v) => v + 1)} />
     </div>

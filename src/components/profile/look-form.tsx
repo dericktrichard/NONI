@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CharacterFinder } from "@/components/characters/character-finder";
 import { BannerSurface, ProfileAvatar, ProfileBanner } from "@/components/profile/banner";
+import { ImageUpload } from "@/components/profile/image-upload";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import {
   BANNER_THEMES,
@@ -34,6 +35,13 @@ export function LookForm({ initial, handle, section, onSaved }: LookFormProps) {
       avatarName: c.name,
       avatarUrl: c.imageUrl,
     }));
+  const uploadAvatar = (url: string) =>
+    setLook((current) => ({
+      ...current,
+      avatarId: null,
+      avatarName: null,
+      avatarUrl: url,
+    }));
   const clearAvatar = () =>
     setLook((current) => ({
       ...current,
@@ -43,6 +51,8 @@ export function LookForm({ initial, handle, section, onSaved }: LookFormProps) {
     }));
   const pickArt = (c: CharacterSummary) =>
     setLook((current) => ({ ...current, bannerId: c.id, bannerUrl: c.imageUrl }));
+  const uploadBanner = (url: string) =>
+    setLook((current) => ({ ...current, bannerId: null, bannerUrl: url }));
   const clearArt = () =>
     setLook((current) => ({ ...current, bannerId: null, bannerUrl: null }));
   const pickTheme = (theme: BannerTheme) =>
@@ -64,6 +74,8 @@ export function LookForm({ initial, handle, section, onSaved }: LookFormProps) {
           avatarId: look.avatarId,
           bannerTheme: look.bannerTheme,
           bannerId: look.bannerId,
+          avatarUpload: look.avatarId === null && look.avatarUrl !== null,
+          bannerUpload: look.bannerId === null && look.bannerUrl !== null,
         }),
       });
       if (response.status === 401) {
@@ -97,14 +109,18 @@ export function LookForm({ initial, handle, section, onSaved }: LookFormProps) {
       </div>
 
       {section === "avatar" ? (
-        <div className="space-y-4">
+        <div className="space-y-5">
+          <div className="border p-3">
+            <p className="eyebrow mb-2">Your own picture</p>
+            <ImageUpload kind="avatar" onUploaded={uploadAvatar} />
+          </div>
           <CharacterFinder
             key="avatar"
-            label="Pick a character portrait"
+            label="Or pick a character portrait"
             needArt
             onPick={pickAvatar}
           />
-          {look.avatarId ? (
+          {look.avatarUrl ? (
             <button type="button" className="btn btn-quiet btn-sm" onClick={clearAvatar}>
               Remove avatar
             </button>
@@ -112,8 +128,13 @@ export function LookForm({ initial, handle, section, onSaved }: LookFormProps) {
         </div>
       ) : (
         <div className="space-y-6">
+          <div className="border p-3">
+            <p className="eyebrow mb-2">Your own banner</p>
+            <ImageUpload kind="banner" onUploaded={uploadBanner} />
+          </div>
+
           <div>
-            <p className="eyebrow mb-2">Pattern</p>
+            <p className="eyebrow mb-2">Or a pattern</p>
             <ul className="grid grid-cols-3 gap-2 sm:grid-cols-6">
               {BANNER_THEMES.map((theme) => {
                 const active = look.bannerUrl === null && look.bannerTheme === theme;
@@ -143,9 +164,9 @@ export function LookForm({ initial, handle, section, onSaved }: LookFormProps) {
             needArt
             onPick={pickArt}
           />
-          {look.bannerId ? (
+          {look.bannerUrl ? (
             <button type="button" className="btn btn-quiet btn-sm" onClick={clearArt}>
-              Remove art
+              Remove banner image
             </button>
           ) : null}
         </div>
