@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { Explore } from "@/components/characters/explore";
+import { GuestStrip } from "@/components/home/guest-strip";
 import { HomeHero } from "@/components/home/home-hero";
 import { RailSection } from "@/components/home/rail";
 import { RailCard, RailMore } from "@/components/home/rail-card";
@@ -35,16 +36,27 @@ export default async function Home() {
     next: items.length > PAGE.default || pool.next !== null ? PAGE.default : null,
   };
 
-  const heroNode = <HomeHero hero={hero} top={items[0] ?? null} pair={pair} stats={stats} />;
+  const heroNode = (
+    <HomeHero hero={hero} top={items[0] ?? null} pair={pair} stats={stats} />
+  );
 
   const overviewNode = (
     <>
+      <GuestStrip />
       {rails.map((rail) => (
-        <RailSection key={rail.id} eyebrow={rail.eyebrow} title={rail.title} href={rail.href}>
+        <RailSection
+          key={rail.id}
+          eyebrow={rail.eyebrow}
+          title={rail.title}
+          href={rail.href}
+        >
           {rail.items.map(({ c, position }) => (
             <RailCard key={c.id} c={c} position={position} />
           ))}
-          <RailMore href={rail.href} label={rail.id === "top" ? "Full ranking" : `All ${rail.title}`} />
+          <RailMore
+            href={rail.href}
+            label={rail.id === "top" ? "Full ranking" : `All ${rail.title}`}
+          />
         </RailSection>
       ))}
     </>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LogoMark } from "@/components/layout/logo-mark";
+import { InstallButton, PwaRegister } from "@/components/pwa/pwa";
 
 const GROUPS = [
   {
@@ -31,6 +32,7 @@ const GROUPS = [
 export function Footer() {
   return (
     <footer className="mt-16 border-t">
+      <PwaRegister />
       <div className="mx-auto max-w-6xl px-4 pt-10 pb-24 sm:pb-10">
         <div className="bg-border grid grid-cols-1 gap-px border sm:grid-cols-3 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
           <div className="bg-background p-5 sm:col-span-3 lg:col-span-1">
@@ -62,14 +64,17 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="text-muted-foreground mt-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 text-xs">
+        <div className="text-muted-foreground mt-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-xs">
           <p>
             An independent fan project. Not affiliated with any creator or rights holder.
           </p>
-          <p className="eyebrow flex items-center gap-2">
-            <span className="bg-accent size-1.5" aria-hidden />
-            Beta
-          </p>
+          <div className="flex items-center gap-4">
+            <InstallButton />
+            <p className="eyebrow flex items-center gap-2">
+              <span className="bg-accent size-1.5" aria-hidden />
+              Beta
+            </p>
+          </div>
         </div>
       </div>
     </footer>
