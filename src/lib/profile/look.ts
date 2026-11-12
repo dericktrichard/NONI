@@ -23,7 +23,8 @@ export interface Look {
 
 const isTheme = (value: unknown): value is BannerTheme =>
   typeof value === "string" && (BANNER_THEMES as readonly string[]).includes(value);
-const text = (value: unknown): string | null => (typeof value === "string" && value.length > 0 ? value : null);
+const text = (value: unknown): string | null =>
+  typeof value === "string" && value.length > 0 ? value : null;
 const image = (value: unknown): string | null =>
   typeof value === "string" && value.startsWith("https://") ? value : null;
 

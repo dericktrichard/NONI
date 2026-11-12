@@ -4,9 +4,14 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { controlClass } from "@/components/ui/fields";
 import type { ReportedList } from "@/lib/data/list-moderation";
-import { LIST_REPORT_LABELS, type ListModAction, type ListReportReason } from "@/lib/lists/moderation";
+import {
+  LIST_REPORT_LABELS,
+  type ListModAction,
+  type ListReportReason,
+} from "@/lib/lists/moderation";
 
-const buttonClass = "min-h-11 border px-4 text-sm hover:bg-foreground/5 disabled:opacity-50";
+const buttonClass =
+  "min-h-11 border px-4 text-sm hover:bg-foreground/5 disabled:opacity-50";
 const LABELS: Record<ListModAction, string> = {
   hide: "Hide list",
   restore: "Restore list",
@@ -19,7 +24,8 @@ export function ListQueueItem({ list }: { list: ReportedList }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const actions: ListModAction[] = list.status === "visible" ? ["hide", "dismiss"] : ["restore"];
+  const actions: ListModAction[] =
+    list.status === "visible" ? ["hide", "dismiss"] : ["restore"];
 
   async function act(action: ListModAction) {
     setBusy(true);
@@ -47,16 +53,18 @@ export function ListQueueItem({ list }: { list: ReportedList }) {
     <article className="space-y-4 border p-4">
       <header>
         <p className="font-medium">{list.title}</p>
-        <p className="text-sm text-muted-foreground">
-          by @{list.ownerHandle || "unknown"} · {list.status === "hidden" ? "hidden" : "visible"} ·{" "}
-          {list.reports.length} {list.reports.length === 1 ? "report" : "reports"}
+        <p className="text-muted-foreground text-sm">
+          by @{list.ownerHandle || "unknown"} ·{" "}
+          {list.status === "hidden" ? "hidden" : "visible"} · {list.reports.length}{" "}
+          {list.reports.length === 1 ? "report" : "reports"}
         </p>
       </header>
 
       <ol className="space-y-2 text-sm">
         {list.items.map((item, index) => (
           <li key={item.characterId}>
-            <span className="tabular text-muted-foreground">{index + 1}.</span> <strong>{item.name}</strong>: {item.reason}
+            <span className="tabular text-muted-foreground">{index + 1}.</span>{" "}
+            <strong>{item.name}</strong>: {item.reason}
           </li>
         ))}
       </ol>
@@ -81,7 +89,13 @@ export function ListQueueItem({ list }: { list: ReportedList }) {
 
       <div className="flex flex-wrap gap-2">
         {actions.map((action) => (
-          <button key={action} type="button" className={buttonClass} onClick={() => act(action)} disabled={busy}>
+          <button
+            key={action}
+            type="button"
+            className={buttonClass}
+            onClick={() => act(action)}
+            disabled={busy}
+          >
             {LABELS[action]}
           </button>
         ))}

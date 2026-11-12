@@ -100,7 +100,11 @@ export function LookForm({ initial, handle, section, onSaved }: LookFormProps) {
   return (
     <div className="space-y-6">
       <div>
-        <ProfileBanner look={look} className="h-24 sm:h-32" />
+        <ProfileBanner
+          look={look}
+          className="h-24 sm:h-32"
+          sizes="(min-width: 640px) 576px, 100vw"
+        />
         <ProfileAvatar
           look={look}
           handle={handle}

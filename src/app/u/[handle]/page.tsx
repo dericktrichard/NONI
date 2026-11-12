@@ -8,6 +8,7 @@ import { ListCard } from "@/components/lists/list-card";
 import { ProfileAvatar, ProfileBanner } from "@/components/profile/banner";
 import { OwnFeats } from "@/components/profile/own-feats";
 import { OwnerTools } from "@/components/profile/owner-tools";
+import { ReportImageButton } from "@/components/profile/report-image-button";
 import { Badges } from "@/components/standing/badges";
 import { GlazePanel } from "@/components/standing/glaze-panel";
 import { getActivityStats, listOwnFeats, uidForHandle } from "@/lib/data/activity";
@@ -67,6 +68,10 @@ export default async function ProfilePage({ params }: Props) {
   const visibleStanding = standing && (isOwner || standing.boards) ? standing : null;
   const badges = uid ? await getBadges(uid, isOwner) : [];
   const onBoards = standing?.boards ?? false;
+  const uploadedAvatar =
+    profile.look.avatarId === null && profile.look.avatarUrl !== null;
+  const uploadedBanner =
+    profile.look.bannerId === null && profile.look.bannerUrl !== null;
 
   return (
     <>
@@ -92,6 +97,14 @@ export default async function ProfilePage({ params }: Props) {
               <p className="mt-3 max-w-xl text-sm whitespace-pre-line">{profile.bio}</p>
             ) : null}
           </div>
+
+          {!isOwner && uid && (uploadedAvatar || uploadedBanner) ? (
+            <ReportImageButton
+              uid={uid}
+              avatar={uploadedAvatar}
+              banner={uploadedBanner}
+            />
+          ) : null}
 
           {isOwner && own && viewer ? (
             <OwnerTools

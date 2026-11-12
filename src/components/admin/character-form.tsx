@@ -8,7 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Field, TierSelect, controlClass } from "@/components/ui/fields";
 import { HAX_KIND_LIST, HAX_KINDS, type HaxKind } from "@/config/combat";
 import { MEDIA_LABELS, MEDIA_TYPES } from "@/config/media";
-import { MAX_DIMENSION, MIN_DIMENSION, SPEED_LEVELS, dimensionLabel } from "@/config/scales";
+import {
+  MAX_DIMENSION,
+  MIN_DIMENSION,
+  SPEED_LEVELS,
+  dimensionLabel,
+} from "@/config/scales";
 import type { HaxClaim } from "@/lib/ranking/profile";
 import { slugify } from "@/lib/slug";
 import type { CharacterEditData } from "@/types/admin-character";
@@ -22,7 +27,11 @@ interface AbilityRow {
 
 let nextKey = 0;
 const blankRow = (): AbilityRow => ({ key: nextKey++, kind: "", power: "" });
-const toRow = (claim: HaxClaim): AbilityRow => ({ key: nextKey++, kind: claim.kind, power: claim.power });
+const toRow = (claim: HaxClaim): AbilityRow => ({
+  key: nextKey++,
+  kind: claim.kind,
+  power: claim.power,
+});
 const splitList = (value: string) =>
   value
     .split(",")
@@ -46,7 +55,10 @@ function AbilityEditor({
     <fieldset className="space-y-3">
       <legend className="eyebrow mb-2">{title}</legend>
       {rows.map((row) => (
-        <div key={row.key} className="grid gap-3 border p-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+        <div
+          key={row.key}
+          className="grid gap-3 border p-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
+        >
           <Field label="Kind">
             <select
               value={row.kind}
@@ -61,12 +73,16 @@ function AbilityEditor({
               ))}
             </select>
           </Field>
-          <TierSelect label="Power level" value={row.power} onChange={(power) => patch(row.key, { power })} />
+          <TierSelect
+            label="Power level"
+            value={row.power}
+            onChange={(power) => patch(row.key, { power })}
+          />
           <button
             type="button"
             aria-label="Remove"
             onClick={() => onChange(rows.filter((r) => r.key !== row.key))}
-            className="grid size-11 place-items-center hover:bg-muted"
+            className="hover:bg-muted grid size-11 place-items-center"
           >
             <X className="size-4" />
           </button>
@@ -94,7 +110,9 @@ export function CharacterForm({ initial }: { initial?: CharacterEditData }) {
   const [speed, setSpeed] = useState(initial?.speed ?? "");
   const [dimension, setDimension] = useState(initial?.dimension ?? 0);
   const [hax, setHax] = useState<AbilityRow[]>(() => (initial?.hax ?? []).map(toRow));
-  const [resistances, setResistances] = useState<AbilityRow[]>(() => (initial?.resistances ?? []).map(toRow));
+  const [resistances, setResistances] = useState<AbilityRow[]>(() =>
+    (initial?.resistances ?? []).map(toRow),
+  );
   const [imageUrl, setImageUrl] = useState<string | null>(initial?.imageUrl ?? null);
   const [credit, setCredit] = useState(initial?.imageCredit ?? "");
   const [uploading, setUploading] = useState(false);
@@ -121,7 +139,10 @@ export function CharacterForm({ initial }: { initial?: CharacterEditData }) {
       data.set("slug", slug);
       data.set("file", file);
       const response = await fetch("/api/admin/images", { method: "POST", body: data });
-      const json = (await response.json().catch(() => null)) as { url?: string; error?: string } | null;
+      const json = (await response.json().catch(() => null)) as {
+        url?: string;
+        error?: string;
+      } | null;
       if (response.ok && json?.url) setImageUrl(json.url);
       else setError(json?.error ?? "Upload failed.");
     } catch {
@@ -133,13 +154,17 @@ export function CharacterForm({ initial }: { initial?: CharacterEditData }) {
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const incomplete = [...hax, ...resistances].some((row) => (row.kind === "") !== (row.power === ""));
+    const incomplete = [...hax, ...resistances].some(
+      (row) => (row.kind === "") !== (row.power === ""),
+    );
     if (incomplete) {
       setError("Finish or remove the incomplete ability rows.");
       return;
     }
     const toAbilities = (rows: AbilityRow[]) =>
-      rows.filter((row) => row.kind !== "").map((row) => ({ kind: row.kind, power: row.power }));
+      rows
+        .filter((row) => row.kind !== "")
+        .map((row) => ({ kind: row.kind, power: row.power }));
 
     const fields = {
       name: name.trim(),
@@ -161,12 +186,20 @@ export function CharacterForm({ initial }: { initial?: CharacterEditData }) {
     setError(null);
     setSaved(false);
     try {
-      const response = await fetch(editing ? `/api/admin/characters/${initial.slug}` : "/api/admin/characters", {
-        method: editing ? "PUT" : "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(editing ? fields : { slug: slugText.trim() || undefined, ...fields }),
-      });
-      const json = (await response.json().catch(() => null)) as { id?: string; error?: string } | null;
+      const response = await fetch(
+        editing ? `/api/admin/characters/${initial.slug}` : "/api/admin/characters",
+        {
+          method: editing ? "PUT" : "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(
+            editing ? fields : { slug: slugText.trim() || undefined, ...fields },
+          ),
+        },
+      );
+      const json = (await response.json().catch(() => null)) as {
+        id?: string;
+        error?: string;
+      } | null;
 
       if (editing && response.ok) {
         setSaved(true);
@@ -212,9 +245,21 @@ export function CharacterForm({ initial }: { initial?: CharacterEditData }) {
       <fieldset className="space-y-4">
         <legend className="eyebrow mb-2">Identity</legend>
         <Field label="Name">
-          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} required className={controlClass} />
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={80}
+            required
+            className={controlClass}
+          />
         </Field>
-        <Field label={editing ? "Slug (fixed once created)" : "Slug (optional, used in the page address)"}>
+        <Field
+          label={
+            editing
+              ? "Slug (fixed once created)"
+              : "Slug (optional, used in the page address)"
+          }
+        >
           <input
             value={slugText}
             onChange={(e) => setSlugText(e.target.value)}
@@ -225,10 +270,20 @@ export function CharacterForm({ initial }: { initial?: CharacterEditData }) {
           />
         </Field>
         <Field label="Verse or franchise">
-          <input value={verse} onChange={(e) => setVerse(e.target.value)} maxLength={80} required className={controlClass} />
+          <input
+            value={verse}
+            onChange={(e) => setVerse(e.target.value)}
+            maxLength={80}
+            required
+            className={controlClass}
+          />
         </Field>
         <Field label="Medium">
-          <select value={media} onChange={(e) => setMedia(e.target.value as MediaType)} className={controlClass}>
+          <select
+            value={media}
+            onChange={(e) => setMedia(e.target.value as MediaType)}
+            className={controlClass}
+          >
             {MEDIA_TYPES.map((type) => (
               <option key={type} value={type}>
                 {MEDIA_LABELS[type]}
@@ -237,19 +292,36 @@ export function CharacterForm({ initial }: { initial?: CharacterEditData }) {
           </select>
         </Field>
         <Field label="Aliases (comma separated)">
-          <input value={aliases} onChange={(e) => setAliases(e.target.value)} className={controlClass} />
+          <input
+            value={aliases}
+            onChange={(e) => setAliases(e.target.value)}
+            className={controlClass}
+          />
         </Field>
         <Field label="Tags (comma separated)">
-          <input value={tags} onChange={(e) => setTags(e.target.value)} className={controlClass} />
+          <input
+            value={tags}
+            onChange={(e) => setTags(e.target.value)}
+            className={controlClass}
+          />
         </Field>
       </fieldset>
 
       <fieldset className="space-y-4">
         <legend className="eyebrow mb-2">Baseline power</legend>
-        <TierSelect label="Attack potency" value={attackPotency} onChange={setAttackPotency} />
+        <TierSelect
+          label="Attack potency"
+          value={attackPotency}
+          onChange={setAttackPotency}
+        />
         <TierSelect label="Durability" value={durability} onChange={setDurability} />
         <Field label="Speed">
-          <select value={speed} onChange={(e) => setSpeed(e.target.value)} required className={controlClass}>
+          <select
+            value={speed}
+            onChange={(e) => setSpeed(e.target.value)}
+            required
+            className={controlClass}
+          >
             <option value="">Select</option>
             {SPEED_LEVELS.map((level) => (
               <option key={level} value={level}>
@@ -259,9 +331,16 @@ export function CharacterForm({ initial }: { initial?: CharacterEditData }) {
           </select>
         </Field>
         <Field label="Dimensionality">
-          <select value={dimension} onChange={(e) => setDimension(Number(e.target.value))} className={controlClass}>
+          <select
+            value={dimension}
+            onChange={(e) => setDimension(Number(e.target.value))}
+            className={controlClass}
+          >
             <option value={0}>Automatic from the tiers</option>
-            {Array.from({ length: MAX_DIMENSION - MIN_DIMENSION + 1 }, (_, i) => MIN_DIMENSION + i).map((n) => (
+            {Array.from(
+              { length: MAX_DIMENSION - MIN_DIMENSION + 1 },
+              (_, i) => MIN_DIMENSION + i,
+            ).map((n) => (
               <option key={n} value={n}>
                 {dimensionLabel(n)}
               </option>
@@ -269,8 +348,9 @@ export function CharacterForm({ initial }: { initial?: CharacterEditData }) {
           </select>
         </Field>
         {editing ? (
-          <p className="text-sm text-muted-foreground">
-            This is the starting baseline. Verified feats override it automatically on the live profile.
+          <p className="text-muted-foreground text-sm">
+            This is the starting baseline. Verified feats override it automatically on the
+            live profile.
           </p>
         ) : null}
       </fieldset>
@@ -281,7 +361,12 @@ export function CharacterForm({ initial }: { initial?: CharacterEditData }) {
       <fieldset className="space-y-4">
         <legend className="eyebrow mb-2">Image</legend>
         <div className="flex items-start gap-4">
-          <Portrait name={name || "Preview"} src={imageUrl} sizes="160px" className="aspect-4/5 w-40 shrink-0" />
+          <Portrait
+            name={name || "Preview"}
+            src={imageUrl}
+            sizes="160px"
+            className="aspect-4/5 w-40 shrink-0"
+          />
           <div className="min-w-0 flex-1 space-y-3">
             <Field label="JPEG, PNG or WebP, up to 4 MB">
               <input
@@ -293,15 +378,24 @@ export function CharacterForm({ initial }: { initial?: CharacterEditData }) {
                   if (file) void upload(file);
                   e.target.value = "";
                 }}
-                className="block w-full text-sm file:mr-3 file:border file:bg-muted file:px-3 file:py-2"
+                className="file:bg-muted block w-full text-sm file:mr-3 file:border file:px-3 file:py-2"
               />
             </Field>
             {uploading ? <p className="eyebrow">Uploading</p> : null}
             <Field label="Credit and source">
-              <input value={credit} onChange={(e) => setCredit(e.target.value)} maxLength={200} className={controlClass} />
+              <input
+                value={credit}
+                onChange={(e) => setCredit(e.target.value)}
+                maxLength={200}
+                className={controlClass}
+              />
             </Field>
             {imageUrl ? (
-              <button type="button" onClick={() => setImageUrl(null)} className="text-sm underline underline-offset-4">
+              <button
+                type="button"
+                onClick={() => setImageUrl(null)}
+                className="text-sm underline underline-offset-4"
+              >
                 Remove image
               </button>
             ) : null}

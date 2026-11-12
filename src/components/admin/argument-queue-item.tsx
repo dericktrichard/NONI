@@ -41,7 +41,9 @@ export function ArgumentQueueItem({ item }: { item: QueueArgument }) {
         }),
       });
       if (!response.ok) {
-        const data = (await response.json().catch(() => null)) as { error?: string } | null;
+        const data = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
         setError(data?.error ?? "Action failed.");
         return;
       }
@@ -57,16 +59,19 @@ export function ArgumentQueueItem({ item }: { item: QueueArgument }) {
   return (
     <li className="border-b py-6">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <Badge variant={item.status === "visible" ? "outline" : "accent"}>{item.status}</Badge>
+        <Badge variant={item.status === "visible" ? "outline" : "accent"}>
+          {item.status}
+        </Badge>
         <span className="eyebrow tabular">
           +{item.upvotes} / -{item.downvotes}
         </span>
       </div>
 
       <p className="eyebrow mt-2">
-        {item.a} vs {item.b} / argues for {item.sideSlug} / {item.authorName} / {item.createdAt.slice(0, 10)}
+        {item.a} vs {item.b} / argues for {item.sideSlug} / {item.authorName} /{" "}
+        {item.createdAt.slice(0, 10)}
       </p>
-      <p className="mt-2 text-sm whitespace-pre-line text-foreground/80">{item.body}</p>
+      <p className="text-foreground/80 mt-2 text-sm whitespace-pre-line">{item.body}</p>
 
       <ul className="mt-3 space-y-1">
         {item.citations.map((citation) => (
@@ -78,7 +83,10 @@ export function ArgumentQueueItem({ item }: { item: QueueArgument }) {
       </ul>
 
       <p className="mt-3 text-sm">
-        <Link href={`/matchups/${item.a}/${item.b}`} className="underline underline-offset-4">
+        <Link
+          href={`/matchups/${item.a}/${item.b}`}
+          className="underline underline-offset-4"
+        >
           Open the matchup
         </Link>
       </p>

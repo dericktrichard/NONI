@@ -50,7 +50,15 @@ export function BannerSurface({
   );
 }
 
-export function ProfileBanner({ look, className }: { look: Look; className?: string }) {
+export function ProfileBanner({
+  look,
+  className,
+  sizes = "100vw",
+}: {
+  look: Look;
+  className?: string;
+  sizes?: string;
+}) {
   return (
     <BannerSurface theme={look.bannerTheme} className={className}>
       {look.bannerUrl ? (
@@ -58,7 +66,7 @@ export function ProfileBanner({ look, className }: { look: Look; className?: str
           src={look.bannerUrl}
           alt=""
           fill
-          sizes="100vw"
+          sizes={sizes}
           className={cn(
             "object-cover",
             look.bannerId ? "object-[50%_15%]" : "object-center",
