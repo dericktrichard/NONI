@@ -6,7 +6,12 @@ import { ProofItem } from "@/components/feats/feat-card";
 import { Badge } from "@/components/ui/badge";
 import { controlClass } from "@/components/ui/fields";
 import { claimLabel } from "@/lib/feats/labels";
-import { MOD_ACTION_LABELS, REPORT_REASON_LABELS, needsNote, type ModAction } from "@/lib/moderation/actions";
+import {
+  MOD_ACTION_LABELS,
+  REPORT_REASON_LABELS,
+  needsNote,
+  type ModAction,
+} from "@/lib/moderation/actions";
 import type { QueueFeat } from "@/lib/data/mod-queue";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +44,9 @@ export function QueueItem({ feat }: { feat: QueueFeat }) {
         }),
       });
       if (!response.ok) {
-        const data = (await response.json().catch(() => null)) as { error?: string } | null;
+        const data = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
         setError(data?.error ?? "Action failed.");
         return;
       }
@@ -55,7 +62,9 @@ export function QueueItem({ feat }: { feat: QueueFeat }) {
   return (
     <li className="border-b py-6">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <Badge variant={feat.status === "verified" ? "accent" : "outline"}>{feat.status}</Badge>
+        <Badge variant={feat.status === "verified" ? "accent" : "outline"}>
+          {feat.status}
+        </Badge>
         {feat.staffLocked ? <Badge variant="outline">Locked by staff</Badge> : null}
         <span className="eyebrow">{claimLabel(feat.claim)}</span>
         <span className="eyebrow tabular">
@@ -63,11 +72,15 @@ export function QueueItem({ feat }: { feat: QueueFeat }) {
         </span>
       </div>
 
-      <h3 className="mt-2 font-display text-lg leading-snug font-semibold">{feat.title}</h3>
+      <h3 className="font-display mt-2 text-lg leading-snug font-semibold">
+        {feat.title}
+      </h3>
       <p className="eyebrow mt-1">
         {feat.characterId} / {feat.authorName} / {feat.createdAt.slice(0, 10)}
       </p>
-      <p className="mt-2 text-sm whitespace-pre-line text-foreground/80">{feat.description}</p>
+      <p className="text-foreground/80 mt-2 text-sm whitespace-pre-line">
+        {feat.description}
+      </p>
 
       <ul className="mt-3 space-y-2">
         {feat.proofs.map((proof, index) => (

@@ -94,6 +94,8 @@ export async function saveUpload(
   const user = await userRef.get();
   if (typeof user.get("handle") !== "string")
     throw new HttpError(409, "Choose a handle first.");
+  if (user.get("uploadsBlocked") === true)
+    throw new HttpError(403, "Uploads are disabled for your account.");
 
   const previous = held(user, kind);
   const url = await putUserImage(uid, kind, image);

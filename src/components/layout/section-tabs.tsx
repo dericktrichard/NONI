@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 const TABS = [
   { href: "/play", label: "Higher or lower" },
   { href: "/matchups", label: "Matchups" },
-  { href: "/leaderboard", label: "Leaderboard" },
 ];
 
 export function SectionTabs() {

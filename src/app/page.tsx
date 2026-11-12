@@ -37,7 +37,7 @@ export default async function Home() {
   };
 
   const heroNode = (
-    <HomeHero hero={hero} top={items[0] ?? null} pair={pair} stats={stats} />
+    <HomeHero hero={hero} cycle={items.slice(0, 3)} pair={pair} stats={stats} />
   );
 
   const overviewNode = (

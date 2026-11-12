@@ -1,16 +1,16 @@
 import { ArgumentQueueItem } from "@/components/admin/argument-queue-item";
+import { ImageModerationSection } from "@/components/admin/image-moderation-section";
 import { ListModerationSection } from "@/components/admin/list-moderation-section";
 import { QueueItem } from "@/components/admin/queue-item";
+import { getReportedImages } from "@/lib/data/image-moderation";
 import { getReportedLists } from "@/lib/data/list-moderation";
 import { fetchModQueue } from "@/lib/data/mod-queue";
 
 export const dynamic = "force-dynamic";
 
 export default async function ModerationPage() {
-  const [{ reported, pending, reportedArguments }, reportedLists] = await Promise.all([
-    fetchModQueue(),
-    getReportedLists(),
-  ]);
+  const [{ reported, pending, reportedArguments }, reportedLists, reportedImages] =
+    await Promise.all([fetchModQueue(), getReportedLists(), getReportedImages()]);
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
@@ -19,7 +19,7 @@ export default async function ModerationPage() {
       <section className="mt-8">
         <h2 className="eyebrow">Reported feats ({reported.length})</h2>
         {reported.length === 0 ? (
-          <p className="mt-3 text-sm text-foreground/70">No open reports.</p>
+          <p className="text-foreground/70 mt-3 text-sm">No open reports.</p>
         ) : (
           <ul>
             {reported.map((feat) => (
@@ -32,11 +32,14 @@ export default async function ModerationPage() {
       <section className="mt-10">
         <h2 className="eyebrow">Reported arguments ({reportedArguments.length})</h2>
         {reportedArguments.length === 0 ? (
-          <p className="mt-3 text-sm text-foreground/70">No open reports.</p>
+          <p className="text-foreground/70 mt-3 text-sm">No open reports.</p>
         ) : (
           <ul>
             {reportedArguments.map((item) => (
-              <ArgumentQueueItem key={`${item.a}/${item.b}/${item.argumentId}`} item={item} />
+              <ArgumentQueueItem
+                key={`${item.a}/${item.b}/${item.argumentId}`}
+                item={item}
+              />
             ))}
           </ul>
         )}
@@ -44,10 +47,12 @@ export default async function ModerationPage() {
 
       <ListModerationSection lists={reportedLists} />
 
+      <ImageModerationSection items={reportedImages} />
+
       <section className="mt-10">
         <h2 className="eyebrow">Pending feats, highest score first ({pending.length})</h2>
         {pending.length === 0 ? (
-          <p className="mt-3 text-sm text-foreground/70">Nothing waiting.</p>
+          <p className="text-foreground/70 mt-3 text-sm">Nothing waiting.</p>
         ) : (
           <ul>
             {pending.map((feat) => (

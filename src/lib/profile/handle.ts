@@ -26,7 +26,8 @@ export type HandleIssue = "length" | "characters" | "reserved";
 
 export const HANDLE_MESSAGES: Record<HandleIssue, string> = {
   length: `Use ${HANDLE_MIN} to ${HANDLE_MAX} characters.`,
-  characters: "Use lowercase letters, numbers and underscores, starting with a letter or number.",
+  characters:
+    "Use lowercase letters, numbers and underscores, starting with a letter or number.",
   reserved: "That handle is not available.",
 };
 

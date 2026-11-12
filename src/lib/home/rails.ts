@@ -21,7 +21,10 @@ interface RailOptions {
 }
 
 /** `pool` must be in rank order starting at rank 1, so an item's index is its global position */
-export function buildRails(pool: readonly CharacterSummary[], options: RailOptions = {}): Rail[] {
+export function buildRails(
+  pool: readonly CharacterSummary[],
+  options: RailOptions = {},
+): Rail[] {
   const limit = options.limit ?? 12;
   const minPerMedium = options.minPerMedium ?? 2;
 
@@ -47,7 +50,13 @@ export function buildRails(pool: readonly CharacterSummary[], options: RailOptio
     }));
 
   return [
-    { id: "top", eyebrow: "Overall", title: "Top ranked", href: exploreHref({ all: true }), items: ranked.slice(0, limit) },
+    {
+      id: "top",
+      eyebrow: "Overall",
+      title: "Top ranked",
+      href: exploreHref({ all: true }),
+      items: ranked.slice(0, limit),
+    },
     ...mediaRails,
   ];
 }

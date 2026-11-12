@@ -40,8 +40,9 @@ export function DeleteCharacter({ slug, name }: { slug: string; name: string }) 
         Delete {name}
       </h2>
       <p className="mt-2 text-sm">
-        This permanently deletes the character, all of its feats and votes, every matchup it appears in with its
-        votes and arguments, and any reports about them. It cannot be undone.
+        This permanently deletes the character, all of its feats and votes, every matchup
+        it appears in with its votes and arguments, and any reports about them. It cannot
+        be undone.
       </p>
       <label className="mt-4 block">
         <span className="eyebrow">Type {slug} to confirm</span>
@@ -54,7 +55,11 @@ export function DeleteCharacter({ slug, name }: { slug: string; name: string }) 
         />
       </label>
       <div className="mt-4">
-        <Button variant="outline" disabled={busy || typed !== slug} onClick={() => void remove()}>
+        <Button
+          variant="outline"
+          disabled={busy || typed !== slug}
+          onClick={() => void remove()}
+        >
           Delete permanently
         </Button>
       </div>
