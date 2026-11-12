@@ -63,11 +63,10 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // Public profiles only. Nothing private is ever stored here.
+    // User documents hold balances, flags and settings. The server reads them
+    // with the Admin SDK and shares only what a profile page may show.
     match /users/{uid} {
-      allow get: if true;
-      allow list: if pagedList();
-      allow write: if false;
+      allow read, write: if false;
     }
 
     match /creators/{creatorId} {
