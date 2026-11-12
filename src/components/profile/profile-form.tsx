@@ -11,6 +11,20 @@ import {
   checkHandle,
   normalizeHandle,
 } from "@/lib/profile/handle";
+import { cn } from "@/lib/utils";
+
+const PRIVACY = [
+  {
+    hidden: false,
+    label: "Public",
+    note: "Anyone can view your profile, Glaze and badges. You can join the leaderboards.",
+  },
+  {
+    hidden: true,
+    label: "Private",
+    note: "Only you and moderators can see it. You are taken off the leaderboards.",
+  },
+] as const;
 
 interface ProfileFormProps {
   initial: OwnProfile;
@@ -22,6 +36,7 @@ export function ProfileForm({ initial, verified, onSaved }: ProfileFormProps) {
   const router = useRouter();
   const [handle, setHandle] = useState(initial.handle ?? "");
   const [bio, setBio] = useState(initial.bio);
+  const [hidden, setHidden] = useState(initial.private);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,7 +57,7 @@ export function ProfileForm({ initial, verified, onSaved }: ProfileFormProps) {
       const response = await fetch("/api/profile", {
         method: "PUT",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ handle: normalized, bio: bio.trim() }),
+        body: JSON.stringify({ handle: normalized, bio: bio.trim(), private: hidden }),
       });
       if (response.status === 401) {
         window.dispatchEvent(new Event(OPEN_SIGN_IN));
@@ -123,6 +138,27 @@ export function ProfileForm({ initial, verified, onSaved }: ProfileFormProps) {
           {error}
         </p>
       ) : null}
+
+      <fieldset>
+        <legend className="eyebrow mb-2">Who can see your profile</legend>
+        <div className="bg-border grid gap-px border sm:grid-cols-2">
+          {PRIVACY.map((option) => (
+            <button
+              key={option.label}
+              type="button"
+              aria-pressed={hidden === option.hidden}
+              onClick={() => setHidden(option.hidden)}
+              className={cn(
+                "bg-background border-b-2 border-transparent p-3 text-left text-sm transition-colors",
+                hidden === option.hidden && "bg-muted border-b-accent",
+              )}
+            >
+              <span className="block font-medium">{option.label}</span>
+              <span className="text-muted-foreground mt-1 block">{option.note}</span>
+            </button>
+          ))}
+        </div>
+      </fieldset>
 
       <div className="border-t pt-5">
         <button

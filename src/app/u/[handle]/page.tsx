@@ -1,3 +1,4 @@
+import { Lock } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -15,6 +16,7 @@ import { getActivityStats, listOwnFeats, uidForHandle } from "@/lib/data/activit
 import { getOwnLists } from "@/lib/data/lists";
 import { getOwnProfile, getProfileByHandle } from "@/lib/data/profile";
 import { getBadges, getMyStanding } from "@/lib/data/standing";
+import { canViewProfile } from "@/lib/profile/visibility";
 import { roleOf } from "@/lib/security/roles";
 import { getSessionUser } from "@/lib/security/session";
 
@@ -26,6 +28,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { handle } = await params;
   const profile = await load(handle);
   if (!profile) return { title: "Profile not found" };
+  if (profile.private) {
+    return {
+      title: `@${profile.handle}`,
+      description: "This profile is private.",
+      robots: { index: false, follow: false },
+    };
+  }
   return {
     title: `@${profile.handle}`,
     description: profile.bio || `@${profile.handle} on NONI`,
@@ -43,16 +52,39 @@ function Stat({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
+function PrivateNotice({ handle }: { handle: string }) {
+  return (
+    <div className="mx-auto max-w-3xl px-4 pt-10 pb-24">
+      <p className="eyebrow">Profile</p>
+      <h1 className="font-display mt-1 text-3xl font-semibold tracking-tight wrap-break-word sm:text-5xl">
+        @{handle}
+      </h1>
+      <p className="text-muted-foreground mt-6 flex items-center gap-3 border p-4 text-sm">
+        <Lock className="size-4 shrink-0" aria-hidden />
+        This profile is private.
+      </p>
+    </div>
+  );
+}
+
 const shown = (value: number | null) => (value === null ? "--" : value);
 
 export default async function ProfilePage({ params }: Props) {
   const { handle } = await params;
-  const profile = await load(handle);
-  if (!profile) notFound();
+  const base = await load(handle);
+  if (!base) notFound();
 
   const viewer = await getSessionUser();
   const own = viewer ? await getOwnProfile(viewer.uid) : null;
-  const isOwner = viewer !== null && own !== null && own.handle === profile.handle;
+  const isOwner = viewer !== null && own !== null && own.handle === base.handle;
+  const staff = viewer !== null && roleOf(viewer) !== "user";
+
+  if (!canViewProfile(base.private, isOwner, staff))
+    return <PrivateNotice handle={base.handle} />;
+
+  const profile = base.private
+    ? ((await getProfileByHandle(handle, true)) ?? base)
+    : base;
 
   const uid = isOwner && viewer ? viewer.uid : await uidForHandle(profile.handle);
   const [stats, ownLists, ownFeats, standing] = await Promise.all([
@@ -89,12 +121,23 @@ export default async function ProfilePage({ params }: Props) {
           />
 
           <div className="mt-4">
-            <p className="eyebrow">{isOwner ? "Your profile" : "Profile"}</p>
+            <p className="eyebrow">
+              {isOwner ? "Your profile" : "Profile"}
+              {profile.private ? " · Private" : ""}
+            </p>
             <h1 className="font-display mt-1 text-3xl font-semibold tracking-tight wrap-break-word sm:text-5xl">
               @{profile.handle}
             </h1>
             {profile.bio ? (
               <p className="mt-3 max-w-xl text-sm whitespace-pre-line">{profile.bio}</p>
+            ) : null}
+            {profile.private ? (
+              <p className="text-muted-foreground mt-3 flex items-center gap-2 text-sm">
+                <Lock className="size-4 shrink-0" aria-hidden />
+                {isOwner
+                  ? "Only you and moderators can see this profile."
+                  : "Private profile, visible to moderators only."}
+              </p>
             ) : null}
           </div>
 
@@ -111,7 +154,7 @@ export default async function ProfilePage({ params }: Props) {
               profile={own}
               look={profile.look}
               verified={viewer.email_verified === true}
-              staff={roleOf(viewer) !== "user"}
+              staff={staff}
               lists={ownLists}
             />
           ) : null}

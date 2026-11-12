@@ -234,7 +234,7 @@ export function Onboarding({ open, user, onClose, onSignOut, refresh }: Onboardi
                 This is your public name on NONI. Your profile page and lists live at it.
               </p>
               <ProfileForm
-                initial={{ handle: null, bio: "", cooldownDays: 0 }}
+                initial={{ handle: null, bio: "", cooldownDays: 0, private: false }}
                 verified={user.verified}
                 onSaved={() => {
                   setChosen("avatar");

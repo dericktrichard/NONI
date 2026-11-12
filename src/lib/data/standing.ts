@@ -5,22 +5,42 @@ import { adminDb } from "@/lib/firebase/admin";
 import { COL } from "@/lib/firebase/paths";
 import { GLAZE } from "@/lib/glaze/rules";
 import { readLook } from "@/lib/profile/look";
-import { FAN, fanPoints, fanTitle, rankRows, tierOf, weekKey, type BattleKind } from "@/lib/standing/rules";
+import {
+  FAN,
+  fanPoints,
+  fanTitle,
+  rankRows,
+  tierOf,
+  weekKey,
+  type BattleKind,
+} from "@/lib/standing/rules";
 import type { Badge, BoardKey, BoardRow, Standing } from "@/lib/standing/types";
 
 const FANS = "fans";
 const LIMIT = 50;
-const FIELD: Record<BoardKey, string> = { glaze: "glaze", week: "weekGlaze", champions: "titles" };
+const FIELD: Record<BoardKey, string> = {
+  glaze: "glaze",
+  week: "weekGlaze",
+  champions: "titles",
+};
 
 const person = (doc: DocumentSnapshot) => {
   const handle = doc.get("handle");
-  return typeof handle === "string" ? { handle, look: readLook(doc.data() ?? {}) } : null;
+  return typeof handle === "string" && doc.get("private") !== true
+    ? { handle, look: readLook(doc.data() ?? {}) }
+    : null;
 };
 
 /** Counts one finished battle: stats on the player and fan points for the characters they used */
 export async function recordBattle(
   uid: string,
-  input: { kind: BattleKind; slugs: string[]; won: boolean; title: boolean; change: number },
+  input: {
+    kind: BattleKind;
+    slugs: string[];
+    won: boolean;
+    title: boolean;
+    change: number;
+  },
 ): Promise<void> {
   const db = adminDb();
   const userRef = db.collection(COL.users).doc(uid);
@@ -38,14 +58,23 @@ export async function recordBattle(
           ...(input.won ? { battlesWon: FieldValue.increment(1) } : {}),
           ...(input.title ? { titles: FieldValue.increment(1) } : {}),
           weekKey: week,
-          weekGlaze: user.get("weekKey") === week ? FieldValue.increment(input.change) : input.change,
+          weekGlaze:
+            user.get("weekKey") === week
+              ? FieldValue.increment(input.change)
+              : input.change,
         },
         { merge: true },
       );
       for (const [slug, score] of Object.entries(points)) {
         tx.set(
           db.collection(FANS).doc(`${slug}_${uid}`),
-          { slug, uid, boards, score: FieldValue.increment(score), updatedAt: FieldValue.serverTimestamp() },
+          {
+            slug,
+            uid,
+            boards,
+            score: FieldValue.increment(score),
+            updatedAt: FieldValue.serverTimestamp(),
+          },
           { merge: true },
         );
       }
@@ -58,7 +87,13 @@ export async function recordBattle(
 export async function setBoards(uid: string, on: boolean): Promise<void> {
   const db = adminDb();
   const userRef = db.collection(COL.users).doc(uid);
-  if (on && typeof (await userRef.get()).get("handle") !== "string") throw new HttpError(409, "Choose a handle first.");
+  if (on) {
+    const user = await userRef.get();
+    if (typeof user.get("handle") !== "string")
+      throw new HttpError(409, "Choose a handle first.");
+    if (user.get("private") === true)
+      throw new HttpError(409, "Make your profile public first.");
+  }
 
   await userRef.set({ boards: on }, { merge: true });
   const fans = await db.collection(FANS).where("uid", "==", uid).get();
@@ -84,32 +119,60 @@ export async function getBoard(key: BoardKey): Promise<BoardRow[]> {
       const value = Number(doc.get(FIELD[key])) || 0;
       return who && value > 0 ? [{ ...who, value }] : [];
     });
-    return rankRows(rows, (row) => row.value, (row) => row.handle);
+    return rankRows(
+      rows,
+      (row) => row.value,
+      (row) => row.handle,
+    );
   } catch (error) {
     console.error(`board ${key} failed`, error);
     return [];
   }
 }
 
-async function fanRows(docs: DocumentSnapshot[], withCharacter: boolean): Promise<BoardRow[]> {
+async function fanRows(
+  docs: DocumentSnapshot[],
+  withCharacter: boolean,
+): Promise<BoardRow[]> {
   const db = adminDb();
   const uids = [...new Set(docs.map((doc) => String(doc.get("uid"))))];
-  const slugs = withCharacter ? [...new Set(docs.map((doc) => String(doc.get("slug"))))] : [];
+  const slugs = withCharacter
+    ? [...new Set(docs.map((doc) => String(doc.get("slug"))))]
+    : [];
   const [users, characters] = await Promise.all([
-    uids.length > 0 ? db.getAll(...uids.map((id) => db.collection(COL.users).doc(id))) : [],
-    slugs.length > 0 ? db.getAll(...slugs.map((id) => db.collection(COL.characters).doc(id))) : [],
+    uids.length > 0
+      ? db.getAll(...uids.map((id) => db.collection(COL.users).doc(id)))
+      : [],
+    slugs.length > 0
+      ? db.getAll(...slugs.map((id) => db.collection(COL.characters).doc(id)))
+      : [],
   ]);
   const people = new Map(users.map((user) => [user.id, person(user)] as const));
-  const names = new Map(characters.map((c) => [c.id, String(c.get("name") ?? c.id)] as const));
+  const names = new Map(
+    characters.map((c) => [c.id, String(c.get("name") ?? c.id)] as const),
+  );
 
   const rows = docs.flatMap((doc) => {
     const who = people.get(String(doc.get("uid")));
     if (!who) return [];
     const slug = String(doc.get("slug"));
     const value = Number(doc.get("score")) || 0;
-    return [{ ...who, slug, value, note: withCharacter ? (names.get(slug) ?? slug) : undefined, tier: tierOf(value), key: doc.id }];
+    return [
+      {
+        ...who,
+        slug,
+        value,
+        note: withCharacter ? (names.get(slug) ?? slug) : undefined,
+        tier: tierOf(value),
+        key: doc.id,
+      },
+    ];
   });
-  return rankRows(rows, (row) => row.value, (row) => row.key);
+  return rankRows(
+    rows,
+    (row) => row.value,
+    (row) => row.key,
+  );
 }
 
 export async function getTopFans(slug: string): Promise<BoardRow[]> {
@@ -130,7 +193,12 @@ export async function getTopFans(slug: string): Promise<BoardRow[]> {
 
 export async function getFansBoard(): Promise<BoardRow[]> {
   try {
-    const snap = await adminDb().collection(FANS).where("boards", "==", true).orderBy("score", "desc").limit(LIMIT).get();
+    const snap = await adminDb()
+      .collection(FANS)
+      .where("boards", "==", true)
+      .orderBy("score", "desc")
+      .limit(LIMIT)
+      .get();
     return await fanRows(snap.docs, true);
   } catch (error) {
     console.error("fans board failed", error);
@@ -144,9 +212,17 @@ export async function getBadges(uid: string, includeHidden: boolean): Promise<Ba
     const db = adminDb();
     if (!includeHidden && !(await isOnBoards(uid))) return [];
 
-    const mine = await db.collection(FANS).where("uid", "==", uid).orderBy("score", "desc").limit(12).get();
+    const mine = await db
+      .collection(FANS)
+      .where("uid", "==", uid)
+      .orderBy("score", "desc")
+      .limit(12)
+      .get();
     const entries = mine.docs
-      .map((doc) => ({ slug: String(doc.get("slug")), score: Number(doc.get("score")) || 0 }))
+      .map((doc) => ({
+        slug: String(doc.get("slug")),
+        score: Number(doc.get("score")) || 0,
+      }))
       .filter((entry) => tierOf(entry.score) !== null);
     if (entries.length === 0) return [];
 
@@ -154,7 +230,11 @@ export async function getBadges(uid: string, includeHidden: boolean): Promise<Ba
       db.getAll(...entries.map((entry) => db.collection(COL.characters).doc(entry.slug))),
       Promise.all(
         entries.map(async (entry) => {
-          const above = db.collection(FANS).where("slug", "==", entry.slug).where("boards", "==", true).where("score", ">", entry.score);
+          const above = db
+            .collection(FANS)
+            .where("slug", "==", entry.slug)
+            .where("boards", "==", true)
+            .where("score", ">", entry.score);
           return (await above.count().get()).data().count + 1;
         }),
       ),
@@ -197,11 +277,19 @@ export async function getMyStanding(uid: string): Promise<Standing> {
   const stored = user.get("glaze");
   const values: Record<BoardKey, number> = {
     glaze: typeof stored === "number" ? stored : GLAZE.start,
-    week: user.get("weekKey") === weekKey(new Date()) ? Number(user.get("weekGlaze")) || 0 : 0,
+    week:
+      user.get("weekKey") === weekKey(new Date())
+        ? Number(user.get("weekGlaze")) || 0
+        : 0,
     champions: Number(user.get("titles")) || 0,
   };
-  const rank = (key: BoardKey) => (boards && values[key] > 0 ? place(key, values[key]) : Promise.resolve(null));
-  const [glaze, week, champions] = await Promise.all([rank("glaze"), rank("week"), rank("champions")]);
+  const rank = (key: BoardKey) =>
+    boards && values[key] > 0 ? place(key, values[key]) : Promise.resolve(null);
+  const [glaze, week, champions] = await Promise.all([
+    rank("glaze"),
+    rank("week"),
+    rank("champions"),
+  ]);
 
   return {
     boards,

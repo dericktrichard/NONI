@@ -7,12 +7,16 @@ export const profileSchema = z
     handle: z
       .string()
       .max(40)
-      .refine((value) => checkHandle(normalizeHandle(value)) === null, "Choose a valid handle."),
+      .refine(
+        (value) => checkHandle(normalizeHandle(value)) === null,
+        "Choose a valid handle.",
+      ),
     bio: z
       .string()
       .trim()
       .max(200)
       .refine((value) => !hasHiddenChars(value), "Invalid characters."),
+    private: z.boolean().optional(),
   })
   .strict();
 
