@@ -87,7 +87,9 @@ describe("reads", () => {
 
 describe("votes", () => {
   it("lets owners read their own vote and nobody else's", async () => {
-    await assertSucceeds(getDoc(doc(as("alice"), "characters/goku/feats/f1/votes/alice")));
+    await assertSucceeds(
+      getDoc(doc(as("alice"), "characters/goku/feats/f1/votes/alice")),
+    );
     await assertFails(getDoc(doc(as("bob"), "characters/goku/feats/f1/votes/alice")));
   });
 
@@ -109,10 +111,15 @@ describe("writes", () => {
   it("blocks every client write, including signed-in users and staff", async () => {
     const alice = as("alice");
     await assertFails(setDoc(doc(alice, "characters/new"), { name: "X", score: 9999 }));
-    await assertFails(setDoc(doc(alice, "characters/goku"), { score: 1 }, { merge: true }));
+    await assertFails(
+      setDoc(doc(alice, "characters/goku"), { score: 1 }, { merge: true }),
+    );
     await assertFails(setDoc(doc(alice, "users/alice"), { reputation: 9999 }));
     await assertFails(
-      setDoc(doc(alice, "characters/goku/feats/f1/votes/alice"), { uid: "alice", value: 1 }),
+      setDoc(doc(alice, "characters/goku/feats/f1/votes/alice"), {
+        uid: "alice",
+        value: 1,
+      }),
     );
     await assertFails(
       setDoc(doc(as("mod", { role: "admin" }), "characters/goku"), { score: 1 }),
@@ -122,5 +129,8 @@ describe("writes", () => {
   it("denies the server-only collections", async () => {
     await assertFails(getDoc(doc(as("alice"), "_rateLimits/alice")));
     await assertFails(getDoc(doc(as("alice"), "handles/alice")));
+    await assertFails(getDoc(doc(anon(), "users/alice")));
+    await assertFails(getDoc(doc(as("alice"), "users/alice")));
+    await assertFails(getDocs(query(collection(anon(), "users"), limit(20))));
   });
 });
