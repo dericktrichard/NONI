@@ -8,6 +8,7 @@ import { AccountButton } from "@/components/auth/account-button";
 import { AuthHost } from "@/components/auth/auth-host";
 import { GlobalSearch } from "@/components/layout/global-search";
 import { LogoMark } from "@/components/layout/logo-mark";
+import { RankChip } from "@/components/layout/rank-chip";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { MatchupMaker } from "@/components/matchups/matchup-maker";
 import { OPEN_SEARCH } from "@/lib/ui/events";
@@ -90,6 +91,7 @@ export function Header() {
                   </Link>
                 );
               })}
+              <RankChip />
             </nav>
 
             <div className="ml-auto flex items-center gap-2 sm:ml-0">

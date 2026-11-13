@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DailyClaim } from "@/components/standing/daily-claim";
+import { TopReward } from "@/components/standing/top-reward";
 import type { Standing } from "@/lib/standing/types";
 
 const signed = (value: number) => (value > 0 ? `+${value}` : String(value));
@@ -46,6 +47,7 @@ export function GlazePanel({
         ))}
       </dl>
       {isOwner ? <DailyClaim /> : null}
+      {isOwner ? <TopReward boards={standing.boards} /> : null}
       {isOwner && !standing.boards ? (
         <p className="text-muted-foreground border-t p-3 text-xs">
           Your rank shows once you switch on leaderboards below.

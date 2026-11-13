@@ -111,11 +111,11 @@ export async function isOnBoards(uid: string): Promise<boolean> {
   return (await adminDb().collection(COL.users).doc(uid).get()).get("boards") === true;
 }
 
-export async function getBoard(key: BoardKey): Promise<BoardRow[]> {
+export async function getBoard(key: BoardKey, limit = LIMIT): Promise<BoardRow[]> {
   try {
     let query: Query = adminDb().collection(COL.users).where("boards", "==", true);
     if (key === "week") query = query.where("weekKey", "==", weekKey(new Date()));
-    const snap = await query.orderBy(FIELD[key], "desc").limit(LIMIT).get();
+    const snap = await query.orderBy(FIELD[key], "desc").limit(limit).get();
 
     const rows = snap.docs.flatMap((doc) => {
       const who = person(doc);
