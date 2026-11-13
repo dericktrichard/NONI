@@ -6,8 +6,10 @@ import { CharacterHero } from "@/components/characters/character-hero";
 import { PowerProfileCard } from "@/components/characters/power-profile";
 import { FeatSection } from "@/components/feats/feat-section";
 import { PageTop } from "@/components/layout/page-top";
+import { BankPanel } from "@/components/bank/bank-panel";
 import { TopFans } from "@/components/standing/top-fans";
 import { fetchCharacterPage } from "@/lib/data/character-page";
+import { getBank } from "@/lib/data/banks";
 import { getTopFans } from "@/lib/data/standing";
 
 export const revalidate = 60;
@@ -31,7 +33,7 @@ export default async function CharacterPage({ params }: Props) {
   const { slug } = await params;
   const data = await getPage(slug);
   if (!data) notFound();
-  const fans = await getTopFans(slug);
+  const [fans, bank] = await Promise.all([getTopFans(slug), getBank(slug)]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 pt-6 pb-24">
@@ -53,6 +55,7 @@ export default async function CharacterPage({ params }: Props) {
         </div>
         <CharacterAside c={data.character}>
           <TopFans fans={fans} name={data.character.name} />
+          <BankPanel slug={slug} name={data.character.name} bank={bank} />
         </CharacterAside>
       </div>
     </div>

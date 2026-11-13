@@ -9,6 +9,7 @@ import { ListReportButton } from "@/components/lists/list-report-button";
 import { ProfileAvatar } from "@/components/profile/banner";
 import { usePaged } from "@/hooks/use-paged";
 import { useReveal } from "@/hooks/use-reveal";
+import type { BankRow } from "@/lib/data/banks";
 import type { FanGroup } from "@/lib/data/fan-groups";
 import type { PublicListEntry } from "@/lib/data/public-lists";
 import type { Page } from "@/lib/paging/rules";
@@ -20,6 +21,7 @@ interface Boards {
   week: BoardRow[];
   champions: BoardRow[];
   fans: Page<FanGroup, number>;
+  banks: Page<BankRow, number>;
 }
 
 type TabKey = keyof Boards | "lists";
@@ -50,6 +52,12 @@ const TABS: ReadonlyArray<{
     hint: "The biggest fans of each character. Points come from playing battles with that character.",
   },
   {
+    key: "banks",
+    label: "Richest characters",
+    unit: "Glaze",
+    hint: "Fans put Glaze into the banks of the characters they back. Banks never change a ranking.",
+  },
+  {
     key: "lists",
     label: "Lists",
     unit: "",
@@ -68,8 +76,15 @@ const loadLists = (cursor: string) =>
   );
 const loadFans = (offset: number) =>
   getPage<FanGroup, number>(`/api/leaderboard/fans?offset=${offset}`);
+const loadBanksAll = (offset: number) =>
+  getPage<BankRow, number>(`/api/leaderboard/banks?kind=all&offset=${offset}`);
+const loadBanksWeek = (offset: number) =>
+  getPage<BankRow, number>(`/api/leaderboard/banks?kind=week&offset=${offset}`);
 const listKey = (entry: PublicListEntry) => entry.list.id;
 const fanKey = (group: FanGroup) => group.slug;
+const bankKey = (row: BankRow) => row.slug;
+/** The week view has no server page, so it starts empty and loads its first page when shown */
+const UNLOADED: Page<BankRow, number> = { items: [], next: 0 };
 
 function Row({ row, unit }: { row: BoardRow; unit: string }) {
   const top = row.rank === 1;
@@ -267,6 +282,99 @@ function FansPanel({ page }: { page: Page<FanGroup, number> }) {
   );
 }
 
+function BankItem({ row }: { row: BankRow }) {
+  return (
+    <li className="border-b last:border-b-0">
+      <Link
+        href={`/characters/${row.slug}`}
+        className="hover:bg-muted grid grid-cols-[2rem_2.5rem_minmax(0,1fr)_auto] items-center gap-3 px-3 py-2.5 transition-colors"
+      >
+        <span className="tabular font-display flex items-center gap-1.5 text-lg font-semibold">
+          {row.rank === 1 ? <span className="bg-accent size-2" aria-hidden /> : null}
+          {row.rank}
+        </span>
+        <Portrait
+          name={row.name}
+          src={row.imageUrl}
+          sizes="40px"
+          className="aspect-2/3 w-8 border"
+        />
+        <span className="min-w-0 truncate text-sm font-medium">{row.name}</span>
+        <span className="text-right">
+          <span className="tabular font-display block text-lg font-semibold">
+            {row.value.toLocaleString("en-US")}
+          </span>
+          <span className="eyebrow block">Glaze</span>
+        </span>
+      </Link>
+    </li>
+  );
+}
+
+function BankList({
+  kind,
+  initial,
+}: {
+  kind: "all" | "week";
+  initial: Page<BankRow, number>;
+}) {
+  const paged = usePaged(
+    initial,
+    kind === "week" ? loadBanksWeek : loadBanksAll,
+    bankKey,
+  );
+  if (paged.items.length === 0 && !paged.hasMore) {
+    return (
+      <Empty
+        title="No banks yet"
+        text="Put Glaze into a character's bank from its page to start one."
+      />
+    );
+  }
+  return (
+    <>
+      {paged.items.length > 0 ? (
+        <ol className="mt-4 border">
+          {paged.items.map((row) => (
+            <BankItem key={row.slug} row={row} />
+          ))}
+        </ol>
+      ) : null}
+      <More
+        hasMore={paged.hasMore}
+        busy={paged.busy}
+        failed={paged.failed}
+        onMore={paged.more}
+      />
+    </>
+  );
+}
+
+function BanksPanel({ initial }: { initial: Page<BankRow, number> }) {
+  const [kind, setKind] = useState<"all" | "week">("all");
+  return (
+    <>
+      <div role="group" aria-label="Period" className="mt-4 flex border-b">
+        {(["all", "week"] as const).map((value) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={kind === value}
+            onClick={() => setKind(value)}
+            className={cn(
+              "hover:bg-muted h-9 border-b-2 border-transparent px-3 text-xs font-medium transition-colors",
+              kind === value && "border-b-accent",
+            )}
+          >
+            {value === "all" ? "All time" : "This week"}
+          </button>
+        ))}
+      </div>
+      <BankList key={kind} kind={kind} initial={kind === "all" ? initial : UNLOADED} />
+    </>
+  );
+}
+
 function ListEntry({ list, ownerHandle }: PublicListEntry) {
   const count = list.items.length;
   return (
@@ -376,6 +484,8 @@ export function BoardTabs({
         <ListsPanel page={lists} />
       ) : key === "fans" ? (
         <FansPanel page={boards.fans} />
+      ) : key === "banks" ? (
+        <BanksPanel initial={boards.banks} />
       ) : (
         <RowsPanel key={key} rows={boards[key]} unit={tab.unit} />
       )}

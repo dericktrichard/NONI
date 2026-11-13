@@ -6,6 +6,7 @@ import { LeaderboardStrip } from "@/components/home/leaderboard-strip";
 import { RailSection } from "@/components/home/rail";
 import { RailCard, RailMore } from "@/components/home/rail-card";
 import { fetchCharacters } from "@/lib/data/characters";
+import { getBankPage } from "@/lib/data/banks";
 import { getFanPage } from "@/lib/data/fan-groups";
 import { getBoard } from "@/lib/data/standing";
 import { DEFAULT_PLAN, PAGE } from "@/lib/data/query";
@@ -24,13 +25,14 @@ export const revalidate = 600;
 const POOL_SIZE = 60;
 
 export default async function Home() {
-  const [pool, stats, hero, glaze, champions, fans] = await Promise.all([
+  const [pool, stats, hero, glaze, champions, fans, banks] = await Promise.all([
     fetchCharacters({ ...DEFAULT_PLAN, limit: POOL_SIZE, fetch: POOL_SIZE + 1 }),
     fetchSiteStats(),
     fetchHero(),
     getBoard("glaze", 3),
     getBoard("champions", 3),
     getFanPage(0, 1),
+    getBankPage("all", 0, 3),
   ]);
 
   const items = pool.items;
@@ -49,7 +51,12 @@ export default async function Home() {
   const overviewNode = (
     <>
       <GuestStrip />
-      <LeaderboardStrip glaze={glaze} champions={champions} fan={fans.items[0] ?? null} />
+      <LeaderboardStrip
+        glaze={glaze}
+        champions={champions}
+        fan={fans.items[0] ?? null}
+        banks={banks.items}
+      />
       {rails.map((rail) => (
         <RailSection
           key={rail.id}
