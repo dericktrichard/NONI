@@ -18,9 +18,15 @@ export async function POST(request: Request) {
     return NextResponse.json(result, { headers: NO_STORE });
   } catch (error) {
     if (error instanceof HttpError) {
-      return NextResponse.json({ error: error.message }, { status: error.status, headers: NO_STORE });
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status, headers: NO_STORE },
+      );
     }
     console.error("argument vote failed", error);
-    return NextResponse.json({ error: "Something went wrong." }, { status: 500, headers: NO_STORE });
+    return NextResponse.json(
+      { error: "Something went wrong." },
+      { status: 500, headers: NO_STORE },
+    );
   }
 }

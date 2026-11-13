@@ -17,9 +17,15 @@ export async function POST(request: Request) {
     return NextResponse.json(result, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     if (error instanceof HttpError) {
-      return NextResponse.json({ error: error.message }, { status: error.status, headers: { "Cache-Control": "no-store" } });
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status, headers: { "Cache-Control": "no-store" } },
+      );
     }
     console.error("moderation failed", error);
-    return NextResponse.json({ error: "Something went wrong." }, { status: 500, headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json(
+      { error: "Something went wrong." },
+      { status: 500, headers: { "Cache-Control": "no-store" } },
+    );
   }
 }

@@ -26,7 +26,8 @@ export function checkCitationScope(
 ): CitationIssue | null {
   const seen = new Set<string>();
   for (const citation of citations) {
-    if (citation.characterId !== pair[0] && citation.characterId !== pair[1]) return "wrong_character";
+    if (citation.characterId !== pair[0] && citation.characterId !== pair[1])
+      return "wrong_character";
     const key = `${citation.characterId}/${citation.featId}`;
     if (seen.has(key)) return "duplicate";
     seen.add(key);

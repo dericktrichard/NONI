@@ -14,9 +14,12 @@ export interface MatchupCardData {
   lastActivity: number;
 }
 
-const text = (value: unknown): string | null => (typeof value === "string" && value.length > 0 ? value : null);
-const count = (value: unknown): number => (typeof value === "number" && Number.isFinite(value) && value > 0 ? value : 0);
-const image = (value: unknown): string | null => (typeof value === "string" && value.startsWith("https://") ? value : null);
+const text = (value: unknown): string | null =>
+  typeof value === "string" && value.length > 0 ? value : null;
+const count = (value: unknown): number =>
+  typeof value === "number" && Number.isFinite(value) && value > 0 ? value : 0;
+const image = (value: unknown): string | null =>
+  typeof value === "string" && value.startsWith("https://") ? value : null;
 
 function millis(value: unknown): number {
   const stamp = value as { toMillis?: () => number } | null | undefined;
@@ -24,7 +27,10 @@ function millis(value: unknown): number {
 }
 
 /** Returns null for a malformed document, so one bad record cannot break the hub */
-export function toCard(id: string, data: Record<string, unknown>): MatchupCardData | null {
+export function toCard(
+  id: string,
+  data: Record<string, unknown>,
+): MatchupCardData | null {
   const aSlug = text(data.characterAId);
   const bSlug = text(data.characterBId);
   const aName = text(data.aName);
@@ -43,7 +49,9 @@ export function toCard(id: string, data: Record<string, unknown>): MatchupCardDa
 }
 
 /** A written argument counts for two votes, since it takes more effort */
-export function hotScore(card: Pick<MatchupCardData, "votesA" | "votesB" | "argumentCount">): number {
+export function hotScore(
+  card: Pick<MatchupCardData, "votesA" | "votesB" | "argumentCount">,
+): number {
   return card.votesA + card.votesB + 2 * card.argumentCount;
 }
 

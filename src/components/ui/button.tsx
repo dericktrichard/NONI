@@ -3,7 +3,8 @@ import { cn } from "@/lib/utils";
 const variants = {
   primary: "bg-foreground text-background border-foreground hover:opacity-85",
   solid: "bg-foreground text-background border-foreground hover:opacity-85",
-  outline: "bg-transparent text-foreground border-border hover:border-foreground hover:bg-muted",
+  outline:
+    "bg-transparent text-foreground border-border hover:border-foreground hover:bg-muted",
   ghost: "bg-transparent text-foreground border-transparent hover:bg-muted",
 } as const;
 
@@ -38,6 +39,18 @@ export function buttonStyles({
 
 type ButtonProps = React.ComponentProps<"button"> & Omit<ButtonStyleOptions, "className">;
 
-export function Button({ variant, size, className, type = "button", ...props }: ButtonProps) {
-  return <button type={type} className={buttonStyles({ variant, size, className })} {...props} />;
+export function Button({
+  variant,
+  size,
+  className,
+  type = "button",
+  ...props
+}: ButtonProps) {
+  return (
+    <button
+      type={type}
+      className={buttonStyles({ variant, size, className })}
+      {...props}
+    />
+  );
 }

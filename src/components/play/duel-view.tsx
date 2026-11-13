@@ -40,11 +40,19 @@ function DuelCard({ c, known }: { c: PlayCharacter; known: "always" | boolean })
       />
       <div className="p-3 sm:p-4">
         <p className="eyebrow truncate">{c.verse}</p>
-        <p className="truncate font-display text-lg font-semibold sm:text-2xl">{c.name}</p>
+        <p className="font-display truncate text-lg font-semibold sm:text-2xl">
+          {c.name}
+        </p>
         <div className="mt-2 h-6">{open ? <TierBadge tier={c.tier} /> : null}</div>
         <p className="eyebrow mt-3">Score</p>
         <p className="tabular font-display text-3xl font-semibold sm:text-5xl">
-          {known === "always" ? c.score.toLocaleString("en-US") : known ? <CountUp to={c.score} /> : "?"}
+          {known === "always" ? (
+            c.score.toLocaleString("en-US")
+          ) : known ? (
+            <CountUp to={c.score} />
+          ) : (
+            "?"
+          )}
         </p>
       </div>
     </div>
@@ -72,22 +80,28 @@ export function DuelView({ duel, guess, correct, onGuess, action }: DuelViewProp
       </div>
 
       <p className="mt-5 text-center text-sm sm:text-base">
-        Does <strong>{right.name}</strong> score higher or lower than <strong>{left.name}</strong>?
+        Does <strong>{right.name}</strong> score higher or lower than{" "}
+        <strong>{left.name}</strong>?
       </p>
 
       {revealed ? (
         <div role="status" className="mt-4 border p-4 text-center">
-          <p className="flex items-center justify-center gap-2 font-display text-xl font-semibold">
-            {correct ? <span className="size-2.5 bg-accent" aria-hidden /> : null}
+          <p className="font-display flex items-center justify-center gap-2 text-xl font-semibold">
+            {correct ? <span className="bg-accent size-2.5" aria-hidden /> : null}
             {correct ? "Correct" : "Wrong"}
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {right.name} scores {right.score.toLocaleString("en-US")}, {relation} {left.name}.
+          <p className="text-muted-foreground mt-1 text-sm">
+            {right.name} scores {right.score.toLocaleString("en-US")}, {relation}{" "}
+            {left.name}.
           </p>
         </div>
       ) : (
         <div className="mt-4 grid grid-cols-2 gap-3">
-          <button type="button" className="btn btn-solid" onClick={() => onGuess("higher")}>
+          <button
+            type="button"
+            className="btn btn-solid"
+            onClick={() => onGuess("higher")}
+          >
             Higher
           </button>
           <button type="button" className="btn btn-line" onClick={() => onGuess("lower")}>

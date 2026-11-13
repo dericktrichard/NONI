@@ -41,14 +41,18 @@ describe("compileProfile", () => {
   it("derives dimension from the tiers unless overridden", () => {
     expect(make({ slug: "a", attackPotency: "7-B" }).dimension).toBe(3);
     expect(make({ slug: "a", attackPotency: "Low 2-C" }).dimension).toBe(4);
-    expect(make({ slug: "a", attackPotency: "1-C", durability: "1-C" }).dimension).toBe(7);
+    expect(make({ slug: "a", attackPotency: "1-C", durability: "1-C" }).dimension).toBe(
+      7,
+    );
     expect(make({ slug: "a", attackPotency: "7-B", dimension: 5 }).dimension).toBe(5);
   });
 
   it("validates dimensions and ability kinds", () => {
     expect(() => make({ slug: "a", dimension: 2 })).toThrow();
     expect(() => make({ slug: "a", dimension: 3.5 })).toThrow();
-    expect(() => make({ slug: "a", hax: [{ kind: "teleport" as never, power: "7-A" }] })).toThrow();
+    expect(() =>
+      make({ slug: "a", hax: [{ kind: "teleport" as never, power: "7-A" }] }),
+    ).toThrow();
   });
 
   it("keeps the strongest claim per ability kind", () => {
@@ -64,8 +68,18 @@ describe("compileProfile", () => {
 });
 
 describe("resolver basics", () => {
-  const cosmic = make({ slug: "cosmic", attackPotency: "3-A", durability: "3-A", speed: "FTL" });
-  const city = make({ slug: "city", attackPotency: "7-B", durability: "7-B", speed: "FTL" });
+  const cosmic = make({
+    slug: "cosmic",
+    attackPotency: "3-A",
+    durability: "3-A",
+    speed: "FTL",
+  });
+  const city = make({
+    slug: "city",
+    attackPotency: "7-B",
+    durability: "7-B",
+    speed: "FTL",
+  });
 
   it("lets a far higher tier win decisively at equal speed", () => {
     const r = resolveMatchup(cosmic, city);
@@ -98,8 +112,18 @@ describe("resolver basics", () => {
   });
 
   it("does not let speed alone beat someone you cannot hurt", () => {
-    const blur = make({ slug: "blur", attackPotency: "9-C", durability: "9-C", speed: "Relativistic" });
-    const tank = make({ slug: "tank", attackPotency: "7-A", durability: "7-A", speed: "Supersonic" });
+    const blur = make({
+      slug: "blur",
+      attackPotency: "9-C",
+      durability: "9-C",
+      speed: "Relativistic",
+    });
+    const tank = make({
+      slug: "tank",
+      attackPotency: "7-A",
+      durability: "7-A",
+      speed: "Supersonic",
+    });
     expect(resolveMatchup(blur, tank).winner).toBe("b");
     expect(winProbability(blur, tank)).toBeLessThan(0.1);
   });
@@ -138,19 +162,28 @@ describe("abilities", () => {
   });
 
   it("is blocked by a matching resistance of equal or higher power", () => {
-    const warded = make({ ...tank, resistances: [{ kind: "soul-manipulation", power: "7-A" }] });
+    const warded = make({
+      ...tank,
+      resistances: [{ kind: "soul-manipulation", power: "7-A" }],
+    });
     const r = resolveMatchup(make(caster), warded);
     expect(r.winner).toBe("b");
     expect(r.reasons.some((x) => x.code === "hax_blocked")).toBe(true);
   });
 
   it("is not blocked by a weaker resistance", () => {
-    const weakWard = make({ ...tank, resistances: [{ kind: "soul-manipulation", power: "9-C" }] });
+    const weakWard = make({
+      ...tank,
+      resistances: [{ kind: "soul-manipulation", power: "9-C" }],
+    });
     expect(resolveMatchup(make(caster), weakWard).winner).toBe("a");
   });
 
   it("is blocked entirely by nullification", () => {
-    const nullifier = make({ ...tank, resistances: [{ kind: "nullification", power: "7-A" }] });
+    const nullifier = make({
+      ...tank,
+      resistances: [{ kind: "nullification", power: "7-A" }],
+    });
     expect(resolveMatchup(make(caster), nullifier).winner).toBe("b");
   });
 
@@ -165,7 +198,12 @@ describe("abilities", () => {
 });
 
 describe("dimensions", () => {
-  const fourD = make({ slug: "fourd", attackPotency: "6-B", durability: "6-B", dimension: 4 });
+  const fourD = make({
+    slug: "fourd",
+    attackPotency: "6-B",
+    durability: "6-B",
+    dimension: 4,
+  });
   const threeD = make({ slug: "threed", attackPotency: "4-B", durability: "4-B" });
 
   it("stalls when a stronger 3D character cannot reach a 4D one", () => {
@@ -186,7 +224,12 @@ describe("dimensions", () => {
   });
 
   it("lets the higher dimension win once it can hurt", () => {
-    const strong4d = make({ slug: "strong4d", attackPotency: "4-B", durability: "4-B", dimension: 4 });
+    const strong4d = make({
+      slug: "strong4d",
+      attackPotency: "4-B",
+      durability: "4-B",
+      dimension: 4,
+    });
     expect(resolveMatchup(strong4d, threeD).winner).toBe("a");
   });
 });
@@ -234,9 +277,19 @@ describe("intransitive matchups", () => {
 describe("field ranking", () => {
   const cast = [
     make({ slug: "god", attackPotency: "3-A", durability: "3-A", speed: "FTL" }),
-    make({ slug: "star", attackPotency: "4-C", durability: "4-C", speed: "Relativistic" }),
+    make({
+      slug: "star",
+      attackPotency: "4-C",
+      durability: "4-C",
+      speed: "Relativistic",
+    }),
     make({ slug: "city", attackPotency: "7-B", durability: "7-B", speed: "Supersonic" }),
-    make({ slug: "human", attackPotency: "10-B", durability: "10-B", speed: "Normal Human" }),
+    make({
+      slug: "human",
+      attackPotency: "10-B",
+      durability: "10-B",
+      speed: "Normal Human",
+    }),
   ];
 
   it("orders by strength and keeps scores in range", () => {
@@ -258,7 +311,11 @@ describe("field ranking", () => {
 
   it("limits each character to a deterministic field when the roster is large", () => {
     const many = Array.from({ length: 10 }, (_, i) =>
-      make({ slug: `c${String(i).padStart(2, "0")}`, attackPotency: AP_TIERS[i + 3].id, durability: AP_TIERS[i + 3].id }),
+      make({
+        slug: `c${String(i).padStart(2, "0")}`,
+        attackPotency: AP_TIERS[i + 3].id,
+        durability: AP_TIERS[i + 3].id,
+      }),
     );
     const field = selectField(many, 4);
     expect(field.map((p) => p.slug)).toEqual(["c00", "c02", "c05", "c07"]);
@@ -281,7 +338,10 @@ describe("applyVerifiedClaims", () => {
     speed: "Peak Human",
     hax: [{ kind: "sealing", power: "9-C" }],
   };
-  const f = (claim: FeatClaim, status: "pending" | "verified" | "rejected") => ({ claim, status });
+  const f = (claim: FeatClaim, status: "pending" | "verified" | "rejected") => ({
+    claim,
+    status,
+  });
 
   it("uses the highest verified claim and ignores the rest", () => {
     const out = applyVerifiedClaims(seed, [

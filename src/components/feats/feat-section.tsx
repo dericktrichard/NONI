@@ -29,7 +29,13 @@ const FILTERS: Array<{ key: Filter; label: string }> = [
   { key: "pending", label: "Pending" },
 ];
 
-export function FeatSection({ characterId, initialFeats }: { characterId: string; initialFeats: FeatView[] }) {
+export function FeatSection({
+  characterId,
+  initialFeats,
+}: {
+  characterId: string;
+  initialFeats: FeatView[];
+}) {
   const { state } = useSession();
   const user = state.status === "ready" ? state.user : null;
   const uid = user?.uid ?? null;
@@ -58,7 +64,8 @@ export function FeatSection({ characterId, initialFeats }: { characterId: string
   }, [uid, characterId, ids]);
 
   const myVotes = uid ? mine : {};
-  const visible = filter === "all" ? feats : feats.filter((feat) => feat.status === filter);
+  const visible =
+    filter === "all" ? feats : feats.filter((feat) => feat.status === filter);
 
   function askToSignIn() {
     window.dispatchEvent(new Event(OPEN_SIGN_IN));
@@ -92,7 +99,13 @@ export function FeatSection({ characterId, initialFeats }: { characterId: string
       });
       const data = (await response.json().catch(() => null)) as VoteResponse | null;
 
-      if (!response.ok || !data || data.status === undefined || data.upvotes === undefined || data.downvotes === undefined) {
+      if (
+        !response.ok ||
+        !data ||
+        data.status === undefined ||
+        data.upvotes === undefined ||
+        data.downvotes === undefined
+      ) {
         setNotice(data?.error ?? "Could not save the vote.");
         return;
       }
@@ -161,7 +174,7 @@ export function FeatSection({ characterId, initialFeats }: { characterId: string
       )}
 
       {visible.length === 0 ? (
-        <p className="mt-4 border p-10 text-center text-muted-foreground">
+        <p className="text-muted-foreground mt-4 border p-10 text-center">
           {feats.length === 0
             ? "No feats yet. Be the first to submit one with proof."
             : "No feats in this filter."}

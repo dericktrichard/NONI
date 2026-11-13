@@ -1,3 +1,5 @@
+import { fanPoints as wantedPoints, type BattleKind } from "@/lib/standing/rules";
+
 /** Every number of the anti-farming rules. Days are UTC days. */
 export const FAIR = {
   practice: { win: 1, dailyCap: 10 },
@@ -5,6 +7,49 @@ export const FAIR = {
   fan: { perCharacterDay: 12 },
   climb: { perRound: 1, title: { 8: 10, 16: 20 }, runsPerDay: 2 },
 } as const;
+
+export interface Daily {
+  matches: number;
+  staked: number;
+  /** Net Glaze from staked matches today */
+  net: number;
+  /** Glaze earned from practice wins today */
+  practice: number;
+  climbRuns: number;
+  matchups: string[];
+  climbs: string[];
+  /** Fan points granted today, per character */
+  fan: Record<string, number>;
+}
+
+export const EMPTY_DAILY: Daily = {
+  matches: 0,
+  staked: 0,
+  net: 0,
+  practice: 0,
+  climbRuns: 0,
+  matchups: [],
+  climbs: [],
+  fan: {},
+};
+
+/** What the screens need to know about today */
+export interface Today {
+  /** After the first match of the day the matchmaker chooses the opponent */
+  matchmade: boolean;
+  stakesLeft: number;
+  practiceLeft: number;
+  winsLeft: number;
+  climbRunsLeft: number;
+}
+
+export const todayOf = (daily: Daily): Today => ({
+  matchmade: daily.matches > 0,
+  stakesLeft: Math.max(0, FAIR.staked.perDay - daily.staked),
+  practiceLeft: Math.max(0, FAIR.practice.dailyCap - daily.practice),
+  winsLeft: Math.max(0, FAIR.staked.netWinCap - daily.net),
+  climbRunsLeft: Math.max(0, FAIR.climb.runsPerDay - daily.climbRuns),
+});
 
 const side = (team: readonly string[]) => [...team].sort().join(",");
 
@@ -55,6 +100,19 @@ export function fanPoints(input: {
     0,
     Math.min(input.wanted, FAIR.fan.perCharacterDay - input.earnedToday),
   );
+}
+
+/** Fan points a battle may add per character, after today's per-character cap */
+export function fanGrant(
+  kind: BattleKind,
+  slugs: readonly string[],
+  used: Readonly<Record<string, number>>,
+): Record<string, number> {
+  const granted: Record<string, number> = {};
+  for (const [slug, wanted] of Object.entries(wantedPoints(kind, slugs))) {
+    granted[slug] = fanPoints({ wanted, earnedToday: used[slug] ?? 0, repeat: false });
+  }
+  return granted;
 }
 
 /** Tournament reward by placement. Repeats and runs past the daily limit pay nothing. */

@@ -20,7 +20,12 @@ interface SegmentedProps<T extends string | number> {
   onChange: (value: T) => void;
 }
 
-export function Segmented<T extends string | number>({ label, value, options, onChange }: SegmentedProps<T>) {
+export function Segmented<T extends string | number>({
+  label,
+  value,
+  options,
+  onChange,
+}: SegmentedProps<T>) {
   return (
     <div role="group" aria-label={label} className="flex items-center gap-2">
       <span className="eyebrow">{label}</span>
@@ -33,7 +38,7 @@ export function Segmented<T extends string | number>({ label, value, options, on
             aria-pressed={value === option.value}
             onClick={() => onChange(option.value)}
             className={cn(
-              "h-8 border-b-2 border-transparent px-2.5 text-xs font-medium transition-colors enabled:hover:bg-muted disabled:opacity-40",
+              "enabled:hover:bg-muted h-8 border-b-2 border-transparent px-2.5 text-xs font-medium transition-colors disabled:opacity-40",
               value === option.value && "border-b-accent",
             )}
           >
@@ -55,7 +60,9 @@ export function PhaseRail({ phase }: { phase: number }) {
           key={label}
           className={cn(
             "border-b-2 pb-0.5 text-[10px] font-medium tracking-widest uppercase transition-colors",
-            index === phase ? "border-b-accent text-background" : "border-transparent text-background/40",
+            index === phase
+              ? "border-b-accent text-background"
+              : "text-background/40 border-transparent",
           )}
         >
           {label}
@@ -66,21 +73,34 @@ export function PhaseRail({ phase }: { phase: number }) {
 }
 
 export const Tag = ({ children }: { children: React.ReactNode }) => (
-  <span className="border border-background/60 px-1.5 py-0.5 text-[10px] font-semibold tracking-widest uppercase">{children}</span>
+  <span className="border-background/60 border px-1.5 py-0.5 text-[10px] font-semibold tracking-widest uppercase">
+    {children}
+  </span>
 );
 
 export function Sweep({ label }: { label: string }) {
   return (
     <div>
-      <div className="relative h-1.5 overflow-hidden border border-background/50" aria-hidden>
-        <div className="anim-sweep absolute inset-y-0 left-0 w-2/5 bg-background" />
+      <div
+        className="border-background/50 relative h-1.5 overflow-hidden border"
+        aria-hidden
+      >
+        <div className="anim-sweep bg-background absolute inset-y-0 left-0 w-2/5" />
       </div>
-      <p className="mt-1 text-xs text-background/60">{label}</p>
+      <p className="text-background/60 mt-1 text-xs">{label}</p>
     </div>
   );
 }
 
-export function PlaybackBar({ p, newLabel, onNew }: { p: Playback; newLabel: string; onNew: () => void }) {
+export function PlaybackBar({
+  p,
+  newLabel,
+  onNew,
+}: {
+  p: Playback;
+  newLabel: string;
+  onNew: () => void;
+}) {
   return (
     <div className="flex flex-wrap gap-2">
       {p.done ? (
@@ -95,7 +115,11 @@ export function PlaybackBar({ p, newLabel, onNew }: { p: Playback; newLabel: str
       ) : (
         <>
           <button type="button" className="btn btn-line btn-sm" onClick={p.toggle}>
-            {p.running ? <Pause className="size-4" aria-hidden /> : <Play className="size-4" aria-hidden />}
+            {p.running ? (
+              <Pause className="size-4" aria-hidden />
+            ) : (
+              <Play className="size-4" aria-hidden />
+            )}
             {p.running ? "Pause" : "Play"}
           </button>
           <button type="button" className="btn btn-line btn-sm" onClick={p.next}>
@@ -104,7 +128,12 @@ export function PlaybackBar({ p, newLabel, onNew }: { p: Playback; newLabel: str
           <button type="button" className="btn btn-quiet btn-sm" onClick={p.skip}>
             <SkipForward className="size-4" aria-hidden /> Skip
           </button>
-          <button type="button" className="btn btn-quiet btn-sm tabular" onClick={p.cycleSpeed} aria-label="Playback speed">
+          <button
+            type="button"
+            className="btn btn-quiet btn-sm tabular"
+            onClick={p.cycleSpeed}
+            aria-label="Playback speed"
+          >
             {p.speed}x
           </button>
         </>
@@ -113,7 +142,15 @@ export function PlaybackBar({ p, newLabel, onNew }: { p: Playback; newLabel: str
   );
 }
 
-export function GlazeLine({ settlement, stake }: { settlement: GlazeChange; stake: number }) {
+export function GlazeLine({
+  settlement,
+  stake,
+  notice,
+}: {
+  settlement: GlazeChange;
+  stake: number;
+  notice?: string | null;
+}) {
   const { change, balance, capped } = settlement;
   const text =
     stake > 0
@@ -129,6 +166,7 @@ export function GlazeLine({ settlement, stake }: { settlement: GlazeChange; stak
     <p className="tabular mt-3 text-sm">
       {text}
       {capped ? ", daily limit reached" : ""}. Balance {balance.toLocaleString("en-US")}.
+      {notice ? " " + notice : ""}
     </p>
   );
 }
@@ -146,29 +184,49 @@ export function Fighter({ card, side, phase, result, health }: FighterProps) {
   const down = phase === 2 && result !== "win";
   const won = phase === 2 && result === "win";
   return (
-    <div className={cn("flex min-h-0 min-w-0 flex-1 flex-col", side === "l" ? "anim-in-l" : "anim-in-r")}>
-      <div className={cn("relative min-h-16 flex-1 border border-background/40", phase === 1 && (side === "l" ? "anim-clash-l" : "anim-clash-r"))}>
+    <div
+      className={cn(
+        "flex min-h-0 min-w-0 flex-1 flex-col",
+        side === "l" ? "anim-in-l" : "anim-in-r",
+      )}
+    >
+      <div
+        className={cn(
+          "border-background/40 relative min-h-16 flex-1 border",
+          phase === 1 && (side === "l" ? "anim-clash-l" : "anim-clash-r"),
+        )}
+      >
         <Portrait
           name={card.name}
           src={card.imageUrl}
           sizes="240px"
-          className={cn("absolute inset-0 size-full transition-[filter] duration-700", down && "grayscale")}
+          className={cn(
+            "absolute inset-0 size-full transition-[filter] duration-700",
+            down && "grayscale",
+          )}
         />
         {down ? (
           <span className="anim-pop absolute inset-0 grid place-items-center">
-            <span className="-rotate-6 border-2 border-foreground bg-background px-2 font-display text-2xl font-bold text-foreground sm:text-3xl">KO</span>
+            <span className="border-foreground bg-background font-display text-foreground -rotate-6 border-2 px-2 text-2xl font-bold sm:text-3xl">
+              KO
+            </span>
           </span>
         ) : null}
         {won ? (
-          <span className="anim-pop absolute top-1 left-1 flex items-center gap-1 bg-background px-1.5 py-0.5 text-[10px] font-semibold tracking-widest text-foreground uppercase">
-            <span className="size-1.5 bg-accent" aria-hidden /> Winner
+          <span className="anim-pop bg-background text-foreground absolute top-1 left-1 flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold tracking-widest uppercase">
+            <span className="bg-accent size-1.5" aria-hidden /> Winner
           </span>
         ) : null}
       </div>
-      <p className="mt-1 truncate font-display text-sm font-semibold sm:text-base">{card.name}</p>
+      <p className="font-display mt-1 truncate text-sm font-semibold sm:text-base">
+        {card.name}
+      </p>
       {health ? (
-        <div className="mt-1 h-1.5 border border-background/50">
-          <div className="h-full bg-background transition-[width] duration-1000" style={{ width: `${phase === 2 ? health.to : health.from}%` }} />
+        <div className="border-background/50 mt-1 h-1.5 border">
+          <div
+            className="bg-background h-full transition-[width] duration-1000"
+            style={{ width: `${phase === 2 ? health.to : health.from}%` }}
+          />
         </div>
       ) : null}
     </div>

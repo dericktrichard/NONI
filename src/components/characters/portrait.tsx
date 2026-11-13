@@ -24,7 +24,7 @@ function initials(name: string) {
 export function Portrait({ name, src, sizes, className, priority }: PortraitProps) {
   return (
     <div
-      className={cn("relative overflow-hidden bg-muted", className)}
+      className={cn("bg-muted relative overflow-hidden", className)}
       style={{ containerType: "inline-size" }}
     >
       {src ? (
@@ -39,17 +39,17 @@ export function Portrait({ name, src, sizes, className, priority }: PortraitProp
       ) : (
         <div role="img" aria-label={name} className="absolute inset-0">
           <span
-            className="absolute inset-0 grid select-none place-items-center font-display font-semibold tracking-tighter text-foreground/15"
+            className="font-display text-foreground/15 absolute inset-0 grid place-items-center font-semibold tracking-tighter select-none"
             style={{ fontSize: "38cqw" }}
             aria-hidden
           >
             {initials(name)}
           </span>
           {/* Print-style crop marks */}
-          <span className="absolute top-1.5 left-1.5 size-2 border-t border-l border-foreground/30" />
-          <span className="absolute top-1.5 right-1.5 size-2 border-t border-r border-foreground/30" />
-          <span className="absolute bottom-1.5 left-1.5 size-2 border-b border-l border-foreground/30" />
-          <span className="absolute right-1.5 bottom-1.5 size-2 border-r border-b border-foreground/30" />
+          <span className="border-foreground/30 absolute top-1.5 left-1.5 size-2 border-t border-l" />
+          <span className="border-foreground/30 absolute top-1.5 right-1.5 size-2 border-t border-r" />
+          <span className="border-foreground/30 absolute bottom-1.5 left-1.5 size-2 border-b border-l" />
+          <span className="border-foreground/30 absolute right-1.5 bottom-1.5 size-2 border-r border-b" />
         </div>
       )}
     </div>

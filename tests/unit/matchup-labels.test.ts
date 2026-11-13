@@ -18,13 +18,21 @@ describe("percentA", () => {
 
 describe("verdictText", () => {
   it("names the winner with the strength of the verdict", () => {
-    expect(verdictText({ winner: "a", verdict: "decisive" }, names)).toBe("Goku wins decisively");
-    expect(verdictText({ winner: "b", verdict: "clear" }, names)).toBe("Gojo wins clearly");
-    expect(verdictText({ winner: "a", verdict: "narrow" }, names)).toBe("Goku wins narrowly");
+    expect(verdictText({ winner: "a", verdict: "decisive" }, names)).toBe(
+      "Goku wins decisively",
+    );
+    expect(verdictText({ winner: "b", verdict: "clear" }, names)).toBe(
+      "Gojo wins clearly",
+    );
+    expect(verdictText({ winner: "a", verdict: "narrow" }, names)).toBe(
+      "Goku wins narrowly",
+    );
   });
 
   it("does not name a winner for toss-ups or stalemates", () => {
-    expect(verdictText({ winner: null, verdict: "toss-up" }, names)).toBe("Too close to call");
+    expect(verdictText({ winner: null, verdict: "toss-up" }, names)).toBe(
+      "Too close to call",
+    );
     expect(verdictText({ winner: null, verdict: "stalemate" }, names)).toBe("Stalemate");
   });
 });

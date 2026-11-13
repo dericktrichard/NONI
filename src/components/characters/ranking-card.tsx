@@ -10,7 +10,7 @@ export function RankingCard({ c, position }: { c: CharacterSummary; position: nu
     <li>
       <Link
         href={`/characters/${c.id}`}
-        className="group block border bg-background transition-colors hover:border-foreground"
+        className="group bg-background hover:border-foreground block border transition-colors"
       >
         <div className="relative">
           <Portrait
@@ -19,7 +19,7 @@ export function RankingCard({ c, position }: { c: CharacterSummary; position: nu
             sizes="(min-width: 1024px) 280px, (min-width: 640px) 33vw, 50vw"
             className="aspect-4/5 w-full"
           />
-          <span className="absolute top-0 left-0 bg-foreground px-2 py-1 font-display text-sm font-semibold tabular-nums text-background">
+          <span className="bg-foreground font-display text-background absolute top-0 left-0 px-2 py-1 text-sm font-semibold tabular-nums">
             {pad2(position)}
           </span>
           <span className="absolute top-2 right-2">
@@ -27,10 +27,12 @@ export function RankingCard({ c, position }: { c: CharacterSummary; position: nu
           </span>
         </div>
 
-        <span className="block h-1 w-0 bg-accent transition-[width] duration-200 group-hover:w-full" />
+        <span className="bg-accent block h-1 w-0 transition-[width] duration-200 group-hover:w-full" />
 
         <div className="p-3">
-          <p className="truncate font-display font-semibold underline-offset-4 group-hover:underline">{c.name}</p>
+          <p className="font-display truncate font-semibold underline-offset-4 group-hover:underline">
+            {c.name}
+          </p>
           <p className="eyebrow truncate">{c.verse}</p>
           <div className="mt-2 flex items-center justify-between">
             <span className="tabular font-semibold">{formatScore(c.score)}</span>

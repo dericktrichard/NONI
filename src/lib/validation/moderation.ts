@@ -37,7 +37,7 @@ export const moderateSchema = z
     }
   });
 
-  const slug = z.string().max(80).regex(SLUG_RE);
+const slug = z.string().max(80).regex(SLUG_RE);
 
 export const reportArgumentSchema = z
   .object({
@@ -61,7 +61,11 @@ export const moderateArgumentSchema = z
   .strict()
   .superRefine((value, ctx) => {
     if (value.a === value.b) {
-      ctx.addIssue({ code: "custom", path: ["b"], message: "A character cannot face itself." });
+      ctx.addIssue({
+        code: "custom",
+        path: ["b"],
+        message: "A character cannot face itself.",
+      });
     }
     if (argumentNeedsNote(value.action) && (value.note?.length ?? 0) < 5) {
       ctx.addIssue({ code: "custom", path: ["note"], message: "Give a reason." });

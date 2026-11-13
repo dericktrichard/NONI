@@ -41,7 +41,8 @@ export async function guardRequest(request: Request, rule: Rule): Promise<Checke
 
   try {
     const decision = await consume(rule.scope, user.uid, rule.limit, rule.windowMs);
-    if (!decision.allowed) return fail(429, "Too many requests.", decision.retryAfterSeconds);
+    if (!decision.allowed)
+      return fail(429, "Too many requests.", decision.retryAfterSeconds);
   } catch (error) {
     console.error("rate limit failed", error);
     return fail(503, "Try again shortly.");
@@ -59,7 +60,8 @@ export async function guardWrite<T>(
   const checked = await guardRequest(request, rule);
   if (!checked.ok) return checked;
 
-  if (!request.headers.get("content-type")?.startsWith("application/json")) return fail(415, "Unsupported content type.");
+  if (!request.headers.get("content-type")?.startsWith("application/json"))
+    return fail(415, "Unsupported content type.");
   const text = await request.text();
   if (text.length > maxBytes) return fail(413, "Request too large.");
 

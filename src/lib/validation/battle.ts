@@ -16,9 +16,19 @@ export const teamSuggestSchema = z
     difficulty: difficulty.default("fair"),
   })
   .strict()
-  .refine((value) => value.mode !== "counter" || value.against.length > 0, { message: "Choose the team to counter." });
+  .refine((value) => value.mode !== "counter" || value.against.length > 0, {
+    message: "Choose the team to counter.",
+  });
 
-export const clashSchema = z.object({ teamA: team, teamB: team, stake }).strict();
+/** teamB is only used for the first match of the day, after that the matchmaker chooses */
+export const clashSchema = z
+  .object({
+    teamA: team,
+    teamB: z.array(slug).max(5).default([]),
+    difficulty: difficulty.default("fair"),
+    stake,
+  })
+  .strict();
 
 export const climbSchema = z
   .object({
@@ -26,6 +36,7 @@ export const climbSchema = z
     size: z.union([z.literal(8), z.literal(16)]),
     mode: z.enum(["counters", "random"]),
     difficulty,
-    stake,
   })
   .strict();
+
+export const todaySchema = z.object({}).strict();

@@ -6,12 +6,7 @@ export type Side = "a" | "b";
 export type Verdict = "decisive" | "clear" | "narrow" | "toss-up" | "stalemate";
 
 export type ReasonCode =
-  | "damage"
-  | "speed"
-  | "dimension"
-  | "hax_lands"
-  | "hax_blocked"
-  | "stalemate";
+  "damage" | "speed" | "dimension" | "hax_lands" | "hax_blocked" | "stalemate";
 
 export interface MatchupReason {
   code: ReasonCode;
@@ -44,7 +39,10 @@ interface Offense {
 
 const logistic = (x: number) => 1 / (1 + Math.exp(-x));
 
-function isBlocked(hax: { kind: HaxKind; power: number }, target: CombatProfile): boolean {
+function isBlocked(
+  hax: { kind: HaxKind; power: number },
+  target: CombatProfile,
+): boolean {
   return target.resistances.some(
     (r) => (r.kind === hax.kind || r.kind === "nullification") && r.power >= hax.power,
   );
@@ -133,7 +131,11 @@ function winnerOf(probabilityA: number, stalemate: boolean): Side | null {
   return probabilityA > 0.5 ? "a" : "b";
 }
 
-function buildReasons(a: CombatProfile, b: CombatProfile, e: Evaluation): MatchupReason[] {
+function buildReasons(
+  a: CombatProfile,
+  b: CombatProfile,
+  e: Evaluation,
+): MatchupReason[] {
   const reasons: MatchupReason[] = [];
 
   // Raw damage
@@ -152,14 +154,26 @@ function buildReasons(a: CombatProfile, b: CombatProfile, e: Evaluation): Matchu
       note: `${b.name} (${apLabel(b.ap)}) can harm ${a.name} (durability ${apLabel(a.durability)}), but not the other way round.`,
     });
   } else if (aHurts && bHurts) {
-    reasons.push({ code: "damage", favors: "even", note: "Both can harm each other with raw damage." });
+    reasons.push({
+      code: "damage",
+      favors: "even",
+      note: "Both can harm each other with raw damage.",
+    });
   } else {
-    reasons.push({ code: "damage", favors: "even", note: "Neither can reliably harm the other with raw damage." });
+    reasons.push({
+      code: "damage",
+      favors: "even",
+      note: "Neither can reliably harm the other with raw damage.",
+    });
   }
 
   // Speed
   if (a.speed === b.speed) {
-    reasons.push({ code: "speed", favors: "even", note: `Both move at ${speedLabel(a.speed)} speed.` });
+    reasons.push({
+      code: "speed",
+      favors: "even",
+      note: `Both move at ${speedLabel(a.speed)} speed.`,
+    });
   } else {
     const fasterIsA = a.speed > b.speed;
     const faster = fasterIsA ? a : b;

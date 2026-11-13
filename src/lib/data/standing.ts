@@ -40,12 +40,14 @@ export async function recordBattle(
     won: boolean;
     title: boolean;
     change: number;
+    /** Fan points to grant per character, defaults to the full amount */
+    points?: Record<string, number>;
   },
 ): Promise<void> {
   const db = adminDb();
   const userRef = db.collection(COL.users).doc(uid);
   const week = weekKey(new Date());
-  const points = fanPoints(input.kind, input.slugs);
+  const points = input.points ?? fanPoints(input.kind, input.slugs);
 
   try {
     await db.runTransaction(async (tx) => {
@@ -66,6 +68,7 @@ export async function recordBattle(
         { merge: true },
       );
       for (const [slug, score] of Object.entries(points)) {
+        if (score <= 0) continue;
         tx.set(
           db.collection(FANS).doc(`${slug}_${uid}`),
           {

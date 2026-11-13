@@ -22,7 +22,10 @@ describe("nextListStatus", () => {
 describe("withoutCharacter", () => {
   it("removes only the matching entry", () => {
     const items = [{ characterId: "a" }, { characterId: "b" }, { characterId: "c" }];
-    expect(withoutCharacter(items, "b")).toEqual([{ characterId: "a" }, { characterId: "c" }]);
+    expect(withoutCharacter(items, "b")).toEqual([
+      { characterId: "a" },
+      { characterId: "c" },
+    ]);
     expect(withoutCharacter(items, "z")).toHaveLength(3);
   });
 });

@@ -21,7 +21,12 @@ const result: ClimbResult = {
   champion: "z",
   beatenBy: "b",
   rounds: [
-    [match(1, "h", "a", "h"), match(1, "b", "c", "b"), match(1, "d", "e", "d"), match(1, "z", "f", "z")],
+    [
+      match(1, "h", "a", "h"),
+      match(1, "b", "c", "b"),
+      match(1, "d", "e", "d"),
+      match(1, "z", "f", "z"),
+    ],
     [match(2, "h", "b", "b"), match(2, "d", "z", "z")],
     [match(3, "b", "z", "z")],
   ],
@@ -29,8 +34,17 @@ const result: ClimbResult = {
 
 describe("roundName", () => {
   it("names rounds from the final backwards", () => {
-    expect([1, 2, 3, 4].map((round) => roundName(round, 4))).toEqual(["Round of 16", "Quarter-final", "Semi-final", "Final"]);
-    expect([1, 2, 3].map((round) => roundName(round, 3, true))).toEqual(["Quarter", "Semi", "Final"]);
+    expect([1, 2, 3, 4].map((round) => roundName(round, 4))).toEqual([
+      "Round of 16",
+      "Quarter-final",
+      "Semi-final",
+      "Final",
+    ]);
+    expect([1, 2, 3].map((round) => roundName(round, 3, true))).toEqual([
+      "Quarter",
+      "Semi",
+      "Final",
+    ]);
     expect(roundName(1, 4, true)).toBe("R16");
   });
 });

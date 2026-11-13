@@ -18,7 +18,16 @@ const raw = (over: Record<string, unknown> = {}) => ({
 });
 
 const card = (id: string, votes: number, args: number, at: number): MatchupCardData =>
-  toCard(id, raw({ characterAId: id, votesA: votes, votesB: 0, argumentCount: args, lastActivityAt: stamp(at) }))!;
+  toCard(
+    id,
+    raw({
+      characterAId: id,
+      votesA: votes,
+      votesB: 0,
+      argumentCount: args,
+      lastActivityAt: stamp(at),
+    }),
+  )!;
 
 describe("toCard", () => {
   it("maps a matchup document", () => {
@@ -38,7 +47,9 @@ describe("toCard", () => {
   });
 
   it("drops images that are not https", () => {
-    expect(toCard("x", raw({ aImageUrl: "http://img.test/a.webp" }))?.a.imageUrl).toBeNull();
+    expect(
+      toCard("x", raw({ aImageUrl: "http://img.test/a.webp" }))?.a.imageUrl,
+    ).toBeNull();
   });
 });
 
@@ -50,7 +61,11 @@ describe("hotScore", () => {
 
 describe("splitFeed", () => {
   it("ranks hot by score and keeps the rest in recency order", () => {
-    const cards = [card("one", 1, 0, 300), card("two", 9, 1, 200), card("three", 3, 0, 100)];
+    const cards = [
+      card("one", 1, 0, 300),
+      card("two", 9, 1, 200),
+      card("three", 3, 0, 100),
+    ];
     const { hot, recent } = splitFeed(cards, 2, 5);
     expect(hot.map((c) => c.id)).toEqual(["two", "three"]);
     expect(recent.map((c) => c.id)).toEqual(["one"]);

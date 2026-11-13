@@ -24,7 +24,11 @@ describe("parseExplore", () => {
   });
 
   it("shows the full list for all=1", () => {
-    expect(parse("all=1")).toEqual({ mode: "list", facet: { kind: "all" }, view: "rows" });
+    expect(parse("all=1")).toEqual({
+      mode: "list",
+      facet: { kind: "all" },
+      view: "rows",
+    });
   });
 
   it("reads the grid view", () => {

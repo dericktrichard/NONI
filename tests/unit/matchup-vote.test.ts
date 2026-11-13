@@ -10,8 +10,16 @@ import {
 
 describe("orderPair", () => {
   it("puts the alphabetically first slug first and reports a flip", () => {
-    expect(orderPair("gojo", "goku")).toEqual({ first: "gojo", second: "goku", flipped: false });
-    expect(orderPair("goku", "gojo")).toEqual({ first: "gojo", second: "goku", flipped: true });
+    expect(orderPair("gojo", "goku")).toEqual({
+      first: "gojo",
+      second: "goku",
+      flipped: false,
+    });
+    expect(orderPair("goku", "gojo")).toEqual({
+      first: "gojo",
+      second: "goku",
+      flipped: true,
+    });
   });
 });
 
@@ -58,7 +66,10 @@ describe("applyMatchupVote", () => {
   });
 
   it("never goes below zero", () => {
-    expect(applyMatchupVote({ votesA: 0, votesB: 0 }, "a", null)).toEqual({ votesA: 0, votesB: 0 });
+    expect(applyMatchupVote({ votesA: 0, votesB: 0 }, "a", null)).toEqual({
+      votesA: 0,
+      votesB: 0,
+    });
   });
 });
 

@@ -4,7 +4,8 @@ import { compileProfile } from "@/lib/ranking/profile";
 
 describe("sample roster", () => {
   it("compiles, so every tier, speed and ability name is real", () => {
-    for (const seed of MOCK_SEEDS) expect(() => compileProfile(seed.profile)).not.toThrow();
+    for (const seed of MOCK_SEEDS)
+      expect(() => compileProfile(seed.profile)).not.toThrow();
   });
 
   it("is ranked best first with scores in range", () => {

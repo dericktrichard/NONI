@@ -18,9 +18,15 @@ export async function POST(request: Request) {
     return NextResponse.json(result, { headers: NO_STORE });
   } catch (error) {
     if (error instanceof HttpError) {
-      return NextResponse.json({ error: error.message }, { status: error.status, headers: NO_STORE });
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status, headers: NO_STORE },
+      );
     }
     console.error("vote failed", error);
-    return NextResponse.json({ error: "Could not save the vote." }, { status: 500, headers: NO_STORE });
+    return NextResponse.json(
+      { error: "Could not save the vote." },
+      { status: 500, headers: NO_STORE },
+    );
   }
 }

@@ -1,4 +1,11 @@
-import { resolveMatchup, winProbability, type MatchupResult, type ReasonCode, type Side, type Verdict } from "@/lib/ranking/matchup";
+import {
+  resolveMatchup,
+  winProbability,
+  type MatchupResult,
+  type ReasonCode,
+  type Side,
+  type Verdict,
+} from "@/lib/ranking/matchup";
 import type { CombatProfile } from "@/lib/ranking/profile";
 import { BATTLE } from "./config";
 import { cmp } from "./types";
@@ -61,18 +68,26 @@ export const TEAM_MESSAGES: Record<TeamIssue, string> = {
   overlap: "A character cannot be on both teams.",
 };
 
-export function checkTeams(a: readonly CombatProfile[], b: readonly CombatProfile[]): TeamIssue | null {
+export function checkTeams(
+  a: readonly CombatProfile[],
+  b: readonly CombatProfile[],
+): TeamIssue | null {
   if (a.length === 0 || b.length === 0) return "empty";
   if (a.length !== b.length || a.length > BATTLE.maxTeam) return "size";
   const slugsA = a.map((p) => p.slug);
   const slugsB = b.map((p) => p.slug);
-  if (new Set(slugsA).size !== slugsA.length || new Set(slugsB).size !== slugsB.length) return "duplicate";
+  if (new Set(slugsA).size !== slugsA.length || new Set(slugsB).size !== slugsB.length)
+    return "duplicate";
   if (slugsA.some((slug) => slugsB.includes(slug))) return "overlap";
   return null;
 }
 
 /** The engine's win probability, moved by how worn down each fighter is */
-export function effectiveProbability(base: number, vitalityA: number, vitalityB: number): number {
+export function effectiveProbability(
+  base: number,
+  vitalityA: number,
+  vitalityB: number,
+): number {
   const p = Math.min(1 - 1e-9, Math.max(1e-9, base));
   const odds = (p / (1 - p)) * (vitalityA / vitalityB) ** BATTLE.vitalityWeight;
   return odds / (1 + odds);
@@ -80,10 +95,14 @@ export function effectiveProbability(base: number, vitalityA: number, vitalityB:
 
 /** Vitality a winner loses, given its win probability. A narrow win costs a lot. */
 export function woundFor(lead: number): number {
-  return Math.min(BATTLE.woundMax, Math.max(BATTLE.woundMin, (1 - lead) * BATTLE.woundScale));
+  return Math.min(
+    BATTLE.woundMax,
+    Math.max(BATTLE.woundMin, (1 - lead) * BATTLE.woundScale),
+  );
 }
 
-export const clampChance = (p: number): number => Math.min(1 - BATTLE.upsetFloor, Math.max(BATTLE.upsetFloor, p));
+export const clampChance = (p: number): number =>
+  Math.min(1 - BATTLE.upsetFloor, Math.max(BATTLE.upsetFloor, p));
 
 export function memoResolver(): Resolver {
   const cache = new Map<string, MatchupResult>();
@@ -98,19 +117,30 @@ export function memoResolver(): Resolver {
   };
 }
 
-const REASON_ORDER: ReasonCode[] = ["hax_lands", "hax_blocked", "dimension", "damage", "speed"];
+const REASON_ORDER: ReasonCode[] = [
+  "hax_lands",
+  "hax_blocked",
+  "dimension",
+  "damage",
+  "speed",
+];
 
 /** The most telling engine reason that favours one side, or a fallback line */
 export function reasonFor(result: MatchupResult, side: Side): string {
   for (const code of REASON_ORDER) {
-    const found = result.reasons.find((reason) => reason.code === code && reason.favors === side);
+    const found = result.reasons.find(
+      (reason) => reason.code === code && reason.favors === side,
+    );
     if (found) return found.note;
   }
   return result.reasons[0]?.note ?? "";
 }
 
 /** Average win probability of one group against another. 0.5 is an even split. */
-export function teamEdge(team: readonly CombatProfile[], against: readonly CombatProfile[]): number {
+export function teamEdge(
+  team: readonly CombatProfile[],
+  against: readonly CombatProfile[],
+): number {
   if (team.length === 0 || against.length === 0) return 0.5;
   let total = 0;
   for (const x of team) for (const y of against) total += winProbability(x, y);
@@ -123,7 +153,8 @@ interface Fighter {
 }
 
 function slimmestEdge(a: CombatProfile, b: CombatProfile): Side {
-  if (a.verifiedFeatCount !== b.verifiedFeatCount) return a.verifiedFeatCount > b.verifiedFeatCount ? "a" : "b";
+  if (a.verifiedFeatCount !== b.verifiedFeatCount)
+    return a.verifiedFeatCount > b.verifiedFeatCount ? "a" : "b";
   return cmp(a.slug, b.slug) <= 0 ? "a" : "b";
 }
 
@@ -131,7 +162,11 @@ function slimmestEdge(a: CombatProfile, b: CombatProfile): Side {
  * Fighters meet in line-up order. The winner of a duel stays on, wounded according to how
  * narrow the win was, and meets the next fighter. A loser falls.
  */
-export function simulateClash(teamA: readonly CombatProfile[], teamB: readonly CombatProfile[], options: ClashOptions = {}): ClashResult {
+export function simulateClash(
+  teamA: readonly CombatProfile[],
+  teamB: readonly CombatProfile[],
+  options: ClashOptions = {},
+): ClashResult {
   const { rng, resolve = resolveMatchup } = options;
   const queueA: Fighter[] = teamA.map((profile) => ({ profile, vitality: 1 }));
   const queueB: Fighter[] = teamB.map((profile) => ({ profile, vitality: 1 }));
@@ -145,7 +180,9 @@ export function simulateClash(teamA: readonly CombatProfile[], teamB: readonly C
     const result = resolve(fa.profile, fb.profile);
     const stalemate = result.verdict === "stalemate";
 
-    const effective = stalemate ? 0.5 : effectiveProbability(result.probabilityA, fa.vitality, fb.vitality);
+    const effective = stalemate
+      ? 0.5
+      : effectiveProbability(result.probabilityA, fa.vitality, fb.vitality);
     const favourite: Side | null = effective > 0.5 ? "a" : effective < 0.5 ? "b" : null;
     const winner: Side | null = stalemate
       ? null
@@ -156,7 +193,8 @@ export function simulateClash(teamA: readonly CombatProfile[], teamB: readonly C
         : (favourite ?? slimmestEdge(fa.profile, fb.profile));
 
     const upset = winner !== null && favourite !== null && winner !== favourite;
-    const worn = !stalemate && !upset && result.winner !== winner && fa.vitality !== fb.vitality;
+    const worn =
+      !stalemate && !upset && result.winner !== winner && fa.vitality !== fb.vitality;
     const before = { a: fa.vitality, b: fb.vitality };
 
     let note: string;
@@ -215,11 +253,14 @@ export function simulateClash(teamA: readonly CombatProfile[], teamB: readonly C
   }
 
   const alive = (queue: Fighter[], from: number): Survivor[] =>
-    queue.slice(from).map((f) => ({ slug: f.profile.slug, name: f.profile.name, vitality: f.vitality }));
+    queue
+      .slice(from)
+      .map((f) => ({ slug: f.profile.slug, name: f.profile.name, vitality: f.vitality }));
 
   const survivorsA = alive(queueA, ia);
   const survivorsB = alive(queueB, ib);
-  const winner: Side | "draw" = survivorsA.length > 0 ? "a" : survivorsB.length > 0 ? "b" : "draw";
+  const winner: Side | "draw" =
+    survivorsA.length > 0 ? "a" : survivorsB.length > 0 ? "b" : "draw";
 
   return { winner, fights, survivorsA, survivorsB };
 }

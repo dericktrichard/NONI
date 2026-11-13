@@ -3,7 +3,11 @@
 import { useState } from "react";
 import { controlClass } from "@/components/ui/fields";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
-import { REPORT_REASONS, REPORT_REASON_LABELS, type ReportReason } from "@/lib/moderation/actions";
+import {
+  REPORT_REASONS,
+  REPORT_REASON_LABELS,
+  type ReportReason,
+} from "@/lib/moderation/actions";
 
 interface ReportButtonProps {
   endpoint: string;
@@ -56,7 +60,7 @@ export function ReportButton({ endpoint, target }: ReportButtonProps) {
             setOpen(true);
             setMessage(null);
           }}
-          className="eyebrow min-h-11 underline underline-offset-4 transition-colors hover:text-foreground"
+          className="eyebrow hover:text-foreground min-h-11 underline underline-offset-4 transition-colors"
         >
           Report
         </button>
@@ -90,7 +94,11 @@ export function ReportButton({ endpoint, target }: ReportButtonProps) {
             <button type="submit" disabled={busy} className="btn btn-solid btn-sm">
               Send report
             </button>
-            <button type="button" onClick={() => setOpen(false)} className="btn btn-quiet btn-sm">
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="btn btn-quiet btn-sm"
+            >
               Cancel
             </button>
           </div>
@@ -98,7 +106,7 @@ export function ReportButton({ endpoint, target }: ReportButtonProps) {
       )}
 
       {message ? (
-        <p role="status" className="mt-1 text-muted-foreground">
+        <p role="status" className="text-muted-foreground mt-1">
           {message}
         </p>
       ) : null}

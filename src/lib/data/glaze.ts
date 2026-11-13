@@ -20,7 +20,7 @@ export interface GlazeChange {
   /** Earned plus bought, what the player sees */
   balance: number;
   earned: number;
-  /** Always false now that practice play pays nothing. Kept until the screens stop reading it. */
+  /** Always false. Kept until the screens stop reading it. */
   capped: boolean;
 }
 

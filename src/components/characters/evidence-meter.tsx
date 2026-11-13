@@ -21,7 +21,10 @@ export function EvidenceMeter({
       {Array.from({ length: segments }, (_, i) => (
         <span
           key={i}
-          className={cn("h-1.5 w-2 rounded-[1px]", i < filled ? "bg-foreground" : "bg-border")}
+          className={cn(
+            "h-1.5 w-2 rounded-[1px]",
+            i < filled ? "bg-foreground" : "bg-border",
+          )}
         />
       ))}
     </div>

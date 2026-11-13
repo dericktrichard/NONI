@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ListBuilder } from "@/components/lists/list-builder";
 import { ProfileEditor } from "@/components/profile/profile-editor";
 import { Modal } from "@/components/ui/modal";
@@ -11,6 +11,7 @@ import { signOutEverywhere } from "@/lib/auth/client";
 import type { UserList } from "@/lib/data/lists";
 import type { OwnProfile } from "@/lib/data/profile";
 import type { Look } from "@/lib/profile/look";
+import { OPEN_LISTS } from "@/lib/ui/events";
 
 interface OwnerToolsProps {
   profile: OwnProfile;
@@ -24,8 +25,22 @@ export function OwnerTools({ profile, look, verified, staff, lists }: OwnerTools
   const router = useRouter();
   const { refresh } = useSession();
   const [open, setOpen] = useState<"edit" | "lists" | null>(null);
+  const [fresh, setFresh] = useState(false);
   const [leaving, setLeaving] = useState(false);
-  const close = () => setOpen(null);
+
+  const close = () => {
+    setOpen(null);
+    setFresh(false);
+  };
+
+  useEffect(() => {
+    const openNew = () => {
+      setFresh(true);
+      setOpen("lists");
+    };
+    window.addEventListener(OPEN_LISTS, openNew);
+    return () => window.removeEventListener(OPEN_LISTS, openNew);
+  }, []);
 
   async function leave() {
     setLeaving(true);
@@ -58,7 +73,10 @@ export function OwnerTools({ profile, look, verified, staff, lists }: OwnerTools
         <button
           type="button"
           className="btn btn-line btn-sm"
-          onClick={() => setOpen("lists")}
+          onClick={() => {
+            setFresh(false);
+            setOpen("lists");
+          }}
         >
           Edit lists
         </button>
@@ -102,7 +120,7 @@ export function OwnerTools({ profile, look, verified, staff, lists }: OwnerTools
         eyebrow="Profile"
         title="Your lists"
       >
-        <ListBuilder lists={lists} />
+        <ListBuilder lists={lists} openNew={fresh} />
       </Modal>
     </>
   );

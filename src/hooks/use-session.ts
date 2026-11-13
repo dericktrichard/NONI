@@ -10,7 +10,8 @@ export type SessionUser = {
   avatarUrl: string | null;
   avatarName: string | null;
 };
-export type SessionState = { status: "loading" } | { status: "ready"; user: SessionUser | null };
+export type SessionState =
+  { status: "loading" } | { status: "ready"; user: SessionUser | null };
 
 const LOADING: SessionState = { status: "loading" };
 

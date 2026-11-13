@@ -23,7 +23,9 @@ export function FavouriteButton({ characterId }: { characterId: string }) {
   useEffect(() => {
     if (!uid) return;
     let live = true;
-    fetch(`/api/favourites?characterId=${encodeURIComponent(characterId)}`, { cache: "no-store" })
+    fetch(`/api/favourites?characterId=${encodeURIComponent(characterId)}`, {
+      cache: "no-store",
+    })
       .then((response) => (response.ok ? response.json() : null))
       .then((json: FavouriteState | null) => {
         if (live && json) setKnown(json);
@@ -55,8 +57,14 @@ export function FavouriteButton({ characterId }: { characterId: string }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ characterId, value: !favourited }),
       });
-      const data = (await response.json().catch(() => null)) as (Partial<FavouriteState> & { error?: string }) | null;
-      if (response.ok && data && typeof data.favourited === "boolean" && typeof data.fans === "number") {
+      const data = (await response.json().catch(() => null)) as
+        (Partial<FavouriteState> & { error?: string }) | null;
+      if (
+        response.ok &&
+        data &&
+        typeof data.favourited === "boolean" &&
+        typeof data.fans === "number"
+      ) {
         setKnown({ favourited: data.favourited, fans: data.fans });
       } else {
         setNotice(data?.error ?? "Could not save that.");
@@ -79,7 +87,9 @@ export function FavouriteButton({ characterId }: { characterId: string }) {
       >
         <Heart className={cn("size-4", favourited && "fill-current")} aria-hidden />
         {favourited ? "Favourited" : "Favourite"}
-        {current ? <span className="tabular text-muted-foreground">{current.fans}</span> : null}
+        {current ? (
+          <span className="tabular text-muted-foreground">{current.fans}</span>
+        ) : null}
       </button>
       {notice ? (
         <p role="status" className="mt-2 text-xs font-medium">

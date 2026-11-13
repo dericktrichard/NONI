@@ -10,7 +10,13 @@ describe("fan points", () => {
 
 describe("tiers and titles", () => {
   it("steps through the tiers at fixed scores", () => {
-    expect([4, 5, 25, 100, 500].map(tierOf)).toEqual([null, "Fan", "Devotee", "Superfan", "Superfan"]);
+    expect([4, 5, 25, 100, 500].map(tierOf)).toEqual([
+      null,
+      "Fan",
+      "Devotee",
+      "Superfan",
+      "Superfan",
+    ]);
   });
   it("titles only the top three", () => {
     expect(fanTitle("Gojo", 1)).toBe("Gojo's no. 1 fan");
@@ -29,7 +35,16 @@ describe("weekKey", () => {
 
 describe("rankRows", () => {
   it("shares ranks on equal scores and orders ties by key", () => {
-    const rows = rankRows([{ h: "b", s: 5 }, { h: "a", s: 5 }, { h: "c", s: 9 }, { h: "d", s: 1 }], (x) => x.s, (x) => x.h);
+    const rows = rankRows(
+      [
+        { h: "b", s: 5 },
+        { h: "a", s: 5 },
+        { h: "c", s: 9 },
+        { h: "d", s: 1 },
+      ],
+      (x) => x.s,
+      (x) => x.h,
+    );
     expect(rows.map((x) => `${x.h}${x.rank}`)).toEqual(["c1", "a2", "b2", "d4"]);
   });
 });

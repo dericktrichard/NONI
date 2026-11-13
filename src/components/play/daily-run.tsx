@@ -4,7 +4,13 @@ import { useMemo, useState } from "react";
 import { DuelView } from "@/components/play/duel-view";
 import { ShareButton } from "@/components/share/share-button";
 import { savePlayStats, usePlayStats } from "@/hooks/use-play-stats";
-import { DAILY_ROUNDS, buildDaily, isCorrect, type Guess, type PlayCharacter } from "@/lib/play/game";
+import {
+  DAILY_ROUNDS,
+  buildDaily,
+  isCorrect,
+  type Guess,
+  type PlayCharacter,
+} from "@/lib/play/game";
 import { afterDaily, liveDailyStreak, previousDay } from "@/lib/play/stats";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +22,9 @@ function Squares({ answers, total }: { answers: boolean[]; total: number }) {
         return (
           <li
             key={index}
-            aria-label={answer === undefined ? "Not played" : answer ? "Correct" : "Wrong"}
+            aria-label={
+              answer === undefined ? "Not played" : answer ? "Correct" : "Wrong"
+            }
             className={cn(
               "size-4 border",
               answer === true && "border-foreground bg-foreground",
@@ -30,21 +38,29 @@ function Squares({ answers, total }: { answers: boolean[]; total: number }) {
   );
 }
 
-function Result({ day, answers, streak }: { day: string; answers: boolean[]; streak: number }) {
+function Result({
+  day,
+  answers,
+  streak,
+}: {
+  day: string;
+  answers: boolean[];
+  streak: number;
+}) {
   const score = answers.filter(Boolean).length;
   const text = `NONI Daily ${day}\n${score}/${answers.length}\n${answers.map((a) => (a ? "■" : "□")).join("")}`;
 
   return (
     <div className="border p-6 sm:p-10">
       <p className="eyebrow">Daily result / {day}</p>
-      <p className="tabular mt-3 font-display text-6xl font-semibold">
+      <p className="tabular font-display mt-3 text-6xl font-semibold">
         {score}
         <span className="text-muted-foreground"> / {answers.length}</span>
       </p>
       <div className="mt-5">
         <Squares answers={answers} total={answers.length} />
       </div>
-      <p className="mt-5 text-sm text-muted-foreground">
+      <p className="text-muted-foreground mt-5 text-sm">
         Daily streak: {streak}. A new puzzle starts at midnight UTC.
       </p>
       <div className="mt-6">
@@ -64,11 +80,22 @@ export function DailyRun({ pool, day }: { pool: PlayCharacter[]; day: string }) 
   const yesterday = previousDay(day);
 
   if (stats.daily?.day === day) {
-    return <Result day={day} answers={stats.daily.answers} streak={liveDailyStreak(stats, day, yesterday)} />;
+    return (
+      <Result
+        day={day}
+        answers={stats.daily.answers}
+        streak={liveDailyStreak(stats, day, yesterday)}
+      />
+    );
   }
 
   const duel = duels[index];
-  if (!duel) return <p className="border p-4 text-sm text-muted-foreground">Not enough characters for a puzzle yet.</p>;
+  if (!duel)
+    return (
+      <p className="text-muted-foreground border p-4 text-sm">
+        Not enough characters for a puzzle yet.
+      </p>
+    );
 
   const last = answers[index];
   const last_ = guess === null ? null : (last ?? null);

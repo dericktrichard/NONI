@@ -32,7 +32,10 @@ describe("readLook", () => {
   });
 
   it("drops images that are not https", () => {
-    const look = readLook({ avatarUrl: "http://img.test/a.webp", bannerUrl: "javascript:alert(1)" });
+    const look = readLook({
+      avatarUrl: "http://img.test/a.webp",
+      bannerUrl: "javascript:alert(1)",
+    });
     expect(look.avatarUrl).toBeNull();
     expect(look.bannerUrl).toBeNull();
   });

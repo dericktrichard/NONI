@@ -18,7 +18,10 @@ export interface RankUpdate {
   previousRank?: number;
 }
 
-export function planRerank(ranked: readonly FieldEntry[], existing: ReadonlyMap<string, ExistingRank>): RankUpdate[] {
+export function planRerank(
+  ranked: readonly FieldEntry[],
+  existing: ReadonlyMap<string, ExistingRank>,
+): RankUpdate[] {
   const updates: RankUpdate[] = [];
 
   ranked.forEach((entry, index) => {
@@ -41,7 +44,8 @@ export function planRerank(ranked: readonly FieldEntry[], existing: ReadonlyMap<
       losses: entry.losses,
       rank,
     };
-    if (before && typeof before.rank === "number" && before.rank !== rank) update.previousRank = before.rank;
+    if (before && typeof before.rank === "number" && before.rank !== rank)
+      update.previousRank = before.rank;
     updates.push(update);
   });
 

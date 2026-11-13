@@ -8,7 +8,17 @@ describe("roleOf", () => {
   });
 
   it("treats anything else as a plain user", () => {
-    for (const role of [undefined, null, "", "Admin", "superuser", 1, true, {}, ["admin"]]) {
+    for (const role of [
+      undefined,
+      null,
+      "",
+      "Admin",
+      "superuser",
+      1,
+      true,
+      {},
+      ["admin"],
+    ]) {
       expect(roleOf({ role })).toBe("user");
     }
     expect(roleOf({})).toBe("user");

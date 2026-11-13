@@ -33,7 +33,8 @@ export async function POST(request: Request) {
   const gate = attempts(getClientIp(request));
   if (!gate.allowed) return reply(429, "Too many attempts.", gate.retryAfterSeconds);
 
-  if (!request.headers.get("content-type")?.startsWith("application/json")) return reply(415, "Unsupported content type.");
+  if (!request.headers.get("content-type")?.startsWith("application/json"))
+    return reply(415, "Unsupported content type.");
 
   const text = await request.text();
   if (text.length > MAX_BODY_BYTES) return reply(413, "Request too large.");
@@ -50,7 +51,8 @@ export async function POST(request: Request) {
   try {
     const auth = adminAuth();
     const decoded = await auth.verifyIdToken(body.data.idToken, true);
-    if (Date.now() / 1000 - decoded.auth_time > RECENT_SIGN_IN_SECONDS) return reply(401, "Sign in again.");
+    if (Date.now() / 1000 - decoded.auth_time > RECENT_SIGN_IN_SECONDS)
+      return reply(401, "Sign in again.");
 
     const profile = adminDb().collection(COL.users).doc(decoded.uid);
     const now = Timestamp.now();
@@ -58,9 +60,14 @@ export async function POST(request: Request) {
       if (error.code !== FIRESTORE_ALREADY_EXISTS) throw error;
     });
 
-    const cookie = await auth.createSessionCookie(body.data.idToken, { expiresIn: SESSION_MAX_AGE_SECONDS * 1000 });
+    const cookie = await auth.createSessionCookie(body.data.idToken, {
+      expiresIn: SESSION_MAX_AGE_SECONDS * 1000,
+    });
     const response = reply(200);
-    response.cookies.set(SESSION_COOKIE, cookie, { ...cookieOptions, maxAge: SESSION_MAX_AGE_SECONDS });
+    response.cookies.set(SESSION_COOKIE, cookie, {
+      ...cookieOptions,
+      maxAge: SESSION_MAX_AGE_SECONDS,
+    });
     return response;
   } catch (error) {
     console.error("session sign-in failed", error);

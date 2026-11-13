@@ -3,13 +3,23 @@ import type { FieldEntry } from "@/lib/ranking/field";
 import { planRerank, type ExistingRank } from "@/lib/ranking/rerank-plan";
 import { detectImageType } from "@/lib/storage/image-type";
 
-const bytes = (...values: number[]) => new Uint8Array([...values, ...new Array(Math.max(0, 16 - values.length)).fill(0)]);
+const bytes = (...values: number[]) =>
+  new Uint8Array([...values, ...new Array(Math.max(0, 16 - values.length)).fill(0)]);
 
 describe("detectImageType", () => {
   it("recognises jpeg, png and webp by their first bytes", () => {
     expect(detectImageType(bytes(0xff, 0xd8, 0xff, 0xe0))).toBe("jpeg");
-    expect(detectImageType(bytes(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a))).toBe("png");
-    const webp = bytes(...[..."RIFF"].map((c) => c.charCodeAt(0)), 0, 0, 0, 0, ...[..."WEBP"].map((c) => c.charCodeAt(0)));
+    expect(detectImageType(bytes(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a))).toBe(
+      "png",
+    );
+    const webp = bytes(
+      ...[..."RIFF"].map((c) => c.charCodeAt(0)),
+      0,
+      0,
+      0,
+      0,
+      ...[..."WEBP"].map((c) => c.charCodeAt(0)),
+    );
     expect(detectImageType(webp)).toBe("webp");
   });
 
@@ -23,7 +33,14 @@ describe("detectImageType", () => {
   });
 
   it("does not accept a RIFF file that is not webp", () => {
-    const wav = bytes(...[..."RIFF"].map((c) => c.charCodeAt(0)), 0, 0, 0, 0, ...[..."WAVE"].map((c) => c.charCodeAt(0)));
+    const wav = bytes(
+      ...[..."RIFF"].map((c) => c.charCodeAt(0)),
+      0,
+      0,
+      0,
+      0,
+      ...[..."WAVE"].map((c) => c.charCodeAt(0)),
+    );
     expect(detectImageType(wav)).toBeNull();
   });
 });
@@ -40,7 +57,13 @@ const entry = (slug: string, score: number): FieldEntry => ({
   opponents: 2,
 });
 
-const stored = (rank: number | null, score: number): ExistingRank => ({ rank, score, winRate: score / 10000, wins: 1, losses: 1 });
+const stored = (rank: number | null, score: number): ExistingRank => ({
+  rank,
+  score,
+  winRate: score / 10000,
+  wins: 1,
+  losses: 1,
+});
 
 describe("planRerank", () => {
   it("assigns ranks in order and remembers the previous rank when it moves", () => {

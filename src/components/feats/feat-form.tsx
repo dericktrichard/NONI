@@ -6,8 +6,20 @@ import { controlClass } from "@/components/ui/fields";
 import { HAX_KIND_LIST, HAX_KINDS, type HaxKind } from "@/config/combat";
 import { LIMITS } from "@/config/limits";
 import { PROOF } from "@/config/ranking";
-import { AP_TIERS, MAX_DIMENSION, MIN_DIMENSION, SPEED_LEVELS, dimensionLabel } from "@/config/scales";
-import { CATEGORY_LABELS, PROOF_TYPE_LABELS, buildClaim, type Category, type ClaimFields } from "@/lib/feats/labels";
+import {
+  AP_TIERS,
+  MAX_DIMENSION,
+  MIN_DIMENSION,
+  SPEED_LEVELS,
+  dimensionLabel,
+} from "@/config/scales";
+import {
+  CATEGORY_LABELS,
+  PROOF_TYPE_LABELS,
+  buildClaim,
+  type Category,
+  type ClaimFields,
+} from "@/lib/feats/labels";
 import { PROOF_TYPES_BY_SOURCE, type ProofIssue } from "@/lib/ranking/proof";
 import type { FeatView } from "@/types/character-page";
 import type { Proof, ProofSource, ProofType } from "@/types/domain";
@@ -30,7 +42,14 @@ const blankProof = (source: ProofSource = "primary"): ProofRow => ({
   locator: "",
   excerpt: "",
 });
-const blankClaim: ClaimFields = { category: "attackPotency", tier: "", level: "", dimension: 0, kind: "", power: "" };
+const blankClaim: ClaimFields = {
+  category: "attackPotency",
+  tier: "",
+  level: "",
+  dimension: 0,
+  kind: "",
+  power: "",
+};
 
 const control = controlClass;
 
@@ -43,22 +62,46 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function Group({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
+function Group({
+  title,
+  hint,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <fieldset className="space-y-4 border-t pt-5">
       <legend className="float-left mb-3 w-full">
         <span className="font-display text-lg font-semibold tracking-tight">{title}</span>
-        {hint ? <span className="mt-1 block text-sm font-normal text-muted-foreground">{hint}</span> : null}
+        {hint ? (
+          <span className="text-muted-foreground mt-1 block text-sm font-normal">
+            {hint}
+          </span>
+        ) : null}
       </legend>
       <div className="clear-both space-y-4">{children}</div>
     </fieldset>
   );
 }
 
-function TierSelect({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+function TierSelect({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
   return (
     <Field label={label}>
-      <select value={value} onChange={(e) => onChange(e.target.value)} className={control}>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={control}
+      >
         <option value="">Select</option>
         {AP_TIERS.map((tier) => (
           <option key={tier.id} value={tier.id}>
@@ -91,9 +134,12 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [issues, setIssues] = useState<ProofIssue[]>([]);
 
-  const patchClaim = (patch: Partial<ClaimFields>) => setClaim((current) => ({ ...current, ...patch }));
+  const patchClaim = (patch: Partial<ClaimFields>) =>
+    setClaim((current) => ({ ...current, ...patch }));
   const patchProof = (key: number, patch: Partial<ProofRow>) =>
-    setProofs((rows) => rows.map((row) => (row.key === key ? { ...row, ...patch } : row)));
+    setProofs((rows) =>
+      rows.map((row) => (row.key === key ? { ...row, ...patch } : row)),
+    );
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -165,15 +211,28 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="eyebrow">New feat</p>
-          <h3 className="mt-1 font-display text-2xl font-semibold tracking-tight">Submit a feat</h3>
+          <h3 className="font-display mt-1 text-2xl font-semibold tracking-tight">
+            Submit a feat
+          </h3>
         </div>
-        <button type="button" onClick={onCancel} aria-label="Close form" className="-m-2 grid size-11 place-items-center hover:bg-muted">
+        <button
+          type="button"
+          onClick={onCancel}
+          aria-label="Close form"
+          className="hover:bg-muted -m-2 grid size-11 place-items-center"
+        >
           <X className="size-5" />
         </button>
       </div>
 
       <Field label="Title">
-        <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={LIMITS.featTitle} required className={control} />
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          maxLength={LIMITS.featTitle}
+          required
+          className={control}
+        />
       </Field>
 
       <Field label="What happens, in your own words">
@@ -203,12 +262,20 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
         </Field>
 
         {(claim.category === "attackPotency" || claim.category === "durability") && (
-          <TierSelect label="Tier" value={claim.tier} onChange={(tier) => patchClaim({ tier })} />
+          <TierSelect
+            label="Tier"
+            value={claim.tier}
+            onChange={(tier) => patchClaim({ tier })}
+          />
         )}
 
         {claim.category === "speed" && (
           <Field label="Speed level">
-            <select value={claim.level} onChange={(e) => patchClaim({ level: e.target.value })} className={control}>
+            <select
+              value={claim.level}
+              onChange={(e) => patchClaim({ level: e.target.value })}
+              className={control}
+            >
               <option value="">Select</option>
               {SPEED_LEVELS.map((level) => (
                 <option key={level} value={level}>
@@ -227,7 +294,10 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
               className={control}
             >
               <option value={0}>Select</option>
-              {Array.from({ length: MAX_DIMENSION - MIN_DIMENSION + 1 }, (_, i) => MIN_DIMENSION + i).map((n) => (
+              {Array.from(
+                { length: MAX_DIMENSION - MIN_DIMENSION + 1 },
+                (_, i) => MIN_DIMENSION + i,
+              ).map((n) => (
                 <option key={n} value={n}>
                   {dimensionLabel(n)}
                 </option>
@@ -252,7 +322,11 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
                 ))}
               </select>
             </Field>
-            <TierSelect label="Power level" value={claim.power} onChange={(power) => patchClaim({ power })} />
+            <TierSelect
+              label="Power level"
+              value={claim.power}
+              onChange={(power) => patchClaim({ power })}
+            />
           </>
         )}
       </Group>
@@ -268,13 +342,17 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
         ))}
 
         {proofs.map((row, index) => (
-          <div key={row.key} className="space-y-3 border bg-muted/40 p-3 sm:p-4">
+          <div key={row.key} className="bg-muted/40 space-y-3 border p-3 sm:p-4">
             <div className="flex items-center justify-between gap-3">
-              <p className="eyebrow">{row.source === "secondary" ? "Secondary reference" : "Primary source"}</p>
+              <p className="eyebrow">
+                {row.source === "secondary" ? "Secondary reference" : "Primary source"}
+              </p>
               {proofs.length > 1 ? (
                 <button
                   type="button"
-                  onClick={() => setProofs((rows) => rows.filter((r) => r.key !== row.key))}
+                  onClick={() =>
+                    setProofs((rows) => rows.filter((r) => r.key !== row.key))
+                  }
                   className="min-h-9 text-sm underline underline-offset-4"
                 >
                   Remove
@@ -286,7 +364,9 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
               <Field label="Type">
                 <select
                   value={row.type}
-                  onChange={(e) => patchProof(row.key, { type: e.target.value as ProofType })}
+                  onChange={(e) =>
+                    patchProof(row.key, { type: e.target.value as ProofType })
+                  }
                   className={control}
                 >
                   {PROOF_TYPES_BY_SOURCE[row.source].map((type) => (
@@ -343,7 +423,11 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
 
         <div className="flex flex-wrap gap-2">
           {canAddProof ? (
-            <button type="button" className="btn btn-line btn-sm" onClick={() => setProofs((rows) => [...rows, blankProof()])}>
+            <button
+              type="button"
+              className="btn btn-line btn-sm"
+              onClick={() => setProofs((rows) => [...rows, blankProof()])}
+            >
               Add proof
             </button>
           ) : null}
@@ -360,7 +444,7 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
       </Group>
 
       {error ? (
-        <p role="alert" className="border-l-2 border-foreground pl-3 text-sm font-medium">
+        <p role="alert" className="border-foreground border-l-2 pl-3 text-sm font-medium">
           {error}
         </p>
       ) : null}

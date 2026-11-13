@@ -10,7 +10,10 @@ export function TierBadge({ tier }: { tier: string }) {
   const variant = group <= 3 ? "accent" : group <= 6 ? "outline" : "default";
 
   return (
-    <Badge variant={variant} title={info ? `${info.label} (${TIER_GROUPS[group]})` : tier}>
+    <Badge
+      variant={variant}
+      title={info ? `${info.label} (${TIER_GROUPS[group]})` : tier}
+    >
       {tier}
     </Badge>
   );

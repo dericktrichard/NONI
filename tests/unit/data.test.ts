@@ -2,8 +2,19 @@ import { describe, expect, it } from "vitest";
 import { MOCK_CHARACTERS, MOCK_SEEDS } from "@/config/mock-characters";
 import { MEDIA_LABELS } from "@/config/media";
 import { TIER_GROUPS } from "@/config/scales";
-import { PAGE, makePlan, parseCharacterQuery, type Facet, type QueryPlan } from "@/lib/data/query";
-import { SUMMARY_FIELDS, assemblePage, toSummary, type CharacterPage } from "@/lib/data/summary";
+import {
+  PAGE,
+  makePlan,
+  parseCharacterQuery,
+  type Facet,
+  type QueryPlan,
+} from "@/lib/data/query";
+import {
+  SUMMARY_FIELDS,
+  assemblePage,
+  toSummary,
+  type CharacterPage,
+} from "@/lib/data/summary";
 import { buildCharacterDocs, type CharacterDocData } from "@/lib/ranking/character-doc";
 
 const docs = buildCharacterDocs(MOCK_SEEDS);
@@ -14,11 +25,14 @@ function run(plan: QueryPlan, source: readonly CharacterDocData[] = docs) {
   const matching = source.filter((doc) => {
     if (!where) return true;
     const value = (doc as unknown as Record<string, unknown>)[where.field];
-    return where.op === "array-contains" ? Array.isArray(value) && value.includes(where.value) : value === where.value;
+    return where.op === "array-contains"
+      ? Array.isArray(value) && value.includes(where.value)
+      : value === where.value;
   });
   const ordered = [...matching].sort((a, b) => (a.rank as number) - (b.rank as number));
   const after = plan.after;
-  const rest = after === null ? ordered : ordered.filter((d) => (d.rank as number) > after);
+  const rest =
+    after === null ? ordered : ordered.filter((d) => (d.rank as number) > after);
   return rest
     .slice(0, plan.fetch)
     .map((d) => ({ id: d.slug, data: d as unknown as Record<string, unknown> }));
@@ -44,17 +58,30 @@ describe("seed documents", () => {
   });
 
   it("round trip into exactly the summaries the sample roster produces", () => {
-    const summaries = docs.map((d) => toSummary(d.slug, d as unknown as Record<string, unknown>));
+    const summaries = docs.map((d) =>
+      toSummary(d.slug, d as unknown as Record<string, unknown>),
+    );
     expect(summaries).toEqual(MOCK_CHARACTERS);
   });
 
   it("carry the fields every query filters on", () => {
     for (const doc of docs) {
       expect(typeof doc.verseId).toBe("string");
-      expect(doc.verseId).toBe(doc.verseName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""));
+      expect(doc.verseId).toBe(
+        doc.verseName
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, ""),
+      );
       expect(Object.hasOwn(MEDIA_LABELS, doc.media)).toBe(true);
       expect(Object.hasOwn(TIER_GROUPS, String(doc.tierGroup))).toBe(true);
-      expect(doc.searchKeys).toContain(doc.name.toLowerCase().split(/\s+/)[0].replace(/[^a-z0-9]/g, "").slice(0, 12));
+      expect(doc.searchKeys).toContain(
+        doc.name
+          .toLowerCase()
+          .split(/\s+/)[0]
+          .replace(/[^a-z0-9]/g, "")
+          .slice(0, 12),
+      );
     }
   });
 
@@ -101,7 +128,11 @@ describe("pagination", () => {
 
   it("skips a malformed document without losing the cursor", () => {
     const rows = run(makePlan({ kind: "all" }, 3, null));
-    const broken = [{ id: "x", data: { ...rows[1].data, score: "high" } }, ...rows.slice(0, 1), ...rows.slice(2)];
+    const broken = [
+      { id: "x", data: { ...rows[1].data, score: "high" } },
+      ...rows.slice(0, 1),
+      ...rows.slice(2),
+    ];
     const page = assemblePage(broken, 3);
     expect(page.items.length).toBe(2);
     expect(page.next).not.toBeNull();
@@ -110,7 +141,11 @@ describe("pagination", () => {
 
 describe("filters over the sample roster", () => {
   it("media", () => {
-    expect(slugsOf({ kind: "media", media: "comic" })).toEqual(["doctor-manhattan", "superman", "thor"]);
+    expect(slugsOf({ kind: "media", media: "comic" })).toEqual([
+      "doctor-manhattan",
+      "superman",
+      "thor",
+    ]);
     expect(slugsOf({ kind: "media", media: "live-action" })).toEqual(["neo"]);
   });
 

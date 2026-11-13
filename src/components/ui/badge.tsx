@@ -15,7 +15,7 @@ export function Badge({ variant = "default", className, ...props }: BadgeProps) 
     <span
       className={cn(
         "inline-flex h-6 items-center rounded-sm border px-2",
-        "font-mono text-[0.6875rem] font-medium uppercase tracking-[0.08em]",
+        "font-mono text-[0.6875rem] font-medium tracking-[0.08em] uppercase",
         variants[variant],
         className,
       )}

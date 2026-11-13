@@ -1,4 +1,5 @@
-export type Reply<T> = { ok: true; data: T } | { ok: false; status: number; error: string };
+export type Reply<T> =
+  { ok: true; data: T } | { ok: false; status: number; error: string };
 
 export async function postJson<T>(url: string, body: unknown): Promise<Reply<T>> {
   try {
@@ -10,7 +11,11 @@ export async function postJson<T>(url: string, body: unknown): Promise<Reply<T>>
     const json: unknown = await response.json().catch(() => null);
     if (response.ok) return { ok: true, data: json as T };
     const error = (json as { error?: unknown } | null)?.error;
-    return { ok: false, status: response.status, error: typeof error === "string" ? error : "Something went wrong." };
+    return {
+      ok: false,
+      status: response.status,
+      error: typeof error === "string" ? error : "Something went wrong.",
+    };
   } catch {
     return { ok: false, status: 0, error: "Network problem. Try again." };
   }

@@ -51,7 +51,11 @@ export function useCharacterSearch(resultLimit = 12) {
           if (ticket !== latest.current) return;
           const words = value.toLowerCase().split(/\s+/).filter(Boolean);
           setResults(
-            page.items.filter((item) => words.every((word) => `${item.name} ${item.verse}`.toLowerCase().includes(word))),
+            page.items.filter((item) =>
+              words.every((word) =>
+                `${item.name} ${item.verse}`.toLowerCase().includes(word),
+              ),
+            ),
           );
           setFailed(false);
         } catch {

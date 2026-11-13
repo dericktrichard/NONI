@@ -41,17 +41,26 @@ export function mulberry32(seed: number): () => number {
 }
 
 export function isCorrect(duel: Duel, guess: Guess): boolean {
-  return guess === "higher" ? duel.right.score > duel.left.score : duel.right.score < duel.left.score;
+  return guess === "higher"
+    ? duel.right.score > duel.left.score
+    : duel.right.score < duel.left.score;
 }
 
 /** A character with a different score from `left`, so a round always has an answer */
-export function pickRight(pool: readonly PlayCharacter[], left: PlayCharacter, rng: () => number): PlayCharacter | null {
+export function pickRight(
+  pool: readonly PlayCharacter[],
+  left: PlayCharacter,
+  rng: () => number,
+): PlayCharacter | null {
   const options = pool.filter((item) => item.id !== left.id && item.score !== left.score);
   if (options.length === 0) return null;
   return options[Math.floor(rng() * options.length)]!;
 }
 
-export function firstDuel(pool: readonly PlayCharacter[], rng: () => number): Duel | null {
+export function firstDuel(
+  pool: readonly PlayCharacter[],
+  rng: () => number,
+): Duel | null {
   if (pool.length < 2) return null;
   const left = pool[Math.floor(rng() * pool.length)]!;
   const right = pickRight(pool, left, rng);
@@ -59,7 +68,11 @@ export function firstDuel(pool: readonly PlayCharacter[], rng: () => number): Du
 }
 
 /** The same chain of duels for everyone on a given day. Each round's right side becomes the next left side. */
-export function buildDaily(pool: readonly PlayCharacter[], day: string, rounds = DAILY_ROUNDS): Duel[] {
+export function buildDaily(
+  pool: readonly PlayCharacter[],
+  day: string,
+  rounds = DAILY_ROUNDS,
+): Duel[] {
   const rng = mulberry32(hashSeed(`noni:daily:${day}`));
   const shuffled = [...pool].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   for (let i = shuffled.length - 1; i > 0; i -= 1) {

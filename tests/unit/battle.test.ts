@@ -1,13 +1,38 @@
 import { describe, expect, it } from "vitest";
 import { buildClimb, isBracketSize } from "@/lib/battle/climb";
-import { checkTeams, effectiveProbability, simulateClash, teamEdge, woundFor } from "@/lib/battle/clash";
+import {
+  checkTeams,
+  effectiveProbability,
+  simulateClash,
+  teamEdge,
+  woundFor,
+} from "@/lib/battle/clash";
 import { counterTeam, randomTeam } from "@/lib/battle/counter";
 import type { Entrant } from "@/lib/battle/types";
 import { mulberry32 } from "@/lib/play/game";
 import { compileProfile } from "@/lib/ranking/profile";
 
-const TIERS = ["10-B", "9-B", "8-C", "7-C", "7-A", "6-C", "6-B", "5-B", "High 6-A", "Low 5-B"];
-const SPEEDS = ["Normal Human", "Peak Human", "Subsonic", "Supersonic", "Hypersonic", "Relativistic", "FTL"];
+const TIERS = [
+  "10-B",
+  "9-B",
+  "8-C",
+  "7-C",
+  "7-A",
+  "6-C",
+  "6-B",
+  "5-B",
+  "High 6-A",
+  "Low 5-B",
+];
+const SPEEDS = [
+  "Normal Human",
+  "Peak Human",
+  "Subsonic",
+  "Supersonic",
+  "Hypersonic",
+  "Relativistic",
+  "FTL",
+];
 
 const roster: Entrant[] = Array.from({ length: 30 }, (_, i) => {
   const tier = TIERS[i % TIERS.length]!;
@@ -55,7 +80,9 @@ describe("simulateClash", () => {
   const b = pick(0, 1, 2);
 
   it("is deterministic", () => {
-    expect(simulateClash(profiles(a), profiles(b))).toEqual(simulateClash(profiles(a), profiles(b)));
+    expect(simulateClash(profiles(a), profiles(b))).toEqual(
+      simulateClash(profiles(a), profiles(b)),
+    );
   });
 
   it("lets a far stronger team win with survivors", () => {
@@ -79,7 +106,10 @@ describe("simulateClash", () => {
 
   it("ends when one side is gone", () => {
     for (let i = 0; i < 9; i += 1) {
-      const r = simulateClash(profiles(pick(i, i + 10, i + 20)), profiles(pick(i + 1, i + 11, i + 21)));
+      const r = simulateClash(
+        profiles(pick(i, i + 10, i + 20)),
+        profiles(pick(i + 1, i + 11, i + 21)),
+      );
       expect(r.survivorsA.length === 0 || r.survivorsB.length === 0).toBe(true);
       expect(r.fights.length).toBeGreaterThan(2);
       expect(r.fights.length).toBeLessThan(6);
@@ -115,7 +145,9 @@ describe("counterTeam", () => {
   it("hard counters beat the user more than fair ones", () => {
     const hard = counterTeam(roster, user, "hard", { size: 5, exclude })!;
     const fair = counterTeam(roster, user, "fair", { size: 5, exclude })!;
-    expect(teamEdge(profiles(hard), profiles(user))).toBeGreaterThan(teamEdge(profiles(fair), profiles(user)));
+    expect(teamEdge(profiles(hard), profiles(user))).toBeGreaterThan(
+      teamEdge(profiles(fair), profiles(user)),
+    );
     expect(teamEdge(profiles(hard), profiles(user))).toBeGreaterThan(0.5);
   });
 

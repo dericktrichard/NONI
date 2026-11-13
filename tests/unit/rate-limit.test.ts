@@ -53,10 +53,13 @@ describe("createMemoryLimiter", () => {
 });
 
 describe("getClientIp", () => {
-  const make = (headers: Record<string, string>) => new Request("https://noni.example/", { headers });
+  const make = (headers: Record<string, string>) =>
+    new Request("https://noni.example/", { headers });
 
   it("uses the first forwarded address", () => {
-    expect(getClientIp(make({ "x-forwarded-for": "203.0.113.9, 10.0.0.1" }))).toBe("203.0.113.9");
+    expect(getClientIp(make({ "x-forwarded-for": "203.0.113.9, 10.0.0.1" }))).toBe(
+      "203.0.113.9",
+    );
   });
 
   it("falls back to x-real-ip and accepts IPv6", () => {

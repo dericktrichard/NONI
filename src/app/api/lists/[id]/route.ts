@@ -18,7 +18,10 @@ export async function PUT(request: Request, context: Context) {
 
   const { id } = await context.params;
   if (!LIST_ID_RE.test(id)) {
-    return NextResponse.json({ error: "List not found." }, { status: 404, headers: NO_STORE });
+    return NextResponse.json(
+      { error: "List not found." },
+      { status: 404, headers: NO_STORE },
+    );
   }
 
   try {
@@ -27,9 +30,15 @@ export async function PUT(request: Request, context: Context) {
     return NextResponse.json({ ok: true }, { headers: NO_STORE });
   } catch (error) {
     if (error instanceof HttpError) {
-      return NextResponse.json({ error: error.message }, { status: error.status, headers: NO_STORE });
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status, headers: NO_STORE },
+      );
     }
     console.error("list update failed", error);
-    return NextResponse.json({ error: "Something went wrong." }, { status: 500, headers: NO_STORE });
+    return NextResponse.json(
+      { error: "Something went wrong." },
+      { status: 500, headers: NO_STORE },
+    );
   }
 }

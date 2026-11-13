@@ -21,10 +21,17 @@ export interface VerseInput {
 const cmp = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 
 /** Unranked verses (null score) get a null rank and sort last */
-export function rankVerses(verses: readonly VerseInput[]): Array<{ id: string; rank: number | null }> {
+export function rankVerses(
+  verses: readonly VerseInput[],
+): Array<{ id: string; rank: number | null }> {
   const ranked = verses
     .filter((v): v is VerseInput & { score: number } => v.score !== null)
-    .sort((a, b) => b.score - a.score || cmp(a.name.toLowerCase(), b.name.toLowerCase()) || cmp(a.id, b.id));
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        cmp(a.name.toLowerCase(), b.name.toLowerCase()) ||
+        cmp(a.id, b.id),
+    );
 
   const positions = new Map(ranked.map((v, i) => [v.id, i + 1]));
   return verses.map((v) => ({ id: v.id, rank: positions.get(v.id) ?? null }));

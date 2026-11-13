@@ -10,8 +10,10 @@ export const runtime = "nodejs";
 const limiter = createMemoryLimiter(120, 60_000);
 const NO_STORE = { "Cache-Control": "no-store" };
 
-const reply = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: NO_STORE });
-const valid = (slug: string) => slug.length > 0 && slug.length <= 80 && SLUG_RE.test(slug);
+const reply = (body: unknown, status = 200) =>
+  NextResponse.json(body, { status, headers: NO_STORE });
+const valid = (slug: string) =>
+  slug.length > 0 && slug.length <= 80 && SLUG_RE.test(slug);
 
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
@@ -32,7 +34,9 @@ export async function GET(request: Request) {
       .doc(user.uid)
       .get();
     const side = snap.exists ? snap.get("side") : null;
-    return reply({ pick: toViewPick(side === "a" || side === "b" ? side : null, flipped) });
+    return reply({
+      pick: toViewPick(side === "a" || side === "b" ? side : null, flipped),
+    });
   } catch (error) {
     console.error("matchup mine failed", error);
     return reply({ error: "Something went wrong." }, 500);

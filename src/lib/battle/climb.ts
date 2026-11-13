@@ -29,16 +29,29 @@ export interface ClimbResult {
   beatenBy: string | null;
 }
 
-export const isBracketSize = (n: number): boolean => Number.isInteger(n) && n >= 2 && (n & (n - 1)) === 0;
+export const isBracketSize = (n: number): boolean =>
+  Number.isInteger(n) && n >= 2 && (n & (n - 1)) === 0;
 
-function decide(a: Entrant, b: Entrant, rng?: () => number): { winner: Entrant; probabilityA: number; upset: boolean; note: string } {
+function decide(
+  a: Entrant,
+  b: Entrant,
+  rng?: () => number,
+): { winner: Entrant; probabilityA: number; upset: boolean; note: string } {
   const result = resolveMatchup(a.profile, b.profile);
   const p = result.probabilityA;
   const favourite = p > 0.5 ? "a" : p < 0.5 ? "b" : null;
 
   let side = result.winner;
   if (rng && result.verdict !== "stalemate") side = rng() < clampChance(p) ? "a" : "b";
-  else if (side === null) side = a.score !== b.score ? (a.score > b.score ? "a" : "b") : cmp(a.profile.slug, b.profile.slug) <= 0 ? "a" : "b";
+  else if (side === null)
+    side =
+      a.score !== b.score
+        ? a.score > b.score
+          ? "a"
+          : "b"
+        : cmp(a.profile.slug, b.profile.slug) <= 0
+          ? "a"
+          : "b";
 
   const winner = side === "a" ? a : b;
   const upset = favourite !== null && side !== favourite;
@@ -50,8 +63,17 @@ function decide(a: Entrant, b: Entrant, rng?: () => number): { winner: Entrant; 
   return { winner, probabilityA: p, upset, note };
 }
 
-function closest<T>(items: readonly T[], target: number, measure: (item: T) => number, slugOf: (item: T) => string): T | undefined {
-  return [...items].sort((x, y) => Math.abs(measure(x) - target) - Math.abs(measure(y) - target) || cmp(slugOf(x), slugOf(y)))[0];
+function closest<T>(
+  items: readonly T[],
+  target: number,
+  measure: (item: T) => number,
+  slugOf: (item: T) => string,
+): T | undefined {
+  return [...items].sort(
+    (x, y) =>
+      Math.abs(measure(x) - target) - Math.abs(measure(y) - target) ||
+      cmp(slugOf(x), slugOf(y)),
+  )[0];
 }
 
 /**
@@ -70,7 +92,9 @@ export function buildClimb(
   sample = false,
 ): ClimbResult | null {
   if (!isBracketSize(size) || size < 4) return null;
-  const others = pool.filter((e) => e.profile.slug !== hero.profile.slug).sort((x, y) => cmp(x.profile.slug, y.profile.slug));
+  const others = pool
+    .filter((e) => e.profile.slug !== hero.profile.slug)
+    .sort((x, y) => cmp(x.profile.slug, y.profile.slug));
   if (others.length < size - 1) return null;
 
   const rounds = Math.log2(size);
@@ -86,15 +110,29 @@ export function buildClimb(
   } else {
     const range = difficulty === "hard" ? CLIMB.hard : CLIMB.fair;
     for (let r = 0; r < rounds; r += 1) {
-      const target = rounds === 1 ? range.to : range.from + ((range.to - range.from) * r) / (rounds - 1);
-      const rival = closest(free(), target, (e) => winProbability(e.profile, hero.profile), (e) => e.profile.slug);
+      const target =
+        rounds === 1
+          ? range.to
+          : range.from + ((range.to - range.from) * r) / (rounds - 1);
+      const rival = closest(
+        free(),
+        target,
+        (e) => winProbability(e.profile, hero.profile),
+        (e) => e.profile.slug,
+      );
       if (!rival) return null;
       take(rival);
       const start = 2 ** r;
       seats[start] = rival;
-      const weaker = free().filter((e) => winProbability(rival.profile, e.profile) >= CLIMB.fillerLoseAt);
+      const weaker = free().filter(
+        (e) => winProbability(rival.profile, e.profile) >= CLIMB.fillerLoseAt,
+      );
       for (let s = start + 1; s < start * 2; s += 1) {
-        const filler = shuffled(weaker.filter((e) => !used.has(e.profile.slug)), rng)[0] ?? free()[0];
+        const filler =
+          shuffled(
+            weaker.filter((e) => !used.has(e.profile.slug)),
+            rng,
+          )[0] ?? free()[0];
         if (!filler) return null;
         take(filler);
         seats[s] = filler;
@@ -139,5 +177,12 @@ export function buildClimb(
     field = next;
   }
 
-  return { size, rounds: played, hero: hero.profile.slug, wins, champion: field[0]!.profile.slug, beatenBy };
+  return {
+    size,
+    rounds: played,
+    hero: hero.profile.slug,
+    wins,
+    champion: field[0]!.profile.slug,
+    beatenBy,
+  };
 }

@@ -17,7 +17,8 @@ interface ArgumentListProps {
 type Tally = { upvotes: number; downvotes: number };
 type Mine = Record<string, 1 | -1>;
 
-const voteButton = "grid size-11 place-items-center transition-colors hover:bg-muted disabled:opacity-40";
+const voteButton =
+  "grid size-11 place-items-center transition-colors hover:bg-muted disabled:opacity-40";
 
 export function ArgumentList({ items, names, slugs }: ArgumentListProps) {
   const [overrides, setOverrides] = useState<Record<string, Tally>>({});
@@ -30,7 +31,9 @@ export function ArgumentList({ items, names, slugs }: ArgumentListProps) {
   useEffect(() => {
     if (!ids) return;
     let active = true;
-    fetch(`/api/matchups/arguments/mine?a=${slugs.a}&b=${slugs.b}&ids=${ids}`, { cache: "no-store" })
+    fetch(`/api/matchups/arguments/mine?a=${slugs.a}&b=${slugs.b}&ids=${ids}`, {
+      cache: "no-store",
+    })
       .then((response) => (response.ok ? response.json() : null))
       .then((data: { votes?: Mine } | null) => {
         if (active && data?.votes) setMine(data.votes);
@@ -56,10 +59,17 @@ export function ArgumentList({ items, names, slugs }: ArgumentListProps) {
         setMessage("Sign in to vote.");
         return;
       }
-      const data = (await response.json().catch(() => null)) as
-        | { upvotes?: number; downvotes?: number; value?: number; error?: string }
-        | null;
-      if (response.ok && typeof data?.upvotes === "number" && typeof data.downvotes === "number") {
+      const data = (await response.json().catch(() => null)) as {
+        upvotes?: number;
+        downvotes?: number;
+        value?: number;
+        error?: string;
+      } | null;
+      if (
+        response.ok &&
+        typeof data?.upvotes === "number" &&
+        typeof data.downvotes === "number"
+      ) {
         const tally: Tally = { upvotes: data.upvotes, downvotes: data.downvotes };
         const stored = data.value;
         setOverrides((current) => ({ ...current, [id]: tally }));
@@ -80,14 +90,21 @@ export function ArgumentList({ items, names, slugs }: ArgumentListProps) {
   }
 
   if (items.length === 0) {
-    return <p className="mt-6 border p-4 text-sm text-muted-foreground">No arguments yet. Be the first to make a case.</p>;
+    return (
+      <p className="text-muted-foreground mt-6 border p-4 text-sm">
+        No arguments yet. Be the first to make a case.
+      </p>
+    );
   }
 
   return (
     <div>
       <ul className="mt-6 space-y-3">
         {items.map((item) => {
-          const tally = overrides[item.id] ?? { upvotes: item.upvotes, downvotes: item.downvotes };
+          const tally = overrides[item.id] ?? {
+            upvotes: item.upvotes,
+            downvotes: item.downvotes,
+          };
           const picked = mine[item.id] ?? 0;
 
           return (
@@ -99,18 +116,26 @@ export function ArgumentList({ items, names, slugs }: ArgumentListProps) {
                   aria-pressed={picked === 1}
                   disabled={busyId === item.id}
                   onClick={() => void vote(item.id, 1)}
-                  className={cn(voteButton, picked === 1 && "text-accent-foreground bg-accent")}
+                  className={cn(
+                    voteButton,
+                    picked === 1 && "text-accent-foreground bg-accent",
+                  )}
                 >
                   <Tri dir="up" />
                 </button>
-                <span className="tabular py-1 text-sm font-semibold">{tally.upvotes - tally.downvotes}</span>
+                <span className="tabular py-1 text-sm font-semibold">
+                  {tally.upvotes - tally.downvotes}
+                </span>
                 <button
                   type="button"
                   aria-label="Downvote"
                   aria-pressed={picked === -1}
                   disabled={busyId === item.id}
                   onClick={() => void vote(item.id, -1)}
-                  className={cn(voteButton, picked === -1 && "bg-foreground text-background")}
+                  className={cn(
+                    voteButton,
+                    picked === -1 && "bg-foreground text-background",
+                  )}
                 >
                   <Tri dir="down" />
                 </button>
@@ -118,14 +143,21 @@ export function ArgumentList({ items, names, slugs }: ArgumentListProps) {
 
               <div className="min-w-0 flex-1 p-4">
                 <p className="eyebrow">
-                  Argues for {names[item.side]} / {item.authorName} / {item.createdAt.slice(0, 10)}
+                  Argues for {names[item.side]} / {item.authorName} /{" "}
+                  {item.createdAt.slice(0, 10)}
                 </p>
                 <p className="mt-2 text-sm whitespace-pre-line">{item.body}</p>
                 <ul className="mt-3 space-y-1">
                   {item.citations.map((citation) => (
-                    <li key={`${citation.characterId}/${citation.featId}`} className="text-sm">
+                    <li
+                      key={`${citation.characterId}/${citation.featId}`}
+                      className="text-sm"
+                    >
                       <span className="eyebrow mr-2">Cites</span>
-                      <Link href={`/characters/${citation.characterId}`} className="underline underline-offset-4">
+                      <Link
+                        href={`/characters/${citation.characterId}`}
+                        className="underline underline-offset-4"
+                      >
                         {citation.title || citation.featId}
                       </Link>
                     </li>

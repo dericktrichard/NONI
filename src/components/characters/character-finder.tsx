@@ -11,7 +11,12 @@ interface CharacterFinderProps {
   needArt?: boolean;
 }
 
-export function CharacterFinder({ label, onPick, isDisabled, needArt }: CharacterFinderProps) {
+export function CharacterFinder({
+  label,
+  onPick,
+  isDisabled,
+  needArt,
+}: CharacterFinderProps) {
   const { text, change, results, list, failed } = useCharacterSearch(10);
   const shown = needArt ? list.filter((item) => item.imageUrl !== null) : list;
 
@@ -26,14 +31,18 @@ export function CharacterFinder({ label, onPick, isDisabled, needArt }: Characte
           placeholder="Name or verse"
           autoComplete="off"
           spellCheck={false}
-          className="h-11 w-full border bg-background px-3 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground"
+          className="bg-background placeholder:text-muted-foreground focus:border-foreground h-11 w-full border px-3 text-sm outline-none"
         />
       </label>
 
       <p className="eyebrow mt-3 mb-2">{results ? "Results" : "Top ranked"}</p>
       {results && shown.length === 0 ? (
-        <p className="border p-3 text-sm text-muted-foreground">
-          {failed ? "Search is unavailable right now." : needArt ? "No character with art matches that." : "No character matches that."}
+        <p className="text-muted-foreground border p-3 text-sm">
+          {failed
+            ? "Search is unavailable right now."
+            : needArt
+              ? "No character with art matches that."
+              : "No character matches that."}
         </p>
       ) : (
         <ul className="grid max-h-64 grid-cols-3 gap-2 overflow-y-auto border p-2 sm:grid-cols-5">
@@ -45,8 +54,15 @@ export function CharacterFinder({ label, onPick, isDisabled, needArt }: Characte
                 disabled={isDisabled?.(c) ?? false}
                 className="group block w-full text-left disabled:opacity-40"
               >
-                <Portrait name={c.name} src={c.imageUrl} sizes="96px" className="aspect-2/3 w-full" />
-                <span className="mt-1 block truncate text-xs font-medium group-hover:underline">{c.name}</span>
+                <Portrait
+                  name={c.name}
+                  src={c.imageUrl}
+                  sizes="96px"
+                  className="aspect-2/3 w-full"
+                />
+                <span className="mt-1 block truncate text-xs font-medium group-hover:underline">
+                  {c.name}
+                </span>
               </button>
             </li>
           ))}

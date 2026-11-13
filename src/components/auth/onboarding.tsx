@@ -165,7 +165,8 @@ function ReadyStep({ onDone }: { onDone: () => void }) {
         <div>
           <p className="eyebrow">Starting Glaze</p>
           <p className="text-muted-foreground mt-1 text-sm">
-            Earn more with free play, or stake it in battles. It has no cash value.
+            Earn more with the daily claim and practice wins, or stake it in battles. It
+            has no cash value.
           </p>
         </div>
       </div>

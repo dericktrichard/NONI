@@ -11,30 +11,40 @@ export function MatchupCard({ m }: { m: MatchupCardData }) {
     <li>
       <Link
         href={`/matchups/${m.a.slug}/${m.b.slug}`}
-        className="group block border transition-colors hover:border-foreground"
+        className="group hover:border-foreground block border transition-colors"
       >
         <div className="grid grid-cols-[1fr_auto_1fr]">
-          <Portrait name={m.a.name} src={m.a.imageUrl} sizes="160px" className="aspect-3/4 w-full" />
+          <Portrait
+            name={m.a.name}
+            src={m.a.imageUrl}
+            sizes="160px"
+            className="aspect-3/4 w-full"
+          />
           <span
-            className="grid w-8 place-items-center bg-foreground font-display text-xs font-semibold text-background"
+            className="bg-foreground font-display text-background grid w-8 place-items-center text-xs font-semibold"
             aria-hidden
           >
             VS
           </span>
-          <Portrait name={m.b.name} src={m.b.imageUrl} sizes="160px" className="aspect-3/4 w-full" />
+          <Portrait
+            name={m.b.name}
+            src={m.b.imageUrl}
+            sizes="160px"
+            className="aspect-3/4 w-full"
+          />
         </div>
 
         <div className="p-3">
-          <p className="truncate font-display font-semibold underline-offset-4 group-hover:underline">
+          <p className="font-display truncate font-semibold underline-offset-4 group-hover:underline">
             {m.a.name} <span className="text-muted-foreground">vs</span> {m.b.name}
           </p>
 
           {total === 0 ? (
-            <div className="mt-3 h-1.5 border bg-muted" aria-hidden />
+            <div className="bg-muted mt-3 h-1.5 border" aria-hidden />
           ) : (
             <div className="mt-3 flex h-1.5 border" aria-hidden>
               <div className="bg-foreground" style={{ width: `${percent}%` }} />
-              <div className="flex-1 bg-accent" />
+              <div className="bg-accent flex-1" />
             </div>
           )}
 

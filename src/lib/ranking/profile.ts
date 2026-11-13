@@ -48,12 +48,15 @@ export interface CombatProfile {
 function compileClaims(claims: HaxClaim[] | undefined, slug: string) {
   const best = new Map<HaxKind, number>();
   for (const claim of claims ?? []) {
-    if (!isHaxKind(claim.kind)) throw new Error(`${slug}: unknown ability kind ${claim.kind}`);
+    if (!isHaxKind(claim.kind))
+      throw new Error(`${slug}: unknown ability kind ${claim.kind}`);
     const power = apIndex(claim.power);
     best.set(claim.kind, Math.max(best.get(claim.kind) ?? 0, power));
   }
   // Sorted so the output never depends on input order
-  return [...best].sort(([a], [b]) => (a < b ? -1 : 1)).map(([kind, power]) => ({ kind, power }));
+  return [...best]
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .map(([kind, power]) => ({ kind, power }));
 }
 
 export function compileProfile(input: ProfileInput): CombatProfile {
@@ -62,8 +65,14 @@ export function compileProfile(input: ProfileInput): CombatProfile {
 
   const implied = Math.max(AP_TIERS[ap].dimension, AP_TIERS[durability].dimension);
   const dimension = input.dimension ?? implied;
-  if (!Number.isInteger(dimension) || dimension < MIN_DIMENSION || dimension > MAX_DIMENSION) {
-    throw new Error(`${input.slug}: dimension must be a whole number from ${MIN_DIMENSION} to ${MAX_DIMENSION}`);
+  if (
+    !Number.isInteger(dimension) ||
+    dimension < MIN_DIMENSION ||
+    dimension > MAX_DIMENSION
+  ) {
+    throw new Error(
+      `${input.slug}: dimension must be a whole number from ${MIN_DIMENSION} to ${MAX_DIMENSION}`,
+    );
   }
 
   return {
@@ -151,12 +160,18 @@ export function applyVerifiedClaims(
         hax.set(claim.kind, raise(hax.get(claim.kind), apIndex(claim.power)));
         break;
       case "resistance":
-        resistances.set(claim.kind, raise(resistances.get(claim.kind), apIndex(claim.power)));
+        resistances.set(
+          claim.kind,
+          raise(resistances.get(claim.kind), apIndex(claim.power)),
+        );
         break;
     }
   }
 
-  const merge = (base: HaxClaim[] | undefined, verifiedClaims: Map<HaxKind, number>): HaxClaim[] => {
+  const merge = (
+    base: HaxClaim[] | undefined,
+    verifiedClaims: Map<HaxKind, number>,
+  ): HaxClaim[] => {
     const merged = new Map<HaxKind, string>();
     for (const claim of base ?? []) merged.set(claim.kind, claim.power);
     for (const [kind, power] of verifiedClaims) merged.set(kind, AP_TIERS[power].id);
@@ -165,7 +180,8 @@ export function applyVerifiedClaims(
 
   return {
     ...seed,
-    attackPotency: attackPotency === undefined ? seed.attackPotency : AP_TIERS[attackPotency].id,
+    attackPotency:
+      attackPotency === undefined ? seed.attackPotency : AP_TIERS[attackPotency].id,
     durability: durability === undefined ? seed.durability : AP_TIERS[durability].id,
     speed: speed === undefined ? seed.speed : SPEED_LEVELS[speed],
     dimension: dimension ?? seed.dimension,

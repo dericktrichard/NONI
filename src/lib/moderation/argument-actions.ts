@@ -22,7 +22,10 @@ export function actionsFor(status: ArgumentStatus): ArgumentAction[] {
   return status === "visible" ? ["hide", "dismiss"] : ["restore", "dismiss"];
 }
 
-export function applyArgumentAction(action: ArgumentAction, current: ArgumentStatus): ArgumentOutcome {
+export function applyArgumentAction(
+  action: ArgumentAction,
+  current: ArgumentStatus,
+): ArgumentOutcome {
   switch (action) {
     case "hide":
       return { status: "hidden", touchesArgument: true, reportStatus: "resolved" };

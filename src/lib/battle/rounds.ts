@@ -10,9 +10,12 @@ export function roundName(round: number, rounds: number, short = false): string 
 }
 
 /** Rounds the hero actually played, including the one they lost */
-export const heroRounds = (result: ClimbResult): number => result.wins + (result.beatenBy === null ? 0 : 1);
+export const heroRounds = (result: ClimbResult): number =>
+  result.wins + (result.beatenBy === null ? 0 : 1);
 
 export function heroMatch(result: ClimbResult, round: number): ClimbMatch | undefined {
   if (round < 1 || round > heroRounds(result)) return undefined;
-  return result.rounds[round - 1]?.find((match) => match.a === result.hero || match.b === result.hero);
+  return result.rounds[round - 1]?.find(
+    (match) => match.a === result.hero || match.b === result.hero,
+  );
 }

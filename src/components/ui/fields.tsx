@@ -2,7 +2,7 @@ import { AP_TIERS } from "@/config/scales";
 
 export const controlClass =
   "h-11 w-full border bg-background px-3 text-sm text-foreground outline-none focus:border-foreground";
-  
+
 export function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block text-sm">
@@ -23,7 +23,11 @@ export function TierSelect({
 }) {
   return (
     <Field label={label}>
-      <select value={value} onChange={(e) => onChange(e.target.value)} className={controlClass}>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={controlClass}
+      >
         <option value="">Select</option>
         {AP_TIERS.map((tier) => (
           <option key={tier.id} value={tier.id}>

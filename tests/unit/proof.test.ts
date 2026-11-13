@@ -27,16 +27,26 @@ describe("validateProof", () => {
   });
 
   it("rejects link shorteners", () => {
-    expect(validateProof({ ...panel, url: "https://bit.ly/abc" })).toContain("url_blocked");
+    expect(validateProof({ ...panel, url: "https://bit.ly/abc" })).toContain(
+      "url_blocked",
+    );
   });
 
   it("requires video proof on a video host with a timestamp", () => {
-    const video: Proof = { type: "video", url: "https://www.youtube.com/watch?v=abc", locator: "12:45" };
+    const video: Proof = {
+      type: "video",
+      url: "https://www.youtube.com/watch?v=abc",
+      locator: "12:45",
+    };
     expect(validateProof(video)).toEqual([]);
     expect(validateProof({ ...video, locator: "1:02:33" })).toEqual([]);
-    expect(validateProof({ ...video, locator: "12 minutes" })).toContain("locator_format");
+    expect(validateProof({ ...video, locator: "12 minutes" })).toContain(
+      "locator_format",
+    );
     expect(validateProof({ ...video, locator: "75:10" })).toContain("locator_format");
-    expect(validateProof({ ...video, url: "https://example.com/v" })).toContain("video_host");
+    expect(validateProof({ ...video, url: "https://example.com/v" })).toContain(
+      "video_host",
+    );
   });
 
   it("requires a number in panel and quote locators", () => {
@@ -54,14 +64,19 @@ describe("validateProof", () => {
     expect(validateProof(quote)).toEqual([]);
     expect(validateProof({ ...quote, excerpt: undefined })).toContain("excerpt_missing");
     expect(validateProof({ ...quote, excerpt: "too short" })).toContain("excerpt_length");
-    expect(validateProof({ ...quote, excerpt: "x".repeat(301) })).toContain("excerpt_length");
+    expect(validateProof({ ...quote, excerpt: "x".repeat(301) })).toContain(
+      "excerpt_length",
+    );
   });
 });
 
 describe("validateFeatProofs", () => {
   it("requires between one and five proofs", () => {
     expect(validateFeatProofs([]).map((i) => i.code)).toContain("too_few");
-    const six = Array.from({ length: 6 }, (_, i) => ({ ...panel, locator: `Ch. ${i + 1}` }));
+    const six = Array.from({ length: 6 }, (_, i) => ({
+      ...panel,
+      locator: `Ch. ${i + 1}`,
+    }));
     expect(validateFeatProofs(six).map((i) => i.code)).toContain("too_many");
   });
 
@@ -72,7 +87,10 @@ describe("validateFeatProofs", () => {
   });
 
   it("reports which proof has the problem", () => {
-    const issues = validateFeatProofs([panel, { ...panel, url: "http://bad.com/x", locator: "Ch. 2" }]);
+    const issues = validateFeatProofs([
+      panel,
+      { ...panel, url: "http://bad.com/x", locator: "Ch. 2" },
+    ]);
     expect(issues[0]).toMatchObject({ code: "url_invalid", index: 1 });
   });
 });

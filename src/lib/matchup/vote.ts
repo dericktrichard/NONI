@@ -19,7 +19,9 @@ export interface Pair {
 }
 
 export function orderPair(a: string, b: string): Pair {
-  return a < b ? { first: a, second: b, flipped: false } : { first: b, second: a, flipped: true };
+  return a < b
+    ? { first: a, second: b, flipped: false }
+    : { first: b, second: a, flipped: true };
 }
 
 export function toCanonicalPick(pick: RequestedPick, flipped: boolean): VotePick {
@@ -35,10 +37,16 @@ export function toViewPick(side: VotePick, flipped: boolean): RequestedPick {
 }
 
 export function toViewTally(tally: Tally, flipped: boolean): ViewTally {
-  return flipped ? { a: tally.votesB, b: tally.votesA } : { a: tally.votesA, b: tally.votesB };
+  return flipped
+    ? { a: tally.votesB, b: tally.votesA }
+    : { a: tally.votesA, b: tally.votesB };
 }
 
-export function applyMatchupVote(tally: Tally, previous: VotePick, next: VotePick): Tally {
+export function applyMatchupVote(
+  tally: Tally,
+  previous: VotePick,
+  next: VotePick,
+): Tally {
   let { votesA, votesB } = tally;
   if (previous === "a") votesA -= 1;
   if (previous === "b") votesB -= 1;

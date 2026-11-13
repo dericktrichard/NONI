@@ -1,11 +1,17 @@
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function RankMovement({ trend, className }: { trend: number; className?: string }) {
+export function RankMovement({
+  trend,
+  className,
+}: {
+  trend: number;
+  className?: string;
+}) {
   if (trend === 0) {
     return (
       <span
-        className={cn("inline-flex h-5 items-center text-muted-foreground", className)}
+        className={cn("text-muted-foreground inline-flex h-5 items-center", className)}
         aria-label="No change"
       >
         <Minus className="size-3" aria-hidden />

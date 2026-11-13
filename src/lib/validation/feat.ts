@@ -7,7 +7,8 @@ import { hasHiddenChars } from "@/lib/validation/text";
 
 const clean = (value: string) => !hasHiddenChars(value);
 
-const text = (min: number, max: number) => z.string().trim().min(min).max(max).refine(clean, "Invalid characters.");
+const text = (min: number, max: number) =>
+  z.string().trim().min(min).max(max).refine(clean, "Invalid characters.");
 
 const slug = z.string().max(80).regex(SLUG_RE);
 const haxKind = z.enum(HAX_KIND_LIST as [HaxKind, ...HaxKind[]]);
@@ -27,8 +28,17 @@ const proofSchema = z
     source: z.enum(["primary", "secondary"]).optional(),
     type: z.enum(["panel", "video", "quote", "official", "wiki", "thread", "other"]),
     url: z.string().trim().max(PROOF.maxUrlLength),
-    locator: z.string().trim().max(LIMITS.proofLocator).refine(clean, "Invalid characters."),
-    excerpt: z.string().trim().max(LIMITS.proofExcerpt).refine(clean, "Invalid characters.").optional(),
+    locator: z
+      .string()
+      .trim()
+      .max(LIMITS.proofLocator)
+      .refine(clean, "Invalid characters."),
+    excerpt: z
+      .string()
+      .trim()
+      .max(LIMITS.proofExcerpt)
+      .refine(clean, "Invalid characters.")
+      .optional(),
   })
   .strict();
 

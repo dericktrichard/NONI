@@ -19,7 +19,7 @@ export function PlayGame({ pool }: { pool: PlayCharacter[] }) {
 
   if (pool.length < DAILY_ROUNDS + 1) {
     return (
-      <p className="mt-8 border p-4 text-sm text-muted-foreground">
+      <p className="text-muted-foreground mt-8 border p-4 text-sm">
         The game opens once at least {DAILY_ROUNDS + 1} characters are ranked.
       </p>
     );
@@ -30,14 +30,18 @@ export function PlayGame({ pool }: { pool: PlayCharacter[] }) {
 
   return (
     <div className="mt-8">
-      <dl className="grid grid-cols-2 gap-px border bg-border">
+      <dl className="bg-border grid grid-cols-2 gap-px border">
         <div className="bg-background p-3 sm:p-4">
           <dt className="eyebrow">Daily streak</dt>
-          <dd className="tabular mt-1 font-display text-xl font-semibold sm:text-3xl">{streak}</dd>
+          <dd className="tabular font-display mt-1 text-xl font-semibold sm:text-3xl">
+            {streak}
+          </dd>
         </div>
         <div className="bg-background p-3 sm:p-4">
           <dt className="eyebrow">Best endless streak</dt>
-          <dd className="tabular mt-1 font-display text-xl font-semibold sm:text-3xl">{stats.bestStreak}</dd>
+          <dd className="tabular font-display mt-1 text-xl font-semibold sm:text-3xl">
+            {stats.bestStreak}
+          </dd>
         </div>
       </dl>
 
@@ -49,7 +53,7 @@ export function PlayGame({ pool }: { pool: PlayCharacter[] }) {
             aria-pressed={mode === key}
             onClick={() => setMode(key)}
             className={cn(
-              "h-11 border-b-2 border-transparent px-5 text-sm font-medium capitalize transition-colors hover:bg-muted",
+              "hover:bg-muted h-11 border-b-2 border-transparent px-5 text-sm font-medium capitalize transition-colors",
               mode === key && "border-b-accent",
             )}
           >

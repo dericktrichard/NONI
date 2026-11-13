@@ -41,7 +41,11 @@ export async function signInWithEmail(email: string, password: string): Promise<
 }
 
 export async function signUpWithEmail(email: string, password: string): Promise<void> {
-  const { user } = await createUserWithEmailAndPassword(getFirebaseAuth(), email, password);
+  const { user } = await createUserWithEmailAndPassword(
+    getFirebaseAuth(),
+    email,
+    password,
+  );
   try {
     await sendEmailVerification(user);
   } catch {}

@@ -6,7 +6,13 @@ import { mulberry32 } from "@/lib/play/game";
 import { compileProfile } from "@/lib/ranking/profile";
 
 const make = (slug: string, tier: string) =>
-  compileProfile({ slug, name: slug, attackPotency: tier, durability: tier, speed: "Supersonic" });
+  compileProfile({
+    slug,
+    name: slug,
+    attackPotency: tier,
+    durability: tier,
+    speed: "Supersonic",
+  });
 
 const strong = [make("s1", "5-B"), make("s2", "6-B"), make("s3", "6-C")];
 const weak = [make("w1", "9-B"), make("w2", "9-C"), make("w3", "10-A")];
@@ -14,7 +20,10 @@ const weak = [make("w1", "9-B"), make("w2", "9-C"), make("w3", "10-A")];
 const roster: Entrant[] = Array.from({ length: 14 }, (_, i) => ({
   verse: `v${i % 4}`,
   score: 3000 + i * 200,
-  profile: make(`r${String(i).padStart(2, "0")}`, ["9-B", "8-C", "7-C", "7-A", "6-C", "6-B", "5-B"][i % 7]!),
+  profile: make(
+    `r${String(i).padStart(2, "0")}`,
+    ["9-B", "8-C", "7-C", "7-A", "6-C", "6-B", "5-B"][i % 7]!,
+  ),
 }));
 
 describe("sampled fights", () => {
@@ -30,7 +39,12 @@ describe("sampled fights", () => {
   it("is repeatable for a given seed and varies between seeds", () => {
     const one = simulateClash(strong, weak, { rng: mulberry32(5) });
     expect(simulateClash(strong, weak, { rng: mulberry32(5) })).toEqual(one);
-    const winners = new Set(Array.from({ length: 60 }, (_, i) => simulateClash(strong, weak, { rng: mulberry32(i) }).winner));
+    const winners = new Set(
+      Array.from(
+        { length: 60 },
+        (_, i) => simulateClash(strong, weak, { rng: mulberry32(i) }).winner,
+      ),
+    );
     expect(winners.size).toBeGreaterThan(0);
   });
 });
@@ -54,7 +68,13 @@ describe("estimateWin", () => {
 describe("sampled climb", () => {
   it("gives the same hero different results across seeds", () => {
     const hero = roster[9]!;
-    const wins = new Set(Array.from({ length: 40 }, (_, i) => buildClimb(roster, hero, 8, "counters", "fair", mulberry32(i), true)!.wins));
+    const wins = new Set(
+      Array.from(
+        { length: 40 },
+        (_, i) =>
+          buildClimb(roster, hero, 8, "counters", "fair", mulberry32(i), true)!.wins,
+      ),
+    );
     expect(wins.size).toBeGreaterThan(1);
   });
 

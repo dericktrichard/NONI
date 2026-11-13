@@ -46,7 +46,10 @@ export default async function MatchupPage({ params }: Props) {
     <div className="mx-auto max-w-4xl px-4 pt-6 pb-24">
       <PageTop
         back={{ href: "/matchups", label: "Matchups" }}
-        trail={[{ label: "Matchups", href: "/matchups" }, { label: `${data.a.name} vs ${data.b.name}` }]}
+        trail={[
+          { label: "Matchups", href: "/matchups" },
+          { label: `${data.a.name} vs ${data.b.name}` },
+        ]}
       />
       <MatchupView data={data} />
 

@@ -133,17 +133,18 @@ const SECTIONS: DocSection[] = [
       <>
         <p>
           Glaze is a game score with no cash value. Every account starts with{" "}
-          {GLAZE.start}. Practice play earns fan points but no Glaze. A daily claim adds{" "}
-          {GLAZE.claim.base} Glaze, rising to{" "}
-          {GLAZE.claim.base + GLAZE.claim.bonus * (GLAZE.claim.maxStreak - 1)} on a seven
-          day streak. You can also stake{" "}
+          {GLAZE.start}. Practice wins earn a little Glaze, up to a daily limit, and a
+          practice loss costs nothing. A daily claim adds {GLAZE.claim.base} Glaze, rising
+          to {GLAZE.claim.base + GLAZE.claim.bonus * (GLAZE.claim.maxStreak - 1)} on a
+          seven day streak. You can also stake{" "}
           {GLAZE.stakes.filter((stake) => stake > 0).join(", ")} Glaze before a battle: a
           win pays more the longer the odds, and a loss costs the stake.
         </p>
         <p>
           Payouts include a small house edge, so on average stakes lose a little over
           time. Glaze is for play, not for earning. It cannot be bought, sold or
-          transferred, and a balance of zero can always be rebuilt through free play.
+          transferred, and a balance of zero can always be rebuilt through the daily claim
+          and practice wins.
         </p>
       </>
     ),

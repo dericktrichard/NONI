@@ -40,7 +40,8 @@ export function buildCharacterDocs(seeds: readonly CharacterSeed[]): CharacterDo
   const bySlug = new Map<string, CharacterSeed>();
   for (const seed of seeds) {
     const slug = seed.profile.slug;
-    if (!slugify(slug) || slugify(slug) !== slug) throw new Error(`Invalid character slug: ${slug}`);
+    if (!slugify(slug) || slugify(slug) !== slug)
+      throw new Error(`Invalid character slug: ${slug}`);
     if (bySlug.has(slug)) throw new Error(`Duplicate character slug: ${slug}`);
     bySlug.set(slug, seed);
   }

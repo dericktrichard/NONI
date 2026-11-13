@@ -29,7 +29,10 @@ const cmp = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
  * The same field of opponents for everyone. Sorted by slug, then evenly spaced, so the
  * choice is deterministic and does not favour any power band.
  */
-export function selectField(profiles: readonly CombatProfile[], cap: number): CombatProfile[] {
+export function selectField(
+  profiles: readonly CombatProfile[],
+  cap: number,
+): CombatProfile[] {
   const sorted = [...profiles].sort((x, y) => cmp(x.slug, y.slug));
   if (sorted.length <= cap) return sorted;
   const step = sorted.length / cap;

@@ -1,7 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { Fighter, GlazeLine, PhaseRail, PlaybackBar, STAGE, Segmented, Sweep, Tag } from "@/components/battle/shared";
+import { useEffect, useState } from "react";
+import {
+  Fighter,
+  GlazeLine,
+  PhaseRail,
+  PlaybackBar,
+  STAGE,
+  Segmented,
+  Sweep,
+  Tag,
+} from "@/components/battle/shared";
 import { usePlayback } from "@/hooks/use-playback";
 import type { ClimbResult } from "@/lib/battle/climb";
 import { heroMatch, heroRounds, roundName } from "@/lib/battle/rounds";
@@ -25,7 +34,15 @@ function Ladder({ result, step, resolved, done }: LadderProps) {
       {Array.from({ length: rounds }, (_, index) => {
         const round = index + 1;
         const state =
-          round <= resolved ? (round <= result.wins ? "won" : "lost") : !done && round === step ? "now" : done ? "gone" : "pending";
+          round <= resolved
+            ? round <= result.wins
+              ? "won"
+              : "lost"
+            : !done && round === step
+              ? "now"
+              : done
+                ? "gone"
+                : "pending";
         return (
           <li
             key={round}
@@ -33,13 +50,24 @@ function Ladder({ result, step, resolved, done }: LadderProps) {
               "flex min-w-0 flex-1 flex-col border p-2 transition-colors duration-500",
               state === "won" && "bg-foreground text-background",
               state === "lost" && "border-foreground",
-              state === "now" && "border-foreground ring-2 ring-foreground",
-              (state === "pending" || state === "gone") && "text-muted-foreground opacity-60",
+              state === "now" && "border-foreground ring-foreground ring-2",
+              (state === "pending" || state === "gone") &&
+                "text-muted-foreground opacity-60",
             )}
           >
-            <span className={cn(label, "truncate")}>{roundName(round, rounds, true)}</span>
-            <span className={cn("mt-1 text-xs font-medium", state === "now" && "anim-pulse")}>
-              {state === "won" ? "Cleared" : state === "lost" ? "Out" : state === "now" ? "Now" : "-"}
+            <span className={cn(label, "truncate")}>
+              {roundName(round, rounds, true)}
+            </span>
+            <span
+              className={cn("mt-1 text-xs font-medium", state === "now" && "anim-pulse")}
+            >
+              {state === "won"
+                ? "Cleared"
+                : state === "lost"
+                  ? "Out"
+                  : state === "now"
+                    ? "Now"
+                    : "-"}
             </span>
           </li>
         );
@@ -47,19 +75,32 @@ function Ladder({ result, step, resolved, done }: LadderProps) {
       <li
         className={cn(
           "flex min-w-0 flex-1 flex-col border p-2 transition-colors duration-500",
-          done && champion ? "bg-foreground text-background" : "text-muted-foreground opacity-60",
+          done && champion
+            ? "bg-foreground text-background"
+            : "text-muted-foreground opacity-60",
         )}
       >
         <span className={cn(label, "flex items-center gap-1")}>
-          {done && champion ? <span className="size-1.5 bg-accent" aria-hidden /> : null}No. 1
+          {done && champion ? <span className="bg-accent size-1.5" aria-hidden /> : null}
+          No. 1
         </span>
-        <span className="mt-1 text-xs font-medium">{done && champion ? "Yours" : "-"}</span>
+        <span className="mt-1 text-xs font-medium">
+          {done && champion ? "Yours" : "-"}
+        </span>
       </li>
     </ol>
   );
 }
 
-function Bracket({ result, decided, current }: { result: ClimbResult; decided: number; current: number }) {
+function Bracket({
+  result,
+  decided,
+  current,
+}: {
+  result: ClimbResult;
+  decided: number;
+  current: number;
+}) {
   const rounds = result.rounds.length;
   return (
     <div className="flex h-full min-w-136 gap-3">
@@ -69,7 +110,9 @@ function Bracket({ result, decided, current }: { result: ClimbResult; decided: n
         const over = decided >= round;
         return (
           <div key={round} className="flex min-w-0 flex-1 flex-col">
-            <p className={cn(label, "mb-1 truncate text-muted-foreground")}>{roundName(round, rounds, true)}</p>
+            <p className={cn(label, "text-muted-foreground mb-1 truncate")}>
+              {roundName(round, rounds, true)}
+            </p>
             <ul className="flex flex-1 flex-col justify-around gap-1.5">
               {matches.map((match, slot) => {
                 const hero = match.a === result.hero || match.b === result.hero;
@@ -80,7 +123,7 @@ function Bracket({ result, decided, current }: { result: ClimbResult; decided: n
                     className={cn(
                       "border",
                       known && hero && "border-foreground",
-                      hero && round === current && "anim-pulse ring-2 ring-foreground",
+                      hero && round === current && "anim-pulse ring-foreground ring-2",
                       over && "anim-pop",
                     )}
                   >
@@ -114,11 +157,23 @@ function Bracket({ result, decided, current }: { result: ClimbResult; decided: n
   );
 }
 
-export function ClimbStage({ outcome, onNew }: { outcome: ClimbOutcome; onNew: () => void }) {
-  const { result, cards, settlement, stake } = outcome;
+export function ClimbStage({
+  outcome,
+  onNew,
+  onSettled,
+}: {
+  outcome: ClimbOutcome;
+  onNew: () => void;
+  onSettled: () => void;
+}) {
+  const { result, cards, settlement, notice } = outcome;
   const rounds = result.rounds.length;
   const played = heroRounds(result);
   const p = usePlayback(played);
+  const finished = p.done;
+  useEffect(() => {
+    if (finished) onSettled();
+  }, [finished, onSettled]);
   const [view, setView] = useState<"duel" | "bracket">("duel");
 
   const match = p.done ? undefined : heroMatch(result, p.step);
@@ -126,10 +181,16 @@ export function ClimbStage({ outcome, onNew }: { outcome: ClimbOutcome; onNew: (
   const name = (slug: string) => cards[slug]?.name ?? slug;
   const opponent = match ? (match.a === result.hero ? match.b : match.a) : null;
   const heroWon = match?.winner === result.hero;
-  const heroChance = match ? Math.round((match.a === result.hero ? match.probabilityA : 1 - match.probabilityA) * 100) : 50;
+  const heroChance = match
+    ? Math.round(
+        (match.a === result.hero ? match.probabilityA : 1 - match.probabilityA) * 100,
+      )
+    : 50;
   const heroCard = cards[result.hero];
   const rivalCard = opponent ? cards[opponent] : undefined;
-  const upsets = result.rounds.flat().filter((m) => m.upset && (m.a === result.hero || m.b === result.hero)).length;
+  const upsets = result.rounds
+    .flat()
+    .filter((m) => m.upset && (m.a === result.hero || m.b === result.hero)).length;
 
   return (
     <div className={STAGE}>
@@ -148,41 +209,73 @@ export function ClimbStage({ outcome, onNew }: { outcome: ClimbOutcome; onNew: (
       </div>
 
       <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1fr)_26rem] lg:gap-6">
-        <div className={cn("min-h-0 overflow-auto", view === "duel" ? "hidden lg:block" : "block")}>
-          <Bracket result={result} decided={p.done ? rounds : p.resolved} current={p.done ? 0 : p.step} />
+        <div
+          className={cn(
+            "min-h-0 overflow-auto",
+            view === "duel" ? "hidden lg:block" : "block",
+          )}
+        >
+          <Bracket
+            result={result}
+            decided={p.done ? rounds : p.resolved}
+            current={p.done ? 0 : p.step}
+          />
         </div>
 
-        <section className={cn("min-h-0 flex-col overflow-hidden bg-foreground p-3 text-background sm:p-4", view === "bracket" ? "hidden lg:flex" : "flex")}>
+        <section
+          className={cn(
+            "bg-foreground text-background min-h-0 flex-col overflow-hidden p-3 sm:p-4",
+            view === "bracket" ? "hidden lg:flex" : "flex",
+          )}
+        >
           <div role="status" aria-live="polite" className="flex min-h-0 flex-1 flex-col">
             {p.done ? (
               <div className="anim-pop my-auto">
-                <p className="text-[10px] font-medium tracking-widest text-background/60 uppercase">{result.size} fighters</p>
-                <p className="mt-1 flex items-center gap-2 font-display text-3xl font-semibold sm:text-5xl">
-                  {champion ? <span className="size-3 bg-accent" aria-hidden /> : null}
+                <p className="text-background/60 text-[10px] font-medium tracking-widest uppercase">
+                  {result.size} fighters
+                </p>
+                <p className="font-display mt-1 flex items-center gap-2 text-3xl font-semibold sm:text-5xl">
+                  {champion ? <span className="bg-accent size-3" aria-hidden /> : null}
                   {champion ? "Champion" : `Out in the ${roundName(played, rounds)}`}
                 </p>
-                <p className="mt-2 text-sm text-background/70">
+                <p className="text-background/70 mt-2 text-sm">
                   {champion
                     ? `${name(result.hero)} beat all ${rounds} rounds and reached No. 1.`
                     : `Beaten by ${name(result.beatenBy!)}. ${name(result.champion)} took the title.`}
-                  {upsets > 0 ? ` ${upsets} upset${upsets > 1 ? "s" : ""} on the way.` : ""}
+                  {upsets > 0
+                    ? ` ${upsets} upset${upsets > 1 ? "s" : ""} on the way.`
+                    : ""}
                 </p>
-                <GlazeLine settlement={settlement} stake={stake} />
+                <GlazeLine settlement={settlement} stake={0} notice={notice} />
               </div>
             ) : match && heroCard && rivalCard ? (
               <div key={p.step} className="flex min-h-0 flex-1 flex-col">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-display text-lg font-semibold">{roundName(p.step, rounds)}</p>
+                  <p className="font-display text-lg font-semibold">
+                    {roundName(p.step, rounds)}
+                  </p>
                   <PhaseRail phase={p.phase} />
                 </div>
                 <div className="mt-3 flex min-h-0 flex-1 items-stretch gap-2 sm:gap-3">
-                  <Fighter card={heroCard} side="l" phase={p.phase} result={heroWon ? "win" : "loss"} />
-                  <span className="grid place-items-center font-display text-2xl font-bold sm:text-4xl">VS</span>
-                  <Fighter card={rivalCard} side="r" phase={p.phase} result={heroWon ? "loss" : "win"} />
+                  <Fighter
+                    card={heroCard}
+                    side="l"
+                    phase={p.phase}
+                    result={heroWon ? "win" : "loss"}
+                  />
+                  <span className="font-display grid place-items-center text-2xl font-bold sm:text-4xl">
+                    VS
+                  </span>
+                  <Fighter
+                    card={rivalCard}
+                    side="r"
+                    phase={p.phase}
+                    result={heroWon ? "loss" : "win"}
+                  />
                 </div>
                 <div className="mt-3 min-h-14">
                   {p.phase === 0 ? (
-                    <p className="text-sm text-background/80">
+                    <p className="text-background/80 text-sm">
                       {heroCard.name} meets {rivalCard.name}.
                     </p>
                   ) : p.phase === 1 ? (
@@ -190,11 +283,15 @@ export function ClimbStage({ outcome, onNew }: { outcome: ClimbOutcome; onNew: (
                   ) : (
                     <>
                       <p className="flex items-center gap-2 text-sm font-medium">
-                        {heroWon ? <span className="size-2 bg-accent" aria-hidden /> : null}
+                        {heroWon ? (
+                          <span className="bg-accent size-2" aria-hidden />
+                        ) : null}
                         {heroWon ? "Advances" : "Eliminated"}
-                        <span className="font-normal text-background/70">{match.note}</span>
+                        <span className="text-background/70 font-normal">
+                          {match.note}
+                        </span>
                       </p>
-                      <p className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-background/70">
+                      <p className="text-background/70 mt-1.5 flex flex-wrap items-center gap-2 text-xs">
                         {match.upset ? <Tag>Upset</Tag> : null}
                         You had {heroChance}% going in.
                       </p>
