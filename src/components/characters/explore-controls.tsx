@@ -15,7 +15,8 @@ const TIER_OPTIONS = Object.entries(TIER_GROUPS)
   .map(([group, name]) => ({ group: Number(group), name }))
   .sort((a, b) => a.group - b.group);
 
-const ACTIVE = "border-foreground bg-foreground text-background [box-shadow:inset_0_-2px_0_var(--color-accent)]";
+const ACTIVE =
+  "border-foreground bg-foreground text-background [box-shadow:inset_0_-2px_0_var(--color-accent)]";
 
 interface ToolbarProps {
   tier: number | null;
@@ -28,7 +29,7 @@ export function ExploreToolbar({ tier, onTier }: ToolbarProps) {
       <button
         type="button"
         onClick={() => window.dispatchEvent(new Event(OPEN_SEARCH))}
-        className="flex h-11 min-w-0 flex-1 items-center gap-3 border px-3 text-left text-sm text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+        className="text-muted-foreground hover:border-foreground hover:text-foreground flex h-11 min-w-0 flex-1 items-center gap-3 border px-3 text-left text-sm transition-colors"
       >
         <Search className="size-4 shrink-0" aria-hidden />
         <span className="flex-1 truncate">Search characters or verses</span>
@@ -37,9 +38,11 @@ export function ExploreToolbar({ tier, onTier }: ToolbarProps) {
 
       <select
         value={tier === null ? "" : String(tier)}
-        onChange={(event) => onTier(event.target.value === "" ? null : Number(event.target.value))}
+        onChange={(event) =>
+          onTier(event.target.value === "" ? null : Number(event.target.value))
+        }
         aria-label="Filter by power scale"
-        className="h-11 border bg-background px-3 text-sm outline-none focus:border-foreground sm:w-56"
+        className="bg-background focus:border-foreground h-11 border px-3 text-sm outline-none sm:w-56"
       >
         <option value="">All power scales</option>
         {TIER_OPTIONS.map(({ group, name }) => (
@@ -67,7 +70,13 @@ const CHIPS: Array<{ key: ChipKey; label: string }> = [
 ];
 
 /** Floats just under the nav while scrolling: where to look, and how to lay it out */
-export function ExploreFilterBar({ active, view, showView, onSelect, onView }: FilterBarProps) {
+export function ExploreFilterBar({
+  active,
+  view,
+  showView,
+  onSelect,
+  onView,
+}: FilterBarProps) {
   return (
     <div className="sticky top-[calc(var(--nav-space)+0.5rem)] z-30">
       <div className="acrylic flex items-center gap-3 px-3 py-2">
@@ -82,7 +91,9 @@ export function ExploreFilterBar({ active, view, showView, onSelect, onView }: F
                 onClick={() => onSelect(chip.key)}
                 className={cn(
                   "inline-flex h-10 shrink-0 items-center border px-3 text-sm font-medium transition-colors",
-                  selected ? ACTIVE : "border-border bg-transparent hover:bg-foreground/10",
+                  selected
+                    ? ACTIVE
+                    : "border-border hover:bg-foreground/10 bg-transparent",
                 )}
               >
                 {chip.label}
@@ -107,7 +118,9 @@ export function ExploreFilterBar({ active, view, showView, onSelect, onView }: F
                 onClick={() => onView(key)}
                 className={cn(
                   "grid size-10 place-items-center transition-colors",
-                  view === key ? "bg-foreground text-background" : "hover:bg-foreground/10",
+                  view === key
+                    ? "bg-foreground text-background"
+                    : "hover:bg-foreground/10",
                 )}
               >
                 <Icon className="size-4" strokeWidth={1.75} aria-hidden />

@@ -1,7 +1,13 @@
 import { decideFeatStatus } from "@/lib/ranking/verification";
 import type { FeatStatus } from "@/types/domain";
 
-export const REPORT_REASONS = ["inaccurate", "no-proof", "spam", "abuse", "other"] as const;
+export const REPORT_REASONS = [
+  "inaccurate",
+  "no-proof",
+  "spam",
+  "abuse",
+  "other",
+] as const;
 export type ReportReason = (typeof REPORT_REASONS)[number];
 
 export const REPORT_REASON_LABELS: Record<ReportReason, string> = {
@@ -44,9 +50,19 @@ export function needsNote(action: ModAction): boolean {
 export function applyModAction(action: ModAction, state: FeatState): ModOutcome {
   switch (action) {
     case "verify":
-      return { status: "verified", staffLocked: true, touchesFeat: true, reportStatus: "resolved" };
+      return {
+        status: "verified",
+        staffLocked: true,
+        touchesFeat: true,
+        reportStatus: "resolved",
+      };
     case "reject":
-      return { status: "rejected", staffLocked: true, touchesFeat: true, reportStatus: "resolved" };
+      return {
+        status: "rejected",
+        staffLocked: true,
+        touchesFeat: true,
+        reportStatus: "resolved",
+      };
     case "reset":
       return {
         status: decideFeatStatus({
@@ -61,7 +77,12 @@ export function applyModAction(action: ModAction, state: FeatState): ModOutcome 
         reportStatus: "resolved",
       };
     case "dismiss":
-      return { status: state.status, staffLocked: state.staffLocked, touchesFeat: false, reportStatus: "dismissed" };
+      return {
+        status: state.status,
+        staffLocked: state.staffLocked,
+        touchesFeat: false,
+        reportStatus: "dismissed",
+      };
   }
 }
 

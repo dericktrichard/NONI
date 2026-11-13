@@ -8,7 +8,12 @@ import { moderateArgumentSchema } from "@/lib/validation/moderation";
 export const runtime = "nodejs";
 
 const NO_STORE = { "Cache-Control": "no-store" };
-const RULE = { scope: "mod-argument", limit: 120, windowMs: 60 * 60_000, role: "moderator" as const };
+const RULE = {
+  scope: "mod-argument",
+  limit: 120,
+  windowMs: 60 * 60_000,
+  role: "moderator" as const,
+};
 
 export async function POST(request: Request) {
   const guarded = await guardWrite(request, RULE, moderateArgumentSchema);
@@ -22,9 +27,15 @@ export async function POST(request: Request) {
     return NextResponse.json(result, { headers: NO_STORE });
   } catch (error) {
     if (error instanceof HttpError) {
-      return NextResponse.json({ error: error.message }, { status: error.status, headers: NO_STORE });
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status, headers: NO_STORE },
+      );
     }
     console.error("argument moderation failed", error);
-    return NextResponse.json({ error: "Something went wrong." }, { status: 500, headers: NO_STORE });
+    return NextResponse.json(
+      { error: "Something went wrong." },
+      { status: 500, headers: NO_STORE },
+    );
   }
 }

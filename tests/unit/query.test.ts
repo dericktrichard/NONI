@@ -55,7 +55,12 @@ describe("parseCharacterQuery", () => {
   });
 
   it("rejects more than one filter", () => {
-    for (const query of ["media=manga&tier=4", "media=manga&q=goku", "q=goku&tier=4", "tier=4&verse=one-piece"]) {
+    for (const query of [
+      "media=manga&tier=4",
+      "media=manga&q=goku",
+      "q=goku&tier=4",
+      "tier=4&verse=one-piece",
+    ]) {
       expect(parse(query).ok).toBe(false);
     }
   });
@@ -146,15 +151,34 @@ describe("searchTerm", () => {
   });
 
   it("only ever produces words that buildSearchKeys indexed", () => {
-    const names = ["Gojo Satoru", "Pokémon", "Sung Jin-woo", "Misfit of Demon King Academy"];
+    const names = [
+      "Gojo Satoru",
+      "Pokémon",
+      "Sung Jin-woo",
+      "Misfit of Demon King Academy",
+    ];
     const keys = new Set(buildSearchKeys(names));
-    for (const typed of ["satoru", "poke", "JIN", "demon k", "academy", "Pokémon", "Gojo Satoru"]) {
+    for (const typed of [
+      "satoru",
+      "poke",
+      "JIN",
+      "demon k",
+      "academy",
+      "Pokémon",
+      "Gojo Satoru",
+    ]) {
       expect(keys.has(searchTerm(typed)!)).toBe(true);
     }
   });
 
   it("is idempotent, so a term the client sends passes the server check", () => {
-    for (const typed of ["Gojo Satoru", "Pokémon", "GOKU", "supercalifragilistic", "a goku"]) {
+    for (const typed of [
+      "Gojo Satoru",
+      "Pokémon",
+      "GOKU",
+      "supercalifragilistic",
+      "a goku",
+    ]) {
       const term = searchTerm(typed)!;
       expect(searchTerm(term)).toBe(term);
     }
@@ -184,12 +208,16 @@ describe("facetQueryString", () => {
   });
 
   it("always writes parameters in the one accepted order", () => {
-    expect(facetQueryString({ kind: "media", media: "manga" }, 24)).toBe("after=24&media=manga");
+    expect(facetQueryString({ kind: "media", media: "manga" }, 24)).toBe(
+      "after=24&media=manga",
+    );
     expect(facetQueryString({ kind: "all" }, null)).toBe("");
   });
 
   it("encodes text safely", () => {
-    expect(facetQueryString({ kind: "search", term: "a&b=c d" }, null)).toBe("q=a%26b%3Dc+d");
+    expect(facetQueryString({ kind: "search", term: "a&b=c d" }, null)).toBe(
+      "q=a%26b%3Dc+d",
+    );
   });
 });
 
@@ -200,7 +228,15 @@ describe("canonical query strings", () => {
   };
 
   it("accepts exactly one spelling of each request", () => {
-    for (const search of ["", "?", "media=manga", "?media=manga", "after=24&media=manga", "limit=5", "after=5&limit=5&q=goku"]) {
+    for (const search of [
+      "",
+      "?",
+      "media=manga",
+      "?media=manga",
+      "after=24&media=manga",
+      "limit=5",
+      "after=5&limit=5&q=goku",
+    ]) {
       expect(accepted(search)).toBe(true);
     }
   });
@@ -220,7 +256,12 @@ describe("canonical query strings", () => {
   });
 
   it("rebuilds the same string the client sends", () => {
-    const facets: Facet[] = [{ kind: "all" }, { kind: "media", media: "anime" }, { kind: "tier", group: 4 }, { kind: "search", term: "goku" }];
+    const facets: Facet[] = [
+      { kind: "all" },
+      { kind: "media", media: "anime" },
+      { kind: "tier", group: 4 },
+      { kind: "search", term: "goku" },
+    ];
     for (const facet of facets) {
       for (const after of [null, 12]) {
         const search = facetQueryString(facet, after);

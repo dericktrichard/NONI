@@ -37,13 +37,15 @@ const MESSAGES: Record<ProofIssueCode, string> = {
   thread_host: "Thread links must come from X, Twitter or Reddit.",
   type_invalid: "This type is not allowed for this kind of proof.",
   locator_missing: "Add where to find it, such as a chapter and page or a timestamp.",
-  locator_format: "Video proof needs a timestamp like 12:45. Panels and quotes need a chapter or page number.",
+  locator_format:
+    "Video proof needs a timestamp like 12:45. Panels and quotes need a chapter or page number.",
   excerpt_missing: "Quote proof needs the quoted text.",
   excerpt_length: `The quote must be between ${PROOF.excerptMin} and ${LIMITS.proofExcerpt} characters.`,
   too_few: "Add at least one proof.",
   too_many: `A feat can have at most ${LIMITS.proofsPerFeat} proofs.`,
   too_many_secondary: `A feat can have at most ${PROOF.maxSecondary} secondary references.`,
-  no_primary: "Add at least one proof from the original work. Secondary references cannot stand alone.",
+  no_primary:
+    "Add at least one proof from the original work. Secondary references cannot stand alone.",
   duplicate: "This proof is already listed.",
 };
 
@@ -103,7 +105,8 @@ export function validateProof(proof: Proof): ProofIssueCode[] {
       const hosts = source === "secondary" ? PROOF.secondaryVideoHosts : PROOF.videoHosts;
       if (!hostMatches(host, hosts)) issues.push("video_host");
     }
-    if (proof.type === "thread" && !hostMatches(host, PROOF.threadHosts)) issues.push("thread_host");
+    if (proof.type === "thread" && !hostMatches(host, PROOF.threadHosts))
+      issues.push("thread_host");
   }
 
   const locator = proof.locator.trim();
@@ -113,7 +116,11 @@ export function validateProof(proof: Proof): ProofIssueCode[] {
     issues.push("locator_format");
   } else if (proof.type === "video" && !TIMESTAMP.test(locator)) {
     issues.push("locator_format");
-  } else if (source === "primary" && (proof.type === "panel" || proof.type === "quote") && !/\d/.test(locator)) {
+  } else if (
+    source === "primary" &&
+    (proof.type === "panel" || proof.type === "quote") &&
+    !/\d/.test(locator)
+  ) {
     issues.push("locator_format");
   }
 
@@ -140,7 +147,10 @@ export function validateFeatProofs(proofs: readonly Proof[]): ProofIssue[] {
   if (proofs.length >= 1 && !proofs.some((proof) => proofSource(proof) === "primary")) {
     issues.push({ code: "no_primary", message: MESSAGES.no_primary });
   }
-  if (proofs.filter((proof) => proofSource(proof) === "secondary").length > PROOF.maxSecondary) {
+  if (
+    proofs.filter((proof) => proofSource(proof) === "secondary").length >
+    PROOF.maxSecondary
+  ) {
     issues.push({ code: "too_many_secondary", message: MESSAGES.too_many_secondary });
   }
 

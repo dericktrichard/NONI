@@ -14,12 +14,21 @@ export async function POST(request: Request) {
 
   try {
     await reportFeat(guarded.user.uid, guarded.body);
-    return NextResponse.json({ ok: true }, { status: 201, headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json(
+      { ok: true },
+      { status: 201, headers: { "Cache-Control": "no-store" } },
+    );
   } catch (error) {
     if (error instanceof HttpError) {
-      return NextResponse.json({ error: error.message }, { status: error.status, headers: { "Cache-Control": "no-store" } });
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status, headers: { "Cache-Control": "no-store" } },
+      );
     }
     console.error("report failed", error);
-    return NextResponse.json({ error: "Something went wrong." }, { status: 500, headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json(
+      { error: "Something went wrong." },
+      { status: 500, headers: { "Cache-Control": "no-store" } },
+    );
   }
 }

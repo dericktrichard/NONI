@@ -38,9 +38,15 @@ const VISIBILITY_COPY: Record<Visibility, { label: string; hint: string }> = {
   },
 };
 
-export function ListBuilder({ lists }: { lists: UserList[] }) {
+export function ListBuilder({
+  lists,
+  openNew = false,
+}: {
+  lists: UserList[];
+  openNew?: boolean;
+}) {
   const router = useRouter();
-  const [editing, setEditing] = useState<string | null>(null);
+  const [editing, setEditing] = useState<string | null>(openNew ? "new" : null);
   const [title, setTitle] = useState("");
   const [visibility, setVisibility] = useState<Visibility>("public");
   const [rows, setRows] = useState<Row[]>([]);

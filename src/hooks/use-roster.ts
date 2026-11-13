@@ -13,7 +13,9 @@ export function useRoster() {
     if (cached) return;
     let live = true;
     fetch("/api/battle/roster")
-      .then((response) => (response.ok ? response.json() : Promise.reject(new Error("roster"))))
+      .then((response) =>
+        response.ok ? response.json() : Promise.reject(new Error("roster")),
+      )
       .then((data: { cards: BattleCard[] }) => {
         cached = data.cards;
         if (live) setCards(data.cards);

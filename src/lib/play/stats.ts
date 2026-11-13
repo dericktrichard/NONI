@@ -10,11 +10,18 @@ export interface PlayStats {
   daily: DailyResult | null;
 }
 
-export const EMPTY_STATS: PlayStats = { bestStreak: 0, dailyStreak: 0, lastDay: null, daily: null };
+export const EMPTY_STATS: PlayStats = {
+  bestStreak: 0,
+  dailyStreak: 0,
+  lastDay: null,
+  daily: null,
+};
 
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
 const count = (value: unknown): number =>
-  typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 100_000 ? value : 0;
+  typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 100_000
+    ? value
+    : 0;
 
 export function parseStats(raw: string | null): PlayStats {
   if (!raw) return EMPTY_STATS;
@@ -34,7 +41,10 @@ export function parseStats(raw: string | null): PlayStats {
     return {
       bestStreak: count(data.bestStreak),
       dailyStreak: count(data.dailyStreak),
-      lastDay: typeof data.lastDay === "string" && DAY_RE.test(data.lastDay) ? data.lastDay : null,
+      lastDay:
+        typeof data.lastDay === "string" && DAY_RE.test(data.lastDay)
+          ? data.lastDay
+          : null,
       daily: validDaily,
     };
   } catch {
@@ -48,7 +58,12 @@ export function previousDay(day: string): string {
   return date.toISOString().slice(0, 10);
 }
 
-export function afterDaily(stats: PlayStats, day: string, answers: boolean[], yesterday: string): PlayStats {
+export function afterDaily(
+  stats: PlayStats,
+  day: string,
+  answers: boolean[],
+  yesterday: string,
+): PlayStats {
   if (stats.lastDay === day) return stats;
   const dailyStreak = stats.lastDay === yesterday ? stats.dailyStreak + 1 : 1;
   return { ...stats, dailyStreak, lastDay: day, daily: { day, answers } };
@@ -59,6 +74,10 @@ export function afterEndless(stats: PlayStats, streak: number): PlayStats {
 }
 
 /** A streak is only alive if you played today or yesterday */
-export function liveDailyStreak(stats: PlayStats, day: string, yesterday: string): number {
+export function liveDailyStreak(
+  stats: PlayStats,
+  day: string,
+  yesterday: string,
+): number {
   return stats.lastDay === day || stats.lastDay === yesterday ? stats.dailyStreak : 0;
 }

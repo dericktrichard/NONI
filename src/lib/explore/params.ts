@@ -44,7 +44,8 @@ export function exploreHref(target: ExploreTarget, view: View = "rows"): string 
   const params = new URLSearchParams();
 
   if (target.media) params.set("media", target.media);
-  else if (target.tier !== null && target.tier !== undefined) params.set("tier", String(target.tier));
+  else if (target.tier !== null && target.tier !== undefined)
+    params.set("tier", String(target.tier));
   else if (target.all) params.set("all", "1");
 
   const filtered = [...params.keys()].length > 0;

@@ -18,7 +18,9 @@ export const argumentSchema = z
       .max(1000)
       .refine((value) => !hasHiddenChars(value), "Invalid characters."),
     citations: z
-      .array(z.object({ characterId: slug, featId: z.string().regex(FEAT_ID_RE) }).strict())
+      .array(
+        z.object({ characterId: slug, featId: z.string().regex(FEAT_ID_RE) }).strict(),
+      )
       .min(1)
       .max(MAX_CITATIONS),
   })

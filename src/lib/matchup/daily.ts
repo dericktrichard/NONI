@@ -17,7 +17,11 @@ export function dailyPair(count: number, day: number): [number, number] | null {
 }
 
 /** The day's pair drawn from the first `poolSize` items */
-export function pickPair<T>(items: readonly T[], day: number, poolSize = 12): [T, T] | null {
+export function pickPair<T>(
+  items: readonly T[],
+  day: number,
+  poolSize = 12,
+): [T, T] | null {
   const pool = items.slice(0, poolSize);
   const pair = dailyPair(pool.length, day);
   const first = pair ? pool[pair[0]] : undefined;

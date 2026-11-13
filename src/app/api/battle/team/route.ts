@@ -9,7 +9,8 @@ export const runtime = "nodejs";
 const NO_STORE = { "Cache-Control": "no-store" };
 const RULE: Rule = { scope: "battle-team", limit: 120, windowMs: 60 * 60_000 };
 
-const reply = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: NO_STORE });
+const reply = (body: unknown, status = 200) =>
+  NextResponse.json(body, { status, headers: NO_STORE });
 
 export async function POST(request: Request) {
   const guarded = await guardWrite(request, RULE, teamSuggestSchema, 1024);

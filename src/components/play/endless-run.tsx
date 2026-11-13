@@ -3,12 +3,25 @@
 import { useState } from "react";
 import { DuelView } from "@/components/play/duel-view";
 import { savePlayStats, usePlayStats } from "@/hooks/use-play-stats";
-import { firstDuel, isCorrect, pickRight, type Duel, type Guess, type PlayCharacter } from "@/lib/play/game";
+import {
+  firstDuel,
+  isCorrect,
+  pickRight,
+  type Duel,
+  type Guess,
+  type PlayCharacter,
+} from "@/lib/play/game";
 import { afterEndless } from "@/lib/play/stats";
 
 type State =
   | { phase: "idle" }
-  | { phase: "playing"; duel: Duel; streak: number; guess: Guess | null; correct: boolean | null };
+  | {
+      phase: "playing";
+      duel: Duel;
+      streak: number;
+      guess: Guess | null;
+      correct: boolean | null;
+    };
 
 export function EndlessRun({ pool }: { pool: PlayCharacter[] }) {
   const stats = usePlayStats();
@@ -23,8 +36,10 @@ export function EndlessRun({ pool }: { pool: PlayCharacter[] }) {
     return (
       <div className="border p-6 sm:p-10">
         <p className="eyebrow">Endless</p>
-        <p className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">How long can you last?</p>
-        <p className="mt-3 max-w-md text-sm text-muted-foreground">
+        <p className="font-display mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+          How long can you last?
+        </p>
+        <p className="text-muted-foreground mt-3 max-w-md text-sm">
           Keep guessing until you miss. Your best streak: {stats.bestStreak}.
         </p>
         <button type="button" className="btn btn-solid mt-6" onClick={start}>
@@ -50,7 +65,13 @@ export function EndlessRun({ pool }: { pool: PlayCharacter[] }) {
       start();
       return;
     }
-    setState({ phase: "playing", duel: { left: duel.right, right: nextRight }, streak, guess: null, correct: null });
+    setState({
+      phase: "playing",
+      duel: { left: duel.right, right: nextRight },
+      streak,
+      guess: null,
+      correct: null,
+    });
   }
 
   return (
@@ -71,7 +92,9 @@ export function EndlessRun({ pool }: { pool: PlayCharacter[] }) {
             </button>
           ) : (
             <div className="flex flex-col items-center gap-3">
-              <p className="font-display text-lg font-semibold">Game over. Streak: {streak}</p>
+              <p className="font-display text-lg font-semibold">
+                Game over. Streak: {streak}
+              </p>
               <button type="button" className="btn btn-solid" onClick={start}>
                 Play again
               </button>

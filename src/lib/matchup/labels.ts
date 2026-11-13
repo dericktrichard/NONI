@@ -10,7 +10,10 @@ export function percentA(probabilityA: number): number {
   return Math.round(Math.min(1, Math.max(0, probabilityA)) * 100);
 }
 
-export function verdictText(result: Pick<MatchupResult, "winner" | "verdict">, names: SideNames): string {
+export function verdictText(
+  result: Pick<MatchupResult, "winner" | "verdict">,
+  names: SideNames,
+): string {
   if (result.verdict === "stalemate") return "Stalemate";
   if (result.verdict === "toss-up" || !result.winner) return "Too close to call";
 

@@ -4,14 +4,23 @@ import { signInSchema, signUpSchema } from "@/lib/validation/auth";
 
 describe("auth validation", () => {
   it("normalises the email", () => {
-    const parsed = signUpSchema.parse({ email: "  Test@Example.COM ", password: "a".repeat(10) });
+    const parsed = signUpSchema.parse({
+      email: "  Test@Example.COM ",
+      password: "a".repeat(10),
+    });
     expect(parsed.email).toBe("test@example.com");
   });
 
   it("requires 10 to 128 characters for a new password", () => {
-    expect(signUpSchema.safeParse({ email: "a@b.co", password: "a".repeat(9) }).success).toBe(false);
-    expect(signUpSchema.safeParse({ email: "a@b.co", password: "a".repeat(10) }).success).toBe(true);
-    expect(signUpSchema.safeParse({ email: "a@b.co", password: "a".repeat(129) }).success).toBe(false);
+    expect(
+      signUpSchema.safeParse({ email: "a@b.co", password: "a".repeat(9) }).success,
+    ).toBe(false);
+    expect(
+      signUpSchema.safeParse({ email: "a@b.co", password: "a".repeat(10) }).success,
+    ).toBe(true);
+    expect(
+      signUpSchema.safeParse({ email: "a@b.co", password: "a".repeat(129) }).success,
+    ).toBe(false);
   });
 
   it("accepts any existing password up to the limit when signing in", () => {
@@ -41,7 +50,9 @@ describe("describeAuthError", () => {
 
   it("handles session failures and unknown errors without leaking details", () => {
     expect(describeAuthError(new SessionError())).toMatch(/session/i);
-    expect(describeAuthError(new Error("secret internals"))).toBe("Something went wrong. Try again.");
+    expect(describeAuthError(new Error("secret internals"))).toBe(
+      "Something went wrong. Try again.",
+    );
     expect(describeAuthError(null)).toBe("Something went wrong. Try again.");
   });
 });

@@ -25,6 +25,9 @@ describe("applyVote", () => {
   });
 
   it("never goes below zero", () => {
-    expect(applyVote({ upvotes: 0, downvotes: 0 }, 1, 0)).toEqual({ upvotes: 0, downvotes: 0 });
+    expect(applyVote({ upvotes: 0, downvotes: 0 }, 1, 0)).toEqual({
+      upvotes: 0,
+      downvotes: 0,
+    });
   });
 });

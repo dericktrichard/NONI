@@ -9,7 +9,12 @@ export interface FighterState {
 }
 
 /** Every fighter's state once the first `resolved` fights are settled, with `active` still in the ring */
-export function replayAt(slugs: readonly string[], fights: readonly ClashFight[], resolved: number, active?: ClashFight): FighterState[] {
+export function replayAt(
+  slugs: readonly string[],
+  fights: readonly ClashFight[],
+  resolved: number,
+  active?: ClashFight,
+): FighterState[] {
   const done = fights.slice(0, resolved);
 
   return slugs.map((slug) => {
@@ -21,7 +26,13 @@ export function replayAt(slugs: readonly string[], fights: readonly ClashFight[]
       fallen ||= fight.fallen.includes(slug);
     }
     const fighting = active !== undefined && (active.a === slug || active.b === slug);
-    const status: FighterStatus = fallen ? "fallen" : fighting ? "fighting" : resolved >= fights.length ? "standing" : "waiting";
+    const status: FighterStatus = fallen
+      ? "fallen"
+      : fighting
+        ? "fighting"
+        : resolved >= fights.length
+          ? "standing"
+          : "waiting";
     return { slug, vitality: fallen ? 0 : vitality, status };
   });
 }

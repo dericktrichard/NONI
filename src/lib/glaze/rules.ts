@@ -2,7 +2,7 @@
 export const GLAZE = {
   /** Every account starts here, as earned Glaze */
   start: 100,
-  /** Amounts a player may put at risk. 0 is practice play, which pays no Glaze. */
+  /** Amounts a player may put at risk. 0 is practice play, which pays a small capped reward on wins. */
   stakes: [0, 10, 25, 50],
   /** Share of fair odds paid on a won stake. The rest is the house edge, which drains Glaze over time. */
   house: 0.9,
@@ -32,7 +32,7 @@ export function stakeMultiplier(chance: number): number {
 }
 
 export interface Settlement {
-  /** Change to the earned balance. Negative when a stake is lost, zero for practice play. */
+  /** Change to the earned balance. Negative when a stake is lost, zero for practice play, which is paid separately. */
   delta: number;
 }
 

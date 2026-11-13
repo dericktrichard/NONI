@@ -3,7 +3,8 @@ import { BattleHub } from "@/components/battle/battle-hub";
 
 export const metadata: Metadata = {
   title: "Battle",
-  description: "Team battles and tournaments. Pick your fighters, watch it play out, and earn or risk Glaze.",
+  description:
+    "Team battles and tournaments. Pick your fighters, watch it play out, and earn or risk Glaze.",
 };
 
 export default function BattlePage() {

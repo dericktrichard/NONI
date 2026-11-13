@@ -11,12 +11,20 @@ interface ActionProps {
   children: React.ReactNode;
 }
 
-export function NewMatchupButton({ preset, className, children }: ActionProps & { preset?: MatchupPreset }) {
+export function NewMatchupButton({
+  preset,
+  className,
+  children,
+}: ActionProps & { preset?: MatchupPreset }) {
   return (
     <button
       type="button"
       className={className}
-      onClick={() => window.dispatchEvent(new CustomEvent(OPEN_MATCHUP, { detail: { preset: preset ?? null } }))}
+      onClick={() =>
+        window.dispatchEvent(
+          new CustomEvent(OPEN_MATCHUP, { detail: { preset: preset ?? null } }),
+        )
+      }
     >
       {children}
     </button>
@@ -35,7 +43,12 @@ export function SurpriseButton({ className, children }: ActionProps) {
   }
 
   return (
-    <button type="button" className={className} disabled={busy} onClick={() => void surprise()}>
+    <button
+      type="button"
+      className={className}
+      disabled={busy}
+      onClick={() => void surprise()}
+    >
       {children}
     </button>
   );

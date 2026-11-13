@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { moderateImageSchema, reportImageSchema } from "@/lib/validation/image-moderation";
+import {
+  moderateImageSchema,
+  reportImageSchema,
+} from "@/lib/validation/image-moderation";
 
 describe("image moderation input", () => {
   it("needs a note to remove or block but not to dismiss", () => {

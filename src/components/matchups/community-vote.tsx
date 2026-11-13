@@ -50,9 +50,12 @@ export function CommunityVote({ a, b, initial }: CommunityVoteProps) {
         setMessage("Sign in to vote.");
         return;
       }
-      const data = (await response.json().catch(() => null)) as
-        | { a?: number; b?: number; pick?: RequestedPick; error?: string }
-        | null;
+      const data = (await response.json().catch(() => null)) as {
+        a?: number;
+        b?: number;
+        pick?: RequestedPick;
+        error?: string;
+      } | null;
       if (response.ok && typeof data?.a === "number" && typeof data.b === "number") {
         setTally({ a: data.a, b: data.b });
         setPick(data.pick ?? "none");
@@ -68,8 +71,18 @@ export function CommunityVote({ a, b, initial }: CommunityVoteProps) {
 
   const total = tally.a + tally.b;
   const sides = [
-    { key: "a" as const, side: a, count: tally.a, pressed: "bg-foreground text-background hover:bg-foreground" },
-    { key: "b" as const, side: b, count: tally.b, pressed: "bg-accent text-accent-foreground hover:bg-accent" },
+    {
+      key: "a" as const,
+      side: a,
+      count: tally.a,
+      pressed: "bg-foreground text-background hover:bg-foreground",
+    },
+    {
+      key: "b" as const,
+      side: b,
+      count: tally.b,
+      pressed: "bg-accent text-accent-foreground hover:bg-accent",
+    },
   ];
 
   return (
@@ -83,31 +96,42 @@ export function CommunityVote({ a, b, initial }: CommunityVoteProps) {
             disabled={busy}
             onClick={() => void vote(key)}
             className={cn(
-              "min-h-20 border p-3 text-left transition-colors hover:bg-muted disabled:opacity-40",
+              "hover:bg-muted min-h-20 border p-3 text-left transition-colors disabled:opacity-40",
               pick === key && pressed,
             )}
           >
             <span className="block truncate text-sm font-medium">{side.name}</span>
-            <span className="font-display tabular block text-3xl font-semibold">{sharePercent(count, total)}%</span>
-            <span className="eyebrow block">{count} {count === 1 ? "vote" : "votes"}</span>
+            <span className="font-display tabular block text-3xl font-semibold">
+              {sharePercent(count, total)}%
+            </span>
+            <span className="eyebrow block">
+              {count} {count === 1 ? "vote" : "votes"}
+            </span>
           </button>
         ))}
       </div>
 
       {total === 0 ? (
-        <div className="mt-3 h-2 border bg-muted" aria-hidden />
+        <div className="bg-muted mt-3 h-2 border" aria-hidden />
       ) : (
         <div
           role="img"
           aria-label={`${a.name} ${sharePercent(tally.a, total)} percent, ${b.name} ${sharePercent(tally.b, total)} percent`}
           className="mt-3 flex h-2 border"
         >
-          <div className="bg-foreground transition-[width] duration-300" style={{ width: `${sharePercent(tally.a, total)}%` }} />
-          <div className="flex-1 bg-accent" />
+          <div
+            className="bg-foreground transition-[width] duration-300"
+            style={{ width: `${sharePercent(tally.a, total)}%` }}
+          />
+          <div className="bg-accent flex-1" />
         </div>
       )}
-      
-      <p className="eyebrow mt-3">{total === 0 ? "No votes yet" : `${total} ${total === 1 ? "vote" : "votes"} in total`}</p>
+
+      <p className="eyebrow mt-3">
+        {total === 0
+          ? "No votes yet"
+          : `${total} ${total === 1 ? "vote" : "votes"} in total`}
+      </p>
 
       {message ? (
         <p role="status" className="mt-2 text-sm">

@@ -8,18 +8,22 @@ function Tile({ label, children }: { label: string; children: React.ReactNode })
   return (
     <div className="bg-background p-4">
       <dt className="eyebrow">{label}</dt>
-      <dd className="mt-1 font-display text-xl leading-tight font-semibold">{children}</dd>
+      <dd className="font-display mt-1 text-xl leading-tight font-semibold">
+        {children}
+      </dd>
     </div>
   );
 }
 
 function Abilities({ claims }: { claims: HaxClaim[] }) {
-  if (claims.length === 0) return <span className="text-sm text-muted-foreground">None recorded</span>;
+  if (claims.length === 0)
+    return <span className="text-muted-foreground text-sm">None recorded</span>;
   return (
     <ul className="flex flex-wrap gap-2">
       {claims.map((claim) => (
         <li key={claim.kind} className="border px-2 py-1 text-sm">
-          {kindText(claim.kind)} <span className="tabular text-muted-foreground">{claim.power}</span>
+          {kindText(claim.kind)}{" "}
+          <span className="tabular text-muted-foreground">{claim.power}</span>
         </li>
       ))}
     </ul>
@@ -31,7 +35,7 @@ export function PowerProfileCard({ profile }: { profile: PowerProfile }) {
     <section aria-label="Power profile">
       <SectionHeading index="01" title="Power profile" />
 
-      <dl className="mt-6 grid grid-cols-2 gap-px border bg-border">
+      <dl className="bg-border mt-6 grid grid-cols-2 gap-px border">
         <Tile label="Attack potency">{tierText(profile.attackPotency)}</Tile>
         <Tile label="Durability">{tierText(profile.durability)}</Tile>
         <Tile label="Speed">{profile.speed}</Tile>

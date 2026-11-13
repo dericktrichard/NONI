@@ -1,5 +1,9 @@
 import { AP_TIERS, apIndex } from "@/config/scales";
-import { applyVerifiedClaims, type FeatClaim, type ProfileInput } from "@/lib/ranking/profile";
+import {
+  applyVerifiedClaims,
+  type FeatClaim,
+  type ProfileInput,
+} from "@/lib/ranking/profile";
 import { evidenceShare } from "@/lib/ranking/score";
 import type { FeatStatus, PowerProfile } from "@/types/domain";
 
@@ -21,7 +25,10 @@ export interface RecomputeResult {
 }
 
 function impliedDimension(attackPotency: string, durability: string): number {
-  return Math.max(AP_TIERS[apIndex(attackPotency)].dimension, AP_TIERS[apIndex(durability)].dimension);
+  return Math.max(
+    AP_TIERS[apIndex(attackPotency)].dimension,
+    AP_TIERS[apIndex(durability)].dimension,
+  );
 }
 
 export function recomputeProfile(input: RecomputeInput): RecomputeResult {
@@ -40,7 +47,8 @@ export function recomputeProfile(input: RecomputeInput): RecomputeResult {
   const applied = applyVerifiedClaims(base, input.feats);
   const claimed = applied.dimension ?? seed.dimension;
   const raised =
-    impliedDimension(applied.attackPotency, applied.durability) > impliedDimension(seed.attackPotency, seed.durability);
+    impliedDimension(applied.attackPotency, applied.durability) >
+    impliedDimension(seed.attackPotency, seed.durability);
   const dimension = raised
     ? Math.max(claimed, impliedDimension(applied.attackPotency, applied.durability))
     : claimed;
@@ -51,7 +59,10 @@ export function recomputeProfile(input: RecomputeInput): RecomputeResult {
     speed: applied.speed,
     dimension,
     hax: (applied.hax ?? []).map((h) => ({ kind: h.kind, power: h.power })),
-    resistances: (applied.resistances ?? []).map((r) => ({ kind: r.kind, power: r.power })),
+    resistances: (applied.resistances ?? []).map((r) => ({
+      kind: r.kind,
+      power: r.power,
+    })),
   };
   const verifiedFeatCount = applied.verifiedFeatCount ?? 0;
 

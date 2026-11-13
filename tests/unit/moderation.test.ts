@@ -33,22 +33,39 @@ describe("applyModAction", () => {
   });
 
   it("reset unlocks and lets the votes decide again", () => {
-    const strong = applyModAction("reset", state({ status: "rejected", staffLocked: true, upvotes: 9, downvotes: 1 }));
+    const strong = applyModAction(
+      "reset",
+      state({ status: "rejected", staffLocked: true, upvotes: 9, downvotes: 1 }),
+    );
     expect(strong.status).toBe("verified");
     expect(strong.staffLocked).toBe(false);
 
-    const weak = applyModAction("reset", state({ status: "verified", staffLocked: true, upvotes: 1, downvotes: 0 }));
+    const weak = applyModAction(
+      "reset",
+      state({ status: "verified", staffLocked: true, upvotes: 1, downvotes: 0 }),
+    );
     expect(weak.status).toBe("pending");
   });
 
   it("reset never verifies a feat whose proofs are invalid", () => {
-    const outcome = applyModAction("reset", state({ upvotes: 20, downvotes: 0, proofsValid: false }));
+    const outcome = applyModAction(
+      "reset",
+      state({ upvotes: 20, downvotes: 0, proofsValid: false }),
+    );
     expect(outcome.status).toBe("pending");
   });
 
   it("dismiss leaves the feat alone and only closes the reports", () => {
-    const outcome = applyModAction("dismiss", state({ status: "verified", staffLocked: true }));
-    expect(outcome).toEqual({ status: "verified", staffLocked: true, touchesFeat: false, reportStatus: "dismissed" });
+    const outcome = applyModAction(
+      "dismiss",
+      state({ status: "verified", staffLocked: true }),
+    );
+    expect(outcome).toEqual({
+      status: "verified",
+      staffLocked: true,
+      touchesFeat: false,
+      reportStatus: "dismissed",
+    });
   });
 });
 

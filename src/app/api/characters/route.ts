@@ -16,7 +16,8 @@ export async function GET(request: Request) {
   const parsed = parseCharacterQuery(url.searchParams);
 
   if (!parsed.ok) return reject(parsed.error, 400);
-  if (!isCanonicalSearch(url.search, parsed.plan)) return reject("Query is not in canonical form.", 400);
+  if (!isCanonicalSearch(url.search, parsed.plan))
+    return reject("Query is not in canonical form.", 400);
 
   try {
     const page = await fetchCharacters(parsed.plan);

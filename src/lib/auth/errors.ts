@@ -11,7 +11,8 @@ const MESSAGES: Record<string, string> = {
   "auth/email-already-in-use": "Could not create the account. Try signing in instead.",
   "auth/too-many-requests": "Too many attempts. Wait a few minutes and try again.",
   "auth/network-request-failed": "Network error. Check your connection.",
-  "auth/popup-blocked": "Your browser blocked the sign-in window. Allow pop-ups and try again.",
+  "auth/popup-blocked":
+    "Your browser blocked the sign-in window. Allow pop-ups and try again.",
   "auth/user-disabled": "This account is disabled.",
 };
 

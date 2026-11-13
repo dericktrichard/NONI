@@ -25,15 +25,20 @@ function Slot({ label, value, active, onSelect }: SlotProps) {
       onClick={onSelect}
       aria-pressed={active}
       className={cn(
-        "flex min-h-24 items-center gap-3 border p-3 text-left transition-colors hover:bg-muted",
+        "hover:bg-muted flex min-h-24 items-center gap-3 border p-3 text-left transition-colors",
         active && "border-foreground [box-shadow:inset_0_-2px_0_var(--color-accent)]",
       )}
     >
       {value ? (
-        <Portrait name={value.name} src={value.imageUrl} sizes="56px" className="aspect-2/3 w-12 shrink-0" />
+        <Portrait
+          name={value.name}
+          src={value.imageUrl}
+          sizes="56px"
+          className="aspect-2/3 w-12 shrink-0"
+        />
       ) : (
         <span
-          className="grid aspect-2/3 w-12 shrink-0 place-items-center border border-dashed text-muted-foreground"
+          className="text-muted-foreground grid aspect-2/3 w-12 shrink-0 place-items-center border border-dashed"
           aria-hidden
         >
           ?
@@ -41,14 +46,22 @@ function Slot({ label, value, active, onSelect }: SlotProps) {
       )}
       <span className="min-w-0">
         <span className="eyebrow block">{label}</span>
-        <span className="block truncate font-display text-lg font-semibold">{value ? value.name : "Choose"}</span>
+        <span className="font-display block truncate text-lg font-semibold">
+          {value ? value.name : "Choose"}
+        </span>
         {value ? <span className="eyebrow block truncate">{value.verse}</span> : null}
       </span>
     </button>
   );
 }
 
-function MakerPanel({ preset, onDone }: { preset: MatchupPreset | null; onDone: () => void }) {
+function MakerPanel({
+  preset,
+  onDone,
+}: {
+  preset: MatchupPreset | null;
+  onDone: () => void;
+}) {
   const router = useRouter();
   const { text, change, results, list, failed } = useCharacterSearch();
   const [a, setA] = useState<MatchupPreset | null>(preset);
@@ -93,13 +106,25 @@ function MakerPanel({ preset, onDone }: { preset: MatchupPreset | null; onDone: 
   return (
     <div className="space-y-5">
       <div className="grid gap-3 sm:grid-cols-2">
-        <Slot label="First character" value={a} active={slot === "a"} onSelect={() => setSlot("a")} />
-        <Slot label="Second character" value={b} active={slot === "b"} onSelect={() => setSlot("b")} />
+        <Slot
+          label="First character"
+          value={a}
+          active={slot === "a"}
+          onSelect={() => setSlot("a")}
+        />
+        <Slot
+          label="Second character"
+          value={b}
+          active={slot === "b"}
+          onSelect={() => setSlot("b")}
+        />
       </div>
 
       <div>
         <label className="block">
-          <span className="eyebrow mb-1 block">Search for the {slot === "a" ? "first" : "second"} character</span>
+          <span className="eyebrow mb-1 block">
+            Search for the {slot === "a" ? "first" : "second"} character
+          </span>
           <input
             autoFocus
             value={text}
@@ -108,13 +133,13 @@ function MakerPanel({ preset, onDone }: { preset: MatchupPreset | null; onDone: 
             placeholder="Name or verse"
             autoComplete="off"
             spellCheck={false}
-            className="h-11 w-full border bg-background px-3 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground"
+            className="bg-background placeholder:text-muted-foreground focus:border-foreground h-11 w-full border px-3 text-sm outline-none"
           />
         </label>
 
         <p className="eyebrow mt-3 mb-2">{results ? "Results" : "Top ranked"}</p>
         {results && choices.length === 0 ? (
-          <p className="border p-3 text-sm text-muted-foreground">
+          <p className="text-muted-foreground border p-3 text-sm">
             {failed ? "Search is unavailable right now." : "No character matches that."}
           </p>
         ) : (
@@ -124,11 +149,18 @@ function MakerPanel({ preset, onDone }: { preset: MatchupPreset | null; onDone: 
                 <button
                   type="button"
                   onClick={() => pick(c)}
-                  className="flex w-full items-center gap-3 p-2.5 text-left transition-colors hover:bg-muted"
+                  className="hover:bg-muted flex w-full items-center gap-3 p-2.5 text-left transition-colors"
                 >
-                  <Portrait name={c.name} src={c.imageUrl} sizes="40px" className="aspect-2/3 w-8 shrink-0" />
+                  <Portrait
+                    name={c.name}
+                    src={c.imageUrl}
+                    sizes="40px"
+                    className="aspect-2/3 w-8 shrink-0"
+                  />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-display text-base font-semibold">{c.name}</span>
+                    <span className="font-display block truncate text-base font-semibold">
+                      {c.name}
+                    </span>
                     <span className="eyebrow block truncate">{c.verse}</span>
                   </span>
                   <TierBadge tier={c.tier} />
@@ -146,10 +178,20 @@ function MakerPanel({ preset, onDone }: { preset: MatchupPreset | null; onDone: 
       ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-5">
-        <button type="button" className="btn btn-line" disabled={busy} onClick={() => void surprise()}>
+        <button
+          type="button"
+          className="btn btn-line"
+          disabled={busy}
+          onClick={() => void surprise()}
+        >
           Surprise me
         </button>
-        <button type="button" className="btn btn-solid" disabled={!ready} onClick={compare}>
+        <button
+          type="button"
+          className="btn btn-solid"
+          disabled={!ready}
+          onClick={compare}
+        >
           {ready ? "Compare" : "Pick two characters"}
         </button>
       </div>
@@ -172,8 +214,18 @@ export function MatchupMaker() {
   }, []);
 
   return (
-    <Modal wide open={open} onClose={() => setOpen(false)} eyebrow="Head to head" title="New matchup">
-      <MakerPanel key={preset?.id ?? "none"} preset={preset} onDone={() => setOpen(false)} />
+    <Modal
+      wide
+      open={open}
+      onClose={() => setOpen(false)}
+      eyebrow="Head to head"
+      title="New matchup"
+    >
+      <MakerPanel
+        key={preset?.id ?? "none"}
+        preset={preset}
+        onDone={() => setOpen(false)}
+      />
     </Modal>
   );
 }

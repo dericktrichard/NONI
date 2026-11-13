@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildDaily, isCorrect, mulberry32, pickRight, type PlayCharacter } from "@/lib/play/game";
+import {
+  buildDaily,
+  isCorrect,
+  mulberry32,
+  pickRight,
+  type PlayCharacter,
+} from "@/lib/play/game";
 import {
   EMPTY_STATS,
   afterDaily,
@@ -19,7 +25,10 @@ const pool = (size: number): PlayCharacter[] =>
     imageUrl: null,
   }));
 
-const ids = (day: string) => buildDaily(pool(30), day).map((d) => `${d.left.id}>${d.right.id}`).join(",");
+const ids = (day: string) =>
+  buildDaily(pool(30), day)
+    .map((d) => `${d.left.id}>${d.right.id}`)
+    .join(",");
 
 describe("buildDaily", () => {
   it("gives the same puzzle for the same day", () => {
@@ -55,7 +64,14 @@ describe("isCorrect", () => {
 });
 
 describe("pickRight", () => {
-  const make = (id: string, score: number): PlayCharacter => ({ id, name: id, verse: "V", tier: "7-B", score, imageUrl: null });
+  const make = (id: string, score: number): PlayCharacter => ({
+    id,
+    name: id,
+    verse: "V",
+    tier: "7-B",
+    score,
+    imageUrl: null,
+  });
 
   it("skips the same character and equal scores", () => {
     const list = [make("a", 100), make("b", 100), make("c", 200)];
@@ -92,7 +108,9 @@ describe("afterDaily", () => {
   const answers = [true, false];
 
   it("starts a streak on the first play", () => {
-    expect(afterDaily(EMPTY_STATS, "2026-11-07", answers, "2026-11-06").dailyStreak).toBe(1);
+    expect(afterDaily(EMPTY_STATS, "2026-11-07", answers, "2026-11-06").dailyStreak).toBe(
+      1,
+    );
   });
 
   it("extends the streak on consecutive days", () => {
@@ -127,12 +145,24 @@ describe("parseStats", () => {
   });
 
   it("round-trips valid stats", () => {
-    const stats = { bestStreak: 6, dailyStreak: 2, lastDay: "2026-11-07", daily: { day: "2026-11-07", answers: [true, false] } };
+    const stats = {
+      bestStreak: 6,
+      dailyStreak: 2,
+      lastDay: "2026-11-07",
+      daily: { day: "2026-11-07", answers: [true, false] },
+    };
     expect(parseStats(JSON.stringify(stats))).toEqual(stats);
   });
 
   it("rejects bad values", () => {
-    const parsed = parseStats(JSON.stringify({ bestStreak: -3, dailyStreak: "x", lastDay: "today", daily: { day: "x", answers: [1] } }));
+    const parsed = parseStats(
+      JSON.stringify({
+        bestStreak: -3,
+        dailyStreak: "x",
+        lastDay: "today",
+        daily: { day: "x", answers: [1] },
+      }),
+    );
     expect(parsed).toEqual(EMPTY_STATS);
   });
 });

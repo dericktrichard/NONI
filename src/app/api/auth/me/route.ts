@@ -28,7 +28,14 @@ export async function GET() {
   }
 
   return NextResponse.json(
-    { uid: user.uid, verified: user.email_verified === true, role: roleOf(user), handle, avatarUrl, avatarName },
+    {
+      uid: user.uid,
+      verified: user.email_verified === true,
+      role: roleOf(user),
+      handle,
+      avatarUrl,
+      avatarName,
+    },
     { headers: HEADERS },
   );
 }

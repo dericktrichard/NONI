@@ -9,7 +9,11 @@ export const size = CARD_SIZE;
 export const contentType = "image/png";
 export const revalidate = 3600;
 
-export default async function Image({ params }: { params: Promise<{ a: string; b: string }> }) {
+export default async function Image({
+  params,
+}: {
+  params: Promise<{ a: string; b: string }>;
+}) {
   const { a, b } = await params;
 
   let data = null;
@@ -26,14 +30,12 @@ export default async function Image({ params }: { params: Promise<{ a: string; b
   ]);
 
   return new ImageResponse(
-    (
-      <MatchupCard
-        a={{ name: data.a.name, verse: data.a.verse, portrait: portraitA }}
-        b={{ name: data.b.name, verse: data.b.verse, portrait: portraitB }}
-        winner={data.result.winner}
-        verdict={verdictText(data.result, { a: data.a.name, b: data.b.name })}
-      />
-    ),
+    <MatchupCard
+      a={{ name: data.a.name, verse: data.a.verse, portrait: portraitA }}
+      b={{ name: data.b.name, verse: data.b.verse, portrait: portraitB }}
+      winner={data.result.winner}
+      verdict={verdictText(data.result, { a: data.a.name, b: data.b.name })}
+    />,
     size,
   );
 }

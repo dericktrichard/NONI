@@ -20,7 +20,10 @@ async function fetchPage(facet: Facet, after: number | null): Promise<FetchResul
     const response = await fetch(`/api/characters?${facetQueryString(facet, after)}`);
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      return { ok: false, message: response.status === 400 && body?.error ? body.error : GENERIC_ERROR };
+      return {
+        ok: false,
+        message: response.status === 400 && body?.error ? body.error : GENERIC_ERROR,
+      };
     }
     return { ok: true, page: (await response.json()) as CharacterPage };
   } catch {
@@ -70,7 +73,9 @@ export function ExploreResults({ facet, view, initial }: ExploreResultsProps) {
 
     if (result.ok) {
       setPage((previous) =>
-        append ? { items: [...previous.items, ...result.page.items], next: result.page.next } : result.page,
+        append
+          ? { items: [...previous.items, ...result.page.items], next: result.page.next }
+          : result.page,
       );
       setStatus("idle");
       return;
@@ -98,12 +103,20 @@ export function ExploreResults({ facet, view, initial }: ExploreResultsProps) {
   if (items.length === 0) {
     return (
       <div className="border p-6">
-        <p className="font-display text-lg font-semibold">{status === "error" ? "Something went wrong" : "No characters found"}</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {status === "error" ? message : "Nothing matches this filter yet. Try a different one."}
+        <p className="font-display text-lg font-semibold">
+          {status === "error" ? "Something went wrong" : "No characters found"}
+        </p>
+        <p className="text-muted-foreground mt-1 text-sm">
+          {status === "error"
+            ? message
+            : "Nothing matches this filter yet. Try a different one."}
         </p>
         {status === "error" ? (
-          <button type="button" className="btn btn-line mt-4" onClick={() => void run(null)}>
+          <button
+            type="button"
+            className="btn btn-line mt-4"
+            onClick={() => void run(null)}
+          >
             Try again
           </button>
         ) : null}
@@ -125,7 +138,7 @@ export function ExploreResults({ facet, view, initial }: ExploreResultsProps) {
           {showPodium ? (
             <p className="eyebrow mt-10 mb-3 flex items-center gap-3">
               Ranks 04 onward
-              <span className="h-px flex-1 bg-border" aria-hidden />
+              <span className="bg-border h-px flex-1" aria-hidden />
             </p>
           ) : null}
 
@@ -147,14 +160,23 @@ export function ExploreResults({ facet, view, initial }: ExploreResultsProps) {
 
       {status === "error" ? (
         <div className="mt-6 border p-4">
-          <p className="text-sm text-muted-foreground">{message}</p>
-          <button type="button" className="btn btn-line mt-3" onClick={() => void run(next)}>
+          <p className="text-muted-foreground text-sm">{message}</p>
+          <button
+            type="button"
+            className="btn btn-line mt-3"
+            onClick={() => void run(next)}
+          >
             Try again
           </button>
         </div>
       ) : next !== null ? (
         <div className="mt-6 flex justify-center">
-          <button type="button" className="btn btn-line" disabled={status === "more"} onClick={() => void run(next)}>
+          <button
+            type="button"
+            className="btn btn-line"
+            disabled={status === "more"}
+            onClick={() => void run(next)}
+          >
             {status === "more" ? (
               <>
                 <Loader2 className="size-4 animate-spin" aria-hidden />

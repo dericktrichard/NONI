@@ -15,18 +15,16 @@ export default async function Image({ params }: { params: Promise<{ slug: string
 
   const portrait = await portraitDataUri(data.imageUrl, 626, 940);
   return new ImageResponse(
-    (
-      <CharacterCard
-        name={data.name}
-        verse={data.verse}
-        tier={data.tier}
-        score={data.score}
-        rank={data.rank}
-        verified={data.verified}
-        total={data.total}
-        portrait={portrait}
-      />
-    ),
+    <CharacterCard
+      name={data.name}
+      verse={data.verse}
+      tier={data.tier}
+      score={data.score}
+      rank={data.rank}
+      verified={data.verified}
+      total={data.total}
+      portrait={portrait}
+    />,
     size,
   );
 }

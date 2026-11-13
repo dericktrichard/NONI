@@ -16,7 +16,12 @@ export function RosterPicker({ label, taken, onPick }: RosterPickerProps) {
   const { cards, failed } = useRoster();
   const [text, setText] = useState("");
   const query = text.trim().toLowerCase();
-  const shown = cards?.filter((c) => !query || c.name.toLowerCase().includes(query) || c.verse.toLowerCase().includes(query));
+  const shown = cards?.filter(
+    (c) =>
+      !query ||
+      c.name.toLowerCase().includes(query) ||
+      c.verse.toLowerCase().includes(query),
+  );
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -29,15 +34,17 @@ export function RosterPicker({ label, taken, onPick }: RosterPickerProps) {
           placeholder="Search name or verse"
           autoComplete="off"
           spellCheck={false}
-          className="h-9 w-full border bg-background px-3 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground"
+          className="bg-background placeholder:text-muted-foreground focus:border-foreground h-9 w-full border px-3 text-sm outline-none"
         />
       </label>
 
       <div className="mt-2 min-h-0 flex-1 overflow-y-auto border p-1.5">
         {!shown ? (
-          <p className="p-2 text-sm text-muted-foreground">{failed ? "The roster is unavailable right now." : "Loading the roster..."}</p>
+          <p className="text-muted-foreground p-2 text-sm">
+            {failed ? "The roster is unavailable right now." : "Loading the roster..."}
+          </p>
         ) : shown.length === 0 ? (
-          <p className="p-2 text-sm text-muted-foreground">No character matches that.</p>
+          <p className="text-muted-foreground p-2 text-sm">No character matches that.</p>
         ) : (
           <ul className="grid grid-cols-4 gap-1.5 sm:grid-cols-6 lg:grid-cols-5 xl:grid-cols-7">
             {shown.map((card) => (
@@ -49,8 +56,15 @@ export function RosterPicker({ label, taken, onPick }: RosterPickerProps) {
                   onClick={() => onPick(card)}
                   className="group block w-full text-left disabled:opacity-30"
                 >
-                  <Portrait name={card.name} src={card.imageUrl} sizes="96px" className="aspect-square w-full" />
-                  <span className="mt-0.5 block truncate text-[10px] font-medium group-hover:underline">{card.name}</span>
+                  <Portrait
+                    name={card.name}
+                    src={card.imageUrl}
+                    sizes="96px"
+                    className="aspect-square w-full"
+                  />
+                  <span className="mt-0.5 block truncate text-[10px] font-medium group-hover:underline">
+                    {card.name}
+                  </span>
                 </button>
               </li>
             ))}

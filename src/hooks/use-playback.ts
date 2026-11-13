@@ -8,7 +8,9 @@ const BEAT_MS = [2400, 2800, 4200] as const;
 
 export function usePlayback(steps: number) {
   const total = steps * BEATS;
-  const [reduced] = useState(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const [reduced] = useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
   const [beat, setBeat] = useState(0);
   const [playing, setPlaying] = useState(!reduced);
   const [speed, setSpeed] = useState(1);
@@ -17,7 +19,10 @@ export function usePlayback(steps: number) {
 
   useEffect(() => {
     if (!running) return;
-    const id = setTimeout(() => setBeat((b) => Math.min(total, b + 1)), BEAT_MS[beat % BEATS]! / speed);
+    const id = setTimeout(
+      () => setBeat((b) => Math.min(total, b + 1)),
+      BEAT_MS[beat % BEATS]! / speed,
+    );
     return () => clearTimeout(id);
   }, [running, beat, total, speed]);
 

@@ -73,8 +73,8 @@ const SECTIONS: DocSection[] = [
           exchanged or transferred.
         </li>
         <li>
-          Stakes risk only Glaze. A balance can fall to zero, and free play lets you earn
-          again.
+          Stakes risk only Glaze. A balance can fall to zero, and practice wins and the
+          daily claim let you earn again.
         </li>
         <li>
           We may correct or reverse balances after a bug or abuse, and we may change

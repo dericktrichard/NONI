@@ -10,7 +10,9 @@ export default async function NewCharacterPage() {
   return (
     <>
       <p className="eyebrow">Admin</p>
-      <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight">Add a character</h1>
+      <h1 className="font-display mt-2 text-4xl font-semibold tracking-tight">
+        Add a character
+      </h1>
       <CharacterForm />
     </>
   );

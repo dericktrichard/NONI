@@ -40,9 +40,9 @@ describe("feat verification", () => {
     expect(
       decideFeatStatus({ ...base, staffLocked: true, upvotes: 50, downvotes: 0 }),
     ).toBe("pending");
-    expect(decideFeatStatus({ ...base, proofsValid: false, upvotes: 50, downvotes: 0 })).toBe(
-      "pending",
-    );
+    expect(
+      decideFeatStatus({ ...base, proofsValid: false, upvotes: 50, downvotes: 0 }),
+    ).toBe("pending");
   });
 });
 
@@ -62,7 +62,13 @@ describe("ordering and ranks", () => {
       c("z", "Zed", 100, 9),
       c("top", "Top", 200, 0),
     ];
-    expect(list.sort(compareCharacters).map((x) => x.slug)).toEqual(["top", "z", "a1", "a2", "b"]);
+    expect(list.sort(compareCharacters).map((x) => x.slug)).toEqual([
+      "top",
+      "z",
+      "a1",
+      "a2",
+      "b",
+    ]);
   });
 
   it("assigns ranks and trends, and rolls previous ranks only on snapshots", () => {
@@ -80,8 +86,14 @@ describe("ordering and ranks", () => {
     ]);
 
     const snapshot = assignRanks(items, { rollPrevious: true });
-    expect(snapshot.find((r) => r.slug === "goku")).toMatchObject({ previousRank: 1, trend: -1 });
-    expect(snapshot.find((r) => r.slug === "new")).toMatchObject({ previousRank: null, trend: 0 });
+    expect(snapshot.find((r) => r.slug === "goku")).toMatchObject({
+      previousRank: 1,
+      trend: -1,
+    });
+    expect(snapshot.find((r) => r.slug === "new")).toMatchObject({
+      previousRank: null,
+      trend: 0,
+    });
   });
 
   it("computes trend direction", () => {

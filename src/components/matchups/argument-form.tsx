@@ -31,7 +31,7 @@ export function ArgumentForm({ a, b, citable }: ArgumentFormProps) {
 
   if (citable.length === 0) {
     return (
-      <p className="mt-4 text-sm text-muted-foreground">
+      <p className="text-muted-foreground mt-4 text-sm">
         Arguments must cite verified feats, and neither character has one yet.
       </p>
     );
@@ -41,7 +41,9 @@ export function ArgumentForm({ a, b, citable }: ArgumentFormProps) {
 
   function toggle(key: string) {
     setSelected((current) =>
-      current.includes(key) ? current.filter((item) => item !== key) : [...current, key].slice(0, MAX_CITATIONS),
+      current.includes(key)
+        ? current.filter((item) => item !== key)
+        : [...current, key].slice(0, MAX_CITATIONS),
     );
   }
 
@@ -59,7 +61,13 @@ export function ArgumentForm({ a, b, citable }: ArgumentFormProps) {
       const response = await fetch("/api/matchups/arguments", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ a: a.slug, b: b.slug, side, body: body.trim(), citations }),
+        body: JSON.stringify({
+          a: a.slug,
+          b: b.slug,
+          side,
+          body: body.trim(),
+          citations,
+        }),
       });
       if (response.status === 401) {
         window.dispatchEvent(new Event(OPEN_SIGN_IN));
@@ -85,7 +93,9 @@ export function ArgumentForm({ a, b, citable }: ArgumentFormProps) {
 
   return (
     <form onSubmit={submit} className="mt-6 space-y-5 border p-4 sm:p-6">
-      <h3 className="font-display text-xl font-semibold tracking-tight">Make your case</h3>
+      <h3 className="font-display text-xl font-semibold tracking-tight">
+        Make your case
+      </h3>
 
       <fieldset>
         <legend className="eyebrow mb-2">Who wins?</legend>
@@ -95,7 +105,7 @@ export function ArgumentForm({ a, b, citable }: ArgumentFormProps) {
             return (
               <label
                 key={option.slug}
-                className="flex min-h-11 cursor-pointer items-center gap-2 border px-3 text-sm has-checked:bg-foreground has-checked:text-background"
+                className="has-checked:bg-foreground has-checked:text-background flex min-h-11 cursor-pointer items-center gap-2 border px-3 text-sm"
               >
                 <input
                   type="radio"
@@ -113,7 +123,9 @@ export function ArgumentForm({ a, b, citable }: ArgumentFormProps) {
       </fieldset>
 
       <label className="block text-sm">
-        <span className="mb-1 block font-medium">Your argument (20 to 1000 characters)</span>
+        <span className="mb-1 block font-medium">
+          Your argument (20 to 1000 characters)
+        </span>
         <textarea
           value={body}
           onChange={(event) => setBody(event.target.value)}

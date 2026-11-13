@@ -5,7 +5,11 @@ const MAX_BYTES = 5_000_000;
 const TIMEOUT_MS = 4_000;
 
 /** The card renderer cannot decode WebP, so portraits become small JPEG data URIs. Null when anything fails. */
-export async function portraitDataUri(url: string | null, width: number, height: number): Promise<string | null> {
+export async function portraitDataUri(
+  url: string | null,
+  width: number,
+  height: number,
+): Promise<string | null> {
   if (!url || !url.startsWith("https://")) return null;
 
   try {

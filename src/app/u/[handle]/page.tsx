@@ -8,6 +8,7 @@ import { SectionHeading } from "@/components/home/section-heading";
 import { ListCard } from "@/components/lists/list-card";
 import { ProfileAvatar, ProfileBanner } from "@/components/profile/banner";
 import { OwnFeats } from "@/components/profile/own-feats";
+import { NewListButton } from "@/components/profile/new-list-button";
 import { OwnerTools } from "@/components/profile/owner-tools";
 import { ReportImageButton } from "@/components/profile/report-image-button";
 import { Badges } from "@/components/standing/badges";
@@ -214,9 +215,16 @@ export default async function ProfilePage({ params }: Props) {
           <SectionHeading title="Lists" />
           {lists.length === 0 ? (
             <p className="text-muted-foreground mt-6 border p-4 text-sm">
-              {isOwner
-                ? "No lists yet. Use Edit lists above to make one."
-                : "No public lists yet."}
+              {isOwner ? (
+                <>
+                  No lists yet. Make your first one.
+                  <span className="mt-3 block">
+                    <NewListButton />
+                  </span>
+                </>
+              ) : (
+                "No public lists yet."
+              )}
             </p>
           ) : (
             <div className="mt-6 space-y-6">

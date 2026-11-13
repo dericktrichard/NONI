@@ -33,7 +33,11 @@ export function ProofItem({ proof }: { proof: Proof }) {
       ) : (
         <span>{label}</span>
       )}
-      {proof.excerpt ? <blockquote className="mt-1 border-l-2 pl-3 text-foreground/70">{proof.excerpt}</blockquote> : null}
+      {proof.excerpt ? (
+        <blockquote className="text-foreground/70 mt-1 border-l-2 pl-3">
+          {proof.excerpt}
+        </blockquote>
+      ) : null}
     </li>
   );
 }
@@ -52,7 +56,12 @@ export function FeatCard({ feat, characterId, mine, busy, onVote }: FeatCardProp
   const secondary = feat.proofs.filter((proof) => proof.source === "secondary");
 
   return (
-    <li className={cn("flex gap-3 border p-4 sm:gap-4 sm:p-5", verified && "border-l-[3px] border-l-accent")}>
+    <li
+      className={cn(
+        "flex gap-3 border p-4 sm:gap-4 sm:p-5",
+        verified && "border-l-accent border-l-[3px]",
+      )}
+    >
       <div className="flex w-11 shrink-0 flex-col items-center">
         <button
           type="button"
@@ -64,7 +73,9 @@ export function FeatCard({ feat, characterId, mine, busy, onVote }: FeatCardProp
         >
           <ChevronUp className="size-5" aria-hidden />
         </button>
-        <span className="tabular py-1 text-sm font-semibold">{feat.upvotes - feat.downvotes}</span>
+        <span className="tabular py-1 text-sm font-semibold">
+          {feat.upvotes - feat.downvotes}
+        </span>
         <button
           type="button"
           aria-label="Downvote"
@@ -79,11 +90,17 @@ export function FeatCard({ feat, characterId, mine, busy, onVote }: FeatCardProp
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <Badge variant={verified ? "accent" : "outline"}>{verified ? "Verified" : "Pending"}</Badge>
+          <Badge variant={verified ? "accent" : "outline"}>
+            {verified ? "Verified" : "Pending"}
+          </Badge>
           <span className="eyebrow">{claimLabel(feat.claim)}</span>
         </div>
-        <h3 className="mt-2 font-display text-lg leading-snug font-semibold">{feat.title}</h3>
-        <p className="mt-1 text-sm whitespace-pre-line text-foreground/80">{feat.description}</p>
+        <h3 className="font-display mt-2 text-lg leading-snug font-semibold">
+          {feat.title}
+        </h3>
+        <p className="text-foreground/80 mt-1 text-sm whitespace-pre-line">
+          {feat.description}
+        </p>
 
         <ul className="mt-3 space-y-2">
           {primary.map((proof, index) => (
@@ -106,7 +123,10 @@ export function FeatCard({ feat, characterId, mine, busy, onVote }: FeatCardProp
           <p className="eyebrow">
             {feat.authorName} / {feat.createdAt.slice(0, 10)}
           </p>
-          <ReportButton endpoint="/api/feats/report" target={{ characterId, featId: feat.id }} />
+          <ReportButton
+            endpoint="/api/feats/report"
+            target={{ characterId, featId: feat.id }}
+          />
         </div>
       </div>
     </li>

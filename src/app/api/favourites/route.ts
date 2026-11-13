@@ -11,7 +11,8 @@ export const runtime = "nodejs";
 const NO_STORE = { "Cache-Control": "no-store" };
 const RULE: Rule = { scope: "favourite", limit: 60, windowMs: 60 * 60_000 };
 
-const reply = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: NO_STORE });
+const reply = (body: unknown, status = 200) =>
+  NextResponse.json(body, { status, headers: NO_STORE });
 
 function failure(error: unknown) {
   if (error instanceof HttpError) return reply({ error: error.message }, error.status);
@@ -21,7 +22,8 @@ function failure(error: unknown) {
 
 export async function GET(request: Request) {
   const characterId = new URL(request.url).searchParams.get("characterId") ?? "";
-  if (characterId.length > 80 || !SLUG_RE.test(characterId)) return reply({ error: "Invalid request." }, 400);
+  if (characterId.length > 80 || !SLUG_RE.test(characterId))
+    return reply({ error: "Invalid request." }, 400);
 
   const viewer = await getSessionUser();
   if (!viewer) return reply({ error: "Sign in required." }, 401);
@@ -38,7 +40,9 @@ export async function PUT(request: Request) {
   if (!guarded.ok) return guarded.response;
 
   try {
-    return reply(await setFavourite(guarded.user.uid, guarded.body.characterId, guarded.body.value));
+    return reply(
+      await setFavourite(guarded.user.uid, guarded.body.characterId, guarded.body.value),
+    );
   } catch (error) {
     return failure(error);
   }
