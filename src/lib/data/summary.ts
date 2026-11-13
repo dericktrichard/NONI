@@ -30,7 +30,10 @@ const finite = (value: unknown): number | null =>
   typeof value === "number" && Number.isFinite(value) ? value : null;
 
 /** Returns null for a malformed document, so one bad record cannot break a page */
-export function toSummary(id: string, data: Record<string, unknown>): CharacterSummary | null {
+export function toSummary(
+  id: string,
+  data: Record<string, unknown>,
+): CharacterSummary | null {
   const name = text(data.name);
   const verse = text(data.verseName);
   const tier = text(data.tier);
@@ -44,7 +47,9 @@ export function toSummary(id: string, data: Record<string, unknown>): CharacterS
   const featCount = finite(data.featCount) ?? 0;
   const verified = finite(data.verifiedFeatCount) ?? 0;
   const imageUrl =
-    typeof data.imageUrl === "string" && data.imageUrl.startsWith("https://") ? data.imageUrl : null;
+    typeof data.imageUrl === "string" && data.imageUrl.startsWith("https://")
+      ? data.imageUrl
+      : null;
 
   return {
     id,

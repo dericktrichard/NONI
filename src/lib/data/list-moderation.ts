@@ -5,7 +5,10 @@ import type { ListItem } from "@/lib/data/lists";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL } from "@/lib/firebase/paths";
 import { nextListStatus, type ListStatus } from "@/lib/lists/moderation";
-import type { ModerateListInput, ReportListInput } from "@/lib/validation/list-moderation";
+import type {
+  ModerateListInput,
+  ReportListInput,
+} from "@/lib/validation/list-moderation";
 
 export interface ReportedList {
   id: string;
@@ -23,8 +26,10 @@ export async function reportList(uid: string, input: ReportListInput): Promise<v
 
   await db.runTransaction(async (tx) => {
     const [list, existing] = await Promise.all([tx.get(listRef), tx.get(reportRef)]);
-    if (!list.exists || list.get("status") !== "visible") throw new HttpError(404, "List not found.");
-    if (list.get("ownerUid") === uid) throw new HttpError(403, "You cannot report your own list.");
+    if (!list.exists || list.get("status") !== "visible")
+      throw new HttpError(404, "List not found.");
+    if (list.get("ownerUid") === uid)
+      throw new HttpError(403, "You cannot report your own list.");
     if (existing.exists) throw new HttpError(409, "You already reported this list.");
 
     tx.create(reportRef, {
@@ -39,7 +44,10 @@ export async function reportList(uid: string, input: ReportListInput): Promise<v
   });
 }
 
-export async function moderateList(moderatorUid: string, input: ModerateListInput): Promise<{ handle: string }> {
+export async function moderateList(
+  moderatorUid: string,
+  input: ModerateListInput,
+): Promise<{ handle: string }> {
   const db = adminDb();
   const listRef = db.collection(COL.lists).doc(input.listId);
   const openReports = db
@@ -54,7 +62,8 @@ export async function moderateList(moderatorUid: string, input: ModerateListInpu
 
     const current: ListStatus = list.get("status") === "hidden" ? "hidden" : "visible";
     const next = nextListStatus(input.action, current);
-    if (next === null) throw new HttpError(409, "That action does not apply to this list.");
+    if (next === null)
+      throw new HttpError(409, "That action does not apply to this list.");
 
     const ownerUid = String(list.get("ownerUid"));
     const owner = await tx.get(db.collection(COL.users).doc(ownerUid));
@@ -90,13 +99,20 @@ export async function moderateList(moderatorUid: string, input: ModerateListInpu
 
 export async function getReportedLists(): Promise<ReportedList[]> {
   const db = adminDb();
-  const snap = await db.collection(COL.listReports).where("status", "==", "open").limit(100).get();
+  const snap = await db
+    .collection(COL.listReports)
+    .where("status", "==", "open")
+    .limit(100)
+    .get();
   if (snap.empty) return [];
 
   const byList = new Map<string, { reason: string; note: string }[]>();
   for (const doc of snap.docs) {
     const listId = String(doc.get("listId"));
-    const entry = { reason: String(doc.get("reason") ?? ""), note: String(doc.get("note") ?? "") };
+    const entry = {
+      reason: String(doc.get("reason") ?? ""),
+      note: String(doc.get("note") ?? ""),
+    };
     const existing = byList.get(listId);
     if (existing) existing.push(entry);
     else byList.set(listId, [entry]);
@@ -119,7 +135,9 @@ export async function getReportedLists(): Promise<ReportedList[]> {
   const owners = ownerIds.length
     ? await db.getAll(...ownerIds.map((id) => db.collection(COL.users).doc(id)))
     : [];
-  const handles = new Map(owners.map((owner) => [owner.id, String(owner.get("handle") ?? "")]));
+  const handles = new Map(
+    owners.map((owner) => [owner.id, String(owner.get("handle") ?? "")]),
+  );
 
   return present
     .map((list) => ({

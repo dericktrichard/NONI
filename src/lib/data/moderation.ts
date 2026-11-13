@@ -11,13 +11,21 @@ import {
 } from "@/lib/moderation/actions";
 import type { FeatStatus } from "@/types/domain";
 import { COL, matchupId } from "@/lib/firebase/paths";
-import { applyArgumentAction, type ArgumentAction, type ArgumentStatus } from "@/lib/moderation/argument-actions";
+import {
+  applyArgumentAction,
+  type ArgumentAction,
+  type ArgumentStatus,
+} from "@/lib/moderation/argument-actions";
 import { orderPair } from "@/lib/matchup/vote";
 
 const MAX_REPORTS_PER_FEAT = 100;
 
 function featRefOf(characterId: string, featId: string) {
-  return adminDb().collection(COL.characters).doc(characterId).collection(COL.feats).doc(featId);
+  return adminDb()
+    .collection(COL.characters)
+    .doc(characterId)
+    .collection(COL.feats)
+    .doc(featId);
 }
 
 export async function reportFeat(
@@ -31,7 +39,8 @@ export async function reportFeat(
   await db.runTransaction(async (tx) => {
     const [feat, existing] = await Promise.all([tx.get(featRef), tx.get(reportRef)]);
     if (!feat.exists) throw new HttpError(404, "Feat not found.");
-    if (feat.get("authorId") === uid) throw new HttpError(403, "You cannot report your own feat.");
+    if (feat.get("authorId") === uid)
+      throw new HttpError(403, "You cannot report your own feat.");
     if (existing.exists) throw new HttpError(409, "You already reported this feat.");
 
     tx.create(reportRef, {
@@ -106,7 +115,10 @@ export async function moderateFeat(
       at: FieldValue.serverTimestamp(),
     });
 
-    return { status: outcome.status, changedVerified: verificationChanged(before, outcome.status) };
+    return {
+      status: outcome.status,
+      changedVerified: verificationChanged(before, outcome.status),
+    };
   });
 
   if (result.changedVerified) {
@@ -118,23 +130,39 @@ export async function moderateFeat(
 }
 
 function argumentRefOf(a: string, b: string, argumentId: string) {
-  return adminDb().collection(COL.matchups).doc(matchupId(a, b)).collection(COL.arguments).doc(argumentId);
+  return adminDb()
+    .collection(COL.matchups)
+    .doc(matchupId(a, b))
+    .collection(COL.arguments)
+    .doc(argumentId);
 }
 
 export async function reportArgument(
   uid: string,
-  input: { a: string; b: string; argumentId: string; reason: ReportReason; note?: string },
+  input: {
+    a: string;
+    b: string;
+    argumentId: string;
+    reason: ReportReason;
+    note?: string;
+  },
 ): Promise<void> {
   const db = adminDb();
   const id = matchupId(input.a, input.b);
   const { first, second } = orderPair(input.a, input.b);
   const argumentRef = argumentRefOf(input.a, input.b, input.argumentId);
-  const reportRef = db.collection(COL.reports).doc(`arg_${id}_${input.argumentId}_${uid}`);
+  const reportRef = db
+    .collection(COL.reports)
+    .doc(`arg_${id}_${input.argumentId}_${uid}`);
 
   await db.runTransaction(async (tx) => {
-    const [argument, existing] = await Promise.all([tx.get(argumentRef), tx.get(reportRef)]);
+    const [argument, existing] = await Promise.all([
+      tx.get(argumentRef),
+      tx.get(reportRef),
+    ]);
     if (!argument.exists) throw new HttpError(404, "Argument not found.");
-    if (argument.get("authorId") === uid) throw new HttpError(403, "You cannot report your own argument.");
+    if (argument.get("authorId") === uid)
+      throw new HttpError(403, "You cannot report your own argument.");
     if (existing.exists) throw new HttpError(409, "You already reported this argument.");
 
     tx.create(reportRef, {
@@ -154,7 +182,13 @@ export async function reportArgument(
 
 export async function moderateArgument(
   actorUid: string,
-  input: { a: string; b: string; argumentId: string; action: ArgumentAction; note?: string },
+  input: {
+    a: string;
+    b: string;
+    argumentId: string;
+    action: ArgumentAction;
+    note?: string;
+  },
 ): Promise<{ status: ArgumentStatus }> {
   const db = adminDb();
   const id = matchupId(input.a, input.b);
@@ -164,7 +198,8 @@ export async function moderateArgument(
     const argument = await tx.get(argumentRef);
     if (!argument.exists) throw new HttpError(404, "Argument not found.");
 
-    const before: ArgumentStatus = argument.get("status") === "hidden" ? "hidden" : "visible";
+    const before: ArgumentStatus =
+      argument.get("status") === "hidden" ? "hidden" : "visible";
     const outcome = applyArgumentAction(input.action, before);
 
     const open = await tx.get(
@@ -177,7 +212,10 @@ export async function moderateArgument(
     );
 
     if (outcome.touchesArgument) {
-      tx.update(argumentRef, { status: outcome.status, updatedAt: FieldValue.serverTimestamp() });
+      tx.update(argumentRef, {
+        status: outcome.status,
+        updatedAt: FieldValue.serverTimestamp(),
+      });
     }
 
     for (const report of open.docs) {

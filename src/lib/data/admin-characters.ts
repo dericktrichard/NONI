@@ -12,13 +12,19 @@ import { buildSearchKeys } from "@/lib/search-keys";
 import { slugify } from "@/lib/slug";
 import type { CharacterEditData, CharacterListItem } from "@/types/admin-character";
 import type { PowerProfile } from "@/types/domain";
-import type { CreateCharacterInput, UpdateCharacterInput } from "@/lib/validation/character";
+import type {
+  CreateCharacterInput,
+  UpdateCharacterInput,
+} from "@/lib/validation/character";
 
 const FIRESTORE_ALREADY_EXISTS = 6;
 const LIST_LIMIT = 500;
 
 function assertCharacterInput(
-  input: Pick<CreateCharacterInput, "attackPotency" | "durability" | "speed" | "hax" | "resistances" | "imageUrl">,
+  input: Pick<
+    CreateCharacterInput,
+    "attackPotency" | "durability" | "speed" | "hax" | "resistances" | "imageUrl"
+  >,
 ): void {
   const abilities = [...input.hax, ...input.resistances];
   if (
@@ -30,7 +36,10 @@ function assertCharacterInput(
     throw new HttpError(400, "Choose values from the scales.");
   }
 
-  if (input.imageUrl !== null && !input.imageUrl.startsWith(`${getR2Env().publicUrl}/characters/`)) {
+  if (
+    input.imageUrl !== null &&
+    !input.imageUrl.startsWith(`${getR2Env().publicUrl}/characters/`)
+  ) {
     throw new HttpError(400, "Upload the image through the form.");
   }
 }
@@ -38,7 +47,10 @@ function assertCharacterInput(
 export async function createCharacter(input: CreateCharacterInput): Promise<string> {
   const slug = input.slug ?? slugify(input.name);
   if (!slug || slug.length > 80 || !SLUG_RE.test(slug)) {
-    throw new HttpError(400, "Could not make a valid slug from that name. Set one by hand.");
+    throw new HttpError(
+      400,
+      "Could not make a valid slug from that name. Set one by hand.",
+    );
   }
 
   assertCharacterInput(input);
@@ -90,7 +102,10 @@ export async function createCharacter(input: CreateCharacterInput): Promise<stri
   return slug;
 }
 
-export async function updateCharacter(slug: string, input: UpdateCharacterInput): Promise<void> {
+export async function updateCharacter(
+  slug: string,
+  input: UpdateCharacterInput,
+): Promise<void> {
   assertCharacterInput(input);
 
   const db = adminDb();
@@ -120,7 +135,10 @@ export async function updateCharacter(slug: string, input: UpdateCharacterInput)
     speed: input.speed,
     dimension,
     hax: input.hax.map((ability) => ({ kind: ability.kind, power: ability.power })),
-    resistances: input.resistances.map((ability) => ({ kind: ability.kind, power: ability.power })),
+    resistances: input.resistances.map((ability) => ({
+      kind: ability.kind,
+      power: ability.power,
+    })),
   };
 
   await ref.update({
@@ -139,7 +157,11 @@ export async function updateCharacter(slug: string, input: UpdateCharacterInput)
 
   await recomputeCharacter(slug);
 
-  const matchups = await db.collection(COL.matchups).where("characterIds", "array-contains", slug).limit(400).get();
+  const matchups = await db
+    .collection(COL.matchups)
+    .where("characterIds", "array-contains", slug)
+    .limit(400)
+    .get();
   if (!matchups.empty) {
     const batch = db.batch();
     for (const doc of matchups.docs) {
@@ -183,13 +205,18 @@ export async function listCharacters(): Promise<CharacterListItem[]> {
 
 function impliedDimension(attackPotency: string, durability: string): number | null {
   try {
-    return Math.max(AP_TIERS[apIndex(attackPotency)].dimension, AP_TIERS[apIndex(durability)].dimension);
+    return Math.max(
+      AP_TIERS[apIndex(attackPotency)].dimension,
+      AP_TIERS[apIndex(durability)].dimension,
+    );
   } catch {
     return null;
   }
 }
 
-export async function getCharacterForEdit(slug: string): Promise<CharacterEditData | null> {
+export async function getCharacterForEdit(
+  slug: string,
+): Promise<CharacterEditData | null> {
   if (slug.length > 80 || !SLUG_RE.test(slug)) return null;
 
   const snapshot = await adminDb().collection(COL.characters).doc(slug).get();
@@ -213,7 +240,11 @@ export async function getCharacterForEdit(slug: string): Promise<CharacterEditDa
     dimension: seed.dimension === implied ? 0 : seed.dimension,
     hax: seed.hax ?? [],
     resistances: seed.resistances ?? [],
-    imageUrl: typeof snapshot.get("imageUrl") === "string" ? snapshot.get("imageUrl") : null,
-    imageCredit: typeof snapshot.get("imageCredit") === "string" ? snapshot.get("imageCredit") : null,
+    imageUrl:
+      typeof snapshot.get("imageUrl") === "string" ? snapshot.get("imageUrl") : null,
+    imageCredit:
+      typeof snapshot.get("imageCredit") === "string"
+        ? snapshot.get("imageCredit")
+        : null,
   };
 }

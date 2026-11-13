@@ -24,7 +24,7 @@ const FIELD: Record<BoardKey, string> = {
   champions: "titles",
 };
 
-const person = (doc: DocumentSnapshot) => {
+export const person = (doc: DocumentSnapshot) => {
   const handle = doc.get("handle");
   return typeof handle === "string" && doc.get("private") !== true
     ? { handle, look: readLook(doc.data() ?? {}) }
@@ -187,21 +187,6 @@ export async function getTopFans(slug: string): Promise<BoardRow[]> {
     return await fanRows(snap.docs, false);
   } catch (error) {
     console.error("top fans failed", error);
-    return [];
-  }
-}
-
-export async function getFansBoard(): Promise<BoardRow[]> {
-  try {
-    const snap = await adminDb()
-      .collection(FANS)
-      .where("boards", "==", true)
-      .orderBy("score", "desc")
-      .limit(LIMIT)
-      .get();
-    return await fanRows(snap.docs, true);
-  } catch (error) {
-    console.error("fans board failed", error);
     return [];
   }
 }

@@ -6,7 +6,10 @@ import { splitFeed, toCard, type MatchupCardData } from "@/lib/matchup/feed";
 /** The only read: the 30 most recently active matchups. Cached by the page, so about 4k reads a day at most. */
 const FEED_READ = 30;
 
-export async function fetchMatchupFeed(): Promise<{ hot: MatchupCardData[]; recent: MatchupCardData[] }> {
+export async function fetchMatchupFeed(): Promise<{
+  hot: MatchupCardData[];
+  recent: MatchupCardData[];
+}> {
   try {
     const snapshot = await adminDb()
       .collection(COL.matchups)

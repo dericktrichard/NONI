@@ -44,7 +44,7 @@ export function ListReportButton({ listId }: { listId: string }) {
 
   if (done) {
     return (
-      <p role="status" className="text-sm text-muted-foreground">
+      <p role="status" className="text-muted-foreground text-sm">
         Thanks. A moderator will review it.
       </p>
     );
@@ -54,7 +54,7 @@ export function ListReportButton({ listId }: { listId: string }) {
     return (
       <button
         type="button"
-        className="eyebrow min-h-11 underline underline-offset-4 transition-colors hover:text-foreground"
+        className="eyebrow hover:text-foreground min-h-11 underline underline-offset-4 transition-colors"
         onClick={() => setOpen(true)}
       >
         Report
@@ -63,7 +63,10 @@ export function ListReportButton({ listId }: { listId: string }) {
   }
 
   return (
-    <form onSubmit={submit} className="w-full max-w-sm space-y-3 border bg-background p-3">
+    <form
+      onSubmit={submit}
+      className="bg-background w-full max-w-sm space-y-3 border p-3"
+    >
       <select
         value={reason}
         onChange={(event) => setReason(event.target.value)}
@@ -87,10 +90,19 @@ export function ListReportButton({ listId }: { listId: string }) {
         className={controlClass}
       />
       <div className="flex gap-2">
-        <button type="submit" className="btn btn-solid btn-sm" disabled={busy || reason === ""}>
+        <button
+          type="submit"
+          className="btn btn-solid btn-sm"
+          disabled={busy || reason === ""}
+        >
           Send report
         </button>
-        <button type="button" className="btn btn-quiet btn-sm" onClick={() => setOpen(false)} disabled={busy}>
+        <button
+          type="button"
+          className="btn btn-quiet btn-sm"
+          onClick={() => setOpen(false)}
+          disabled={busy}
+        >
           Cancel
         </button>
       </div>

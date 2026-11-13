@@ -19,9 +19,17 @@ export interface OwnFeat {
 
 const SHOWN = 25;
 
-async function countWhere(group: string, field: string, uid: string): Promise<number | null> {
+async function countWhere(
+  group: string,
+  field: string,
+  uid: string,
+): Promise<number | null> {
   try {
-    const snap = await adminDb().collectionGroup(group).where(field, "==", uid).count().get();
+    const snap = await adminDb()
+      .collectionGroup(group)
+      .where(field, "==", uid)
+      .count()
+      .get();
     return snap.data().count;
   } catch (error) {
     console.error(`count ${group} failed`, error);
@@ -54,12 +62,19 @@ export async function listOwnFeats(uid: string): Promise<OwnFeat[]> {
       .get();
 
     const ids = [...new Set(snap.docs.map((doc) => String(doc.get("characterId"))))];
-    const characters = ids.length > 0 ? await db.getAll(...ids.map((id) => db.collection(COL.characters).doc(id))) : [];
-    const names = new Map(characters.map((c) => [c.id, String(c.get("name") ?? c.id)] as const));
+    const characters =
+      ids.length > 0
+        ? await db.getAll(...ids.map((id) => db.collection(COL.characters).doc(id)))
+        : [];
+    const names = new Map(
+      characters.map((c) => [c.id, String(c.get("name") ?? c.id)] as const),
+    );
 
     return snap.docs.map((doc) => {
       const characterId = String(doc.get("characterId"));
-      const created = (doc.get("createdAt") as { toDate?: () => Date } | undefined)?.toDate?.();
+      const created = (
+        doc.get("createdAt") as { toDate?: () => Date } | undefined
+      )?.toDate?.();
       return {
         id: doc.id,
         characterId,

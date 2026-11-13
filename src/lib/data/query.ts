@@ -78,8 +78,10 @@ export function parseCharacterQuery(params: URLSearchParams): ParseResult {
 
   if (keys.some((key) => !ALLOWED_KEYS.includes(key))) return fail("Unknown parameter.");
   if (new Set(keys).size !== keys.length) return fail("Repeated parameter.");
-  if (keys.join() !== [...keys].sort().join()) return fail("Parameters must be in alphabetical order.");
-  if (keys.filter((key) => FACET_KEYS.includes(key)).length > 1) return fail("Use one filter at a time.");
+  if (keys.join() !== [...keys].sort().join())
+    return fail("Parameters must be in alphabetical order.");
+  if (keys.filter((key) => FACET_KEYS.includes(key)).length > 1)
+    return fail("Use one filter at a time.");
   for (const value of params.values()) if (value === "") return fail("Empty parameter.");
 
   let limit: number = PAGE.default;
@@ -87,7 +89,8 @@ export function parseCharacterQuery(params: URLSearchParams): ParseResult {
   if (rawLimit !== null) {
     if (!WHOLE_NUMBER.test(rawLimit)) return fail("limit must be a whole number.");
     limit = Number(rawLimit);
-    if (limit < 1 || limit > PAGE.max) return fail(`limit must be between 1 and ${PAGE.max}.`);
+    if (limit < 1 || limit > PAGE.max)
+      return fail(`limit must be between 1 and ${PAGE.max}.`);
   }
 
   let after: number | null = null;
@@ -108,20 +111,26 @@ export function parseCharacterQuery(params: URLSearchParams): ParseResult {
     if (!isMediaType(media)) return fail("Unknown media type.");
     facet = { kind: "media", media };
   } else if (tier !== null) {
-    if (!WHOLE_NUMBER.test(tier) || !Object.hasOwn(TIER_GROUPS, tier)) return fail("Unknown tier group.");
+    if (!WHOLE_NUMBER.test(tier) || !Object.hasOwn(TIER_GROUPS, tier))
+      return fail("Unknown tier group.");
     facet = { kind: "tier", group: Number(tier) };
   } else if (verse !== null) {
     if (verse.length > 80 || !SLUG_RE.test(verse)) return fail("Unknown verse.");
     facet = { kind: "verse", verseId: verse };
   } else if (q !== null) {
-    if (searchTerm(q) !== q) return fail("Search must be one lowercase word of 2 to 12 letters or digits.");
+    if (searchTerm(q) !== q)
+      return fail("Search must be one lowercase word of 2 to 12 letters or digits.");
     facet = { kind: "search", term: q };
   }
 
   return { ok: true, plan: makePlan(facet, limit, after) };
 }
 
-export function facetQueryString(facet: Facet, after: number | null, limit?: number): string {
+export function facetQueryString(
+  facet: Facet,
+  after: number | null,
+  limit?: number,
+): string {
   const params = new URLSearchParams();
   if (after !== null) params.set("after", String(after));
   if (limit !== undefined) params.set("limit", String(limit));
@@ -147,7 +156,11 @@ export function facetQueryString(facet: Facet, after: number | null, limit?: num
 }
 
 export function canonicalQuery(plan: QueryPlan): string {
-  return facetQueryString(plan.facet, plan.after, plan.limit === PAGE.default ? undefined : plan.limit);
+  return facetQueryString(
+    plan.facet,
+    plan.after,
+    plan.limit === PAGE.default ? undefined : plan.limit,
+  );
 }
 
 export function isCanonicalSearch(search: string, plan: QueryPlan): boolean {

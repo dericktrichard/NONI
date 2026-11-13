@@ -8,7 +8,15 @@ import type { PowerProfile } from "@/types/domain";
 
 const POOL_SIZE = 150;
 const TTL_MS = 5 * 60_000;
-const FIELDS = ["name", "verseName", "score", "rank", "imageUrl", "profile", "verifiedFeatCount"];
+const FIELDS = [
+  "name",
+  "verseName",
+  "score",
+  "rank",
+  "imageUrl",
+  "profile",
+  "verifiedFeatCount",
+];
 
 export interface Loaded {
   entrant: Entrant;
@@ -53,8 +61,15 @@ let cache: { at: number; items: Loaded[] } | null = null;
 export async function loadPool(): Promise<Loaded[]> {
   if (cache && Date.now() - cache.at < TTL_MS) return cache.items;
 
-  const snap = await adminDb().collection(COL.characters).orderBy("rank", "asc").select(...FIELDS).limit(POOL_SIZE).get();
-  const items = snap.docs.map((doc) => parse(doc.id, doc.data())).filter((item): item is Loaded => item !== null);
+  const snap = await adminDb()
+    .collection(COL.characters)
+    .orderBy("rank", "asc")
+    .select(...FIELDS)
+    .limit(POOL_SIZE)
+    .get();
+  const items = snap.docs
+    .map((doc) => parse(doc.id, doc.data()))
+    .filter((item): item is Loaded => item !== null);
   cache = { at: Date.now(), items };
   return items;
 }
@@ -66,7 +81,10 @@ export async function loadEntrants(slugs: readonly string[]): Promise<Loaded[] |
 
   if (missing.length > 0) {
     const db = adminDb();
-    const docs = await db.getAll(...missing.map((slug) => db.collection(COL.characters).doc(slug)), { fieldMask: FIELDS });
+    const docs = await db.getAll(
+      ...missing.map((slug) => db.collection(COL.characters).doc(slug)),
+      { fieldMask: FIELDS },
+    );
     for (const doc of docs) {
       if (!doc.exists) return null;
       const item = parse(doc.id, doc.data() ?? {});

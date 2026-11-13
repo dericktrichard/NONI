@@ -65,7 +65,12 @@ function toQueueFeat(doc: DocumentSnapshot, reports: QueueReport[] = []): QueueF
   };
 }
 
-function toQueueArgument(doc: DocumentSnapshot, a: string, b: string, reports: QueueReport[]): QueueArgument {
+function toQueueArgument(
+  doc: DocumentSnapshot,
+  a: string,
+  b: string,
+  reports: QueueReport[],
+): QueueArgument {
   const created = doc.get("createdAt");
   const citations: unknown = doc.get("citations");
   return {
@@ -104,7 +109,16 @@ export async function fetchModQueue(): Promise<ModQueue> {
   ]);
 
   const featGroups = new Map<string, { characterId: string; reports: QueueReport[] }>();
-  const argumentGroups = new Map<string, { matchupId: string; a: string; b: string; argumentId: string; reports: QueueReport[] }>();
+  const argumentGroups = new Map<
+    string,
+    {
+      matchupId: string;
+      a: string;
+      b: string;
+      argumentId: string;
+      reports: QueueReport[];
+    }
+  >();
 
   for (const report of openSnap.docs) {
     const item: QueueReport = {
@@ -129,27 +143,43 @@ export async function fetchModQueue(): Promise<ModQueue> {
     }
 
     const featId = String(report.get("featId"));
-    const entry = featGroups.get(featId) ?? { characterId: String(report.get("characterId")), reports: [] };
+    const entry = featGroups.get(featId) ?? {
+      characterId: String(report.get("characterId")),
+      reports: [],
+    };
     entry.reports.push(item);
     featGroups.set(featId, entry);
   }
 
-  const topFeats = [...featGroups.entries()].sort((x, y) => y[1].reports.length - x[1].reports.length).slice(0, LIMIT);
+  const topFeats = [...featGroups.entries()]
+    .sort((x, y) => y[1].reports.length - x[1].reports.length)
+    .slice(0, LIMIT);
   const featRefs = topFeats.map(([featId, entry]) =>
-    db.collection(COL.characters).doc(entry.characterId).collection(COL.feats).doc(featId),
+    db
+      .collection(COL.characters)
+      .doc(entry.characterId)
+      .collection(COL.feats)
+      .doc(featId),
   );
   const featSnaps = featRefs.length > 0 ? await db.getAll(...featRefs) : [];
 
   const reported: QueueFeat[] = [];
   featSnaps.forEach((snap, index) => {
-    if (snap.exists) reported.push(toQueueFeat(snap, topFeats[index][1].reports.slice(0, REPORTS_SHOWN)));
+    if (snap.exists)
+      reported.push(
+        toQueueFeat(snap, topFeats[index][1].reports.slice(0, REPORTS_SHOWN)),
+      );
   });
 
   const topArguments = [...argumentGroups.values()]
     .sort((x, y) => y.reports.length - x.reports.length)
     .slice(0, LIMIT);
   const argumentRefs = topArguments.map((entry) =>
-    db.collection(COL.matchups).doc(entry.matchupId).collection(COL.arguments).doc(entry.argumentId),
+    db
+      .collection(COL.matchups)
+      .doc(entry.matchupId)
+      .collection(COL.arguments)
+      .doc(entry.argumentId),
   );
   const argumentSnaps = argumentRefs.length > 0 ? await db.getAll(...argumentRefs) : [];
 
@@ -157,12 +187,16 @@ export async function fetchModQueue(): Promise<ModQueue> {
   argumentSnaps.forEach((snap, index) => {
     const entry = topArguments[index];
     if (snap.exists) {
-      reportedArguments.push(toQueueArgument(snap, entry.a, entry.b, entry.reports.slice(0, REPORTS_SHOWN)));
+      reportedArguments.push(
+        toQueueArgument(snap, entry.a, entry.b, entry.reports.slice(0, REPORTS_SHOWN)),
+      );
     }
   });
 
   const reportedIds = new Set(reported.map((feat) => feat.id));
-  const pending = pendingSnap.docs.filter((doc) => !reportedIds.has(doc.id)).map((doc) => toQueueFeat(doc));
+  const pending = pendingSnap.docs
+    .filter((doc) => !reportedIds.has(doc.id))
+    .map((doc) => toQueueFeat(doc));
 
   return { reported, pending, reportedArguments };
 }

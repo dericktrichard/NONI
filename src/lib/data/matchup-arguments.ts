@@ -3,7 +3,11 @@ import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { HttpError } from "@/lib/data/feats";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL, matchupId } from "@/lib/firebase/paths";
-import { CITATION_MESSAGES, checkCitationScope, checkCitedFeats } from "@/lib/matchup/arguments";
+import {
+  CITATION_MESSAGES,
+  checkCitationScope,
+  checkCitedFeats,
+} from "@/lib/matchup/arguments";
 import { orderPair, toCanonicalPick } from "@/lib/matchup/vote";
 import { pseudonymFor } from "@/lib/security/pseudonym";
 import { applyVote, type VoteValue } from "@/lib/ranking/vote";
@@ -29,7 +33,11 @@ export async function createArgument(uid: string, input: ArgumentInput): Promise
   const firstRef = db.collection(COL.characters).doc(first);
   const secondRef = db.collection(COL.characters).doc(second);
   const featRefs = input.citations.map((citation) =>
-    db.collection(COL.characters).doc(citation.characterId).collection(COL.feats).doc(citation.featId),
+    db
+      .collection(COL.characters)
+      .doc(citation.characterId)
+      .collection(COL.feats)
+      .doc(citation.featId),
   );
 
   await db.runTransaction(async (tx) => {
@@ -41,16 +49,23 @@ export async function createArgument(uid: string, input: ArgumentInput): Promise
     ]);
     const feats = await Promise.all(featRefs.map((ref) => tx.get(ref)));
 
-    if (!firstChar.exists || !secondChar.exists) throw new HttpError(404, "Character not found.");
-    if (existing.exists) throw new HttpError(409, "You already posted an argument for this matchup.");
+    if (!firstChar.exists || !secondChar.exists)
+      throw new HttpError(404, "Character not found.");
+    if (existing.exists)
+      throw new HttpError(409, "You already posted an argument for this matchup.");
 
-    const citedIssue = checkCitedFeats(feats.map((feat) => ({ exists: feat.exists, status: feat.get("status") })));
+    const citedIssue = checkCitedFeats(
+      feats.map((feat) => ({ exists: feat.exists, status: feat.get("status") })),
+    );
     if (citedIssue) throw new HttpError(400, CITATION_MESSAGES[citedIssue]);
 
     const now = Timestamp.now();
 
     if (matchup.exists) {
-      tx.update(matchupRef, { argumentCount: FieldValue.increment(1), lastActivityAt: now });
+      tx.update(matchupRef, {
+        argumentCount: FieldValue.increment(1),
+        lastActivityAt: now,
+      });
     } else {
       tx.create(matchupRef, {
         characterAId: first,
@@ -100,14 +115,20 @@ export async function castArgumentVote(
 ): Promise<ArgumentVoteResult> {
   const db = adminDb();
   const id = matchupId(input.a, input.b);
-  const argumentRef = db.collection(COL.matchups).doc(id).collection(COL.arguments).doc(input.argumentId);
+  const argumentRef = db
+    .collection(COL.matchups)
+    .doc(id)
+    .collection(COL.arguments)
+    .doc(input.argumentId);
   const voteRef = argumentRef.collection(COL.votes).doc(uid);
 
   return db.runTransaction(async (tx) => {
     const [argument, vote] = await Promise.all([tx.get(argumentRef), tx.get(voteRef)]);
     if (!argument.exists) throw new HttpError(404, "Argument not found.");
-    if (argument.get("authorId") === uid) throw new HttpError(403, "You cannot vote on your own argument.");
-    if (argument.get("status") !== "visible") throw new HttpError(409, "Voting is closed on this argument.");
+    if (argument.get("authorId") === uid)
+      throw new HttpError(403, "You cannot vote on your own argument.");
+    if (argument.get("status") !== "visible")
+      throw new HttpError(409, "Voting is closed on this argument.");
 
     const stored = vote.exists ? Number(vote.get("value")) : 0;
     const previous: VoteValue = stored === 1 ? 1 : stored === -1 ? -1 : 0;

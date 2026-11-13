@@ -63,7 +63,11 @@ export async function submitFeat(uid: string, feat: NewFeat): Promise<string> {
       updatedAt: now,
       verifiedAt: null,
     });
-    tx.update(characterRef, { featCount, evidence: evidenceShare(verified, featCount), updatedAt: now });
+    tx.update(characterRef, {
+      featCount,
+      evidence: evidenceShare(verified, featCount),
+      updatedAt: now,
+    });
     tx.set(userRef, { featsSubmitted: FieldValue.increment(1) }, { merge: true });
   });
 
@@ -84,7 +88,11 @@ export async function castVote(
   next: VoteValue,
 ): Promise<VoteResult> {
   const db = adminDb();
-  const featRef = db.collection(COL.characters).doc(characterId).collection(COL.feats).doc(featId);
+  const featRef = db
+    .collection(COL.characters)
+    .doc(characterId)
+    .collection(COL.feats)
+    .doc(featId);
   const voteRef = featRef.collection(COL.votes).doc(uid);
 
   const outcome = await db.runTransaction(async (tx) => {
@@ -92,13 +100,18 @@ export async function castVote(
     if (!feat.exists) throw new HttpError(404, "Feat not found.");
 
     const current = feat.get("status") as FeatStatus;
-    if (feat.get("authorId") === uid) throw new HttpError(403, "You cannot vote on your own feat.");
-    if (current === "rejected") throw new HttpError(409, "Voting is closed on this feat.");
+    if (feat.get("authorId") === uid)
+      throw new HttpError(403, "You cannot vote on your own feat.");
+    if (current === "rejected")
+      throw new HttpError(409, "Voting is closed on this feat.");
 
     const stored = vote.exists ? Number(vote.get("value")) : 0;
     const previous: VoteValue = stored === 1 ? 1 : stored === -1 ? -1 : 0;
     const tally = applyVote(
-      { upvotes: Number(feat.get("upvotes")) || 0, downvotes: Number(feat.get("downvotes")) || 0 },
+      {
+        upvotes: Number(feat.get("upvotes")) || 0,
+        downvotes: Number(feat.get("downvotes")) || 0,
+      },
       previous,
       next,
     );
@@ -144,7 +157,7 @@ export async function castVote(
     await recomputeCharacter(characterId);
     await rerankAll(adminDb()).catch((error) => console.error("rerank failed", error));
   }
-  
+
   return outcome.result;
 }
 
@@ -164,7 +177,10 @@ export async function recomputeCharacter(characterId: string): Promise<void> {
     name: String(character.get("name")),
     seed: character.get("seed") as PowerProfile,
     featCount: Number(character.get("featCount")) || 0,
-    feats: verified.docs.map((doc) => ({ claim: doc.get("claim") as FeatClaim, status: "verified" as const })),
+    feats: verified.docs.map((doc) => ({
+      claim: doc.get("claim") as FeatClaim,
+      status: "verified" as const,
+    })),
   });
 
   await characterRef.update({

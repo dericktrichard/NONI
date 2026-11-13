@@ -13,7 +13,9 @@ export interface CharacterCardData {
   imageUrl: string | null;
 }
 
-export async function fetchCharacterCard(slug: string): Promise<CharacterCardData | null> {
+export async function fetchCharacterCard(
+  slug: string,
+): Promise<CharacterCardData | null> {
   if (slug.length > 80 || !SLUG_RE.test(slug)) return null;
 
   try {
