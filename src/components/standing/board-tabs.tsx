@@ -2,11 +2,12 @@
 
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Portrait } from "@/components/characters/portrait";
 import { ListItems } from "@/components/lists/list-card";
 import { ListReportButton } from "@/components/lists/list-report-button";
 import { ProfileAvatar } from "@/components/profile/banner";
+import { useReveal, type Reveal } from "@/hooks/use-reveal";
 import type { FanGroup } from "@/lib/data/fan-groups";
 import type { PublicListEntry } from "@/lib/data/public-lists";
 import type { BoardRow } from "@/lib/standing/types";
@@ -97,7 +98,56 @@ function Empty({ title, text }: { title: string; text: string }) {
   );
 }
 
+function More({ reveal }: { reveal: Reveal }) {
+  const [node, setNode] = useState<HTMLDivElement | null>(null);
+  const { more, showMore, count } = reveal;
+
+  useEffect(() => {
+    if (!node || !more || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) showMore();
+      },
+      { rootMargin: "240px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [node, more, showMore, count]);
+
+  if (!more) return null;
+  return (
+    <div ref={setNode} className="mt-4 flex justify-center">
+      <button type="button" className="btn btn-line btn-sm" onClick={showMore}>
+        Show more
+      </button>
+    </div>
+  );
+}
+
+function RowsPanel({ rows, unit }: { rows: BoardRow[]; unit: string }) {
+  const reveal = useReveal(rows.length, 10);
+  if (rows.length === 0) {
+    return (
+      <Empty
+        title="Nobody is on this board yet"
+        text="Play a battle and switch on boards above to take the first place."
+      />
+    );
+  }
+  return (
+    <>
+      <ol className="mt-2 border-t">
+        {rows.slice(0, reveal.count).map((row) => (
+          <Row key={`${row.handle}-${row.slug ?? ""}`} row={row} unit={unit} />
+        ))}
+      </ol>
+      <More reveal={reveal} />
+    </>
+  );
+}
+
 function FansPanel({ groups }: { groups: FanGroup[] }) {
+  const reveal = useReveal(groups.length);
   if (groups.length === 0) {
     return (
       <Empty
@@ -107,65 +157,70 @@ function FansPanel({ groups }: { groups: FanGroup[] }) {
     );
   }
   return (
-    <ul className="mt-4 space-y-4">
-      {groups.map((group) => (
-        <li key={group.slug} className="border">
-          <div className="bg-muted/50 flex items-center gap-3 border-b p-3">
-            <Portrait
-              name={group.name}
-              src={group.imageUrl}
-              sizes="48px"
-              className="aspect-2/3 w-10 shrink-0 border"
-            />
-            <div className="min-w-0 flex-1">
-              <Link
-                href={`/characters/${group.slug}`}
-                className="font-display block truncate text-lg font-semibold hover:underline"
-              >
-                {group.name}
-              </Link>
-              <p className="eyebrow">
-                {group.fans.length === 1 ? "Biggest fan" : "Biggest fans"}
-              </p>
-            </div>
-          </div>
-          <ol>
-            {group.fans.map((fan) => (
-              <li key={fan.handle} className="border-b last:border-b-0">
+    <>
+      <ul className="mt-4 space-y-4">
+        {groups.slice(0, reveal.count).map((group) => (
+          <li key={group.slug} className="border">
+            <div className="bg-muted/50 flex items-center gap-3 border-b p-3">
+              <Portrait
+                name={group.name}
+                src={group.imageUrl}
+                sizes="48px"
+                className="aspect-2/3 w-10 shrink-0 border"
+              />
+              <div className="min-w-0 flex-1">
                 <Link
-                  href={`/u/${fan.handle}`}
-                  className="hover:bg-muted grid grid-cols-[2rem_2.5rem_minmax(0,1fr)_auto] items-center gap-3 px-3 py-2.5 transition-colors"
+                  href={`/characters/${group.slug}`}
+                  className="font-display block truncate text-lg font-semibold hover:underline"
                 >
-                  <span className="tabular font-display flex items-center gap-1.5 text-lg font-semibold">
-                    {fan.rank === 1 ? (
-                      <span className="bg-accent size-2" aria-hidden />
-                    ) : null}
-                    {fan.rank}
-                  </span>
-                  <ProfileAvatar
-                    look={fan.look}
-                    handle={fan.handle}
-                    className="size-10 p-0.5"
-                  />
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-medium">
-                      @{fan.handle}
-                    </span>
-                    {fan.tier ? <span className="eyebrow block">{fan.tier}</span> : null}
-                  </span>
-                  <span className="text-right">
-                    <span className="tabular font-display block text-lg font-semibold">
-                      {fan.value}
-                    </span>
-                    <span className="eyebrow block">points</span>
-                  </span>
+                  {group.name}
                 </Link>
-              </li>
-            ))}
-          </ol>
-        </li>
-      ))}
-    </ul>
+                <p className="eyebrow">
+                  {group.fans.length === 1 ? "Biggest fan" : "Biggest fans"}
+                </p>
+              </div>
+            </div>
+            <ol>
+              {group.fans.map((fan) => (
+                <li key={fan.handle} className="border-b last:border-b-0">
+                  <Link
+                    href={`/u/${fan.handle}`}
+                    className="hover:bg-muted grid grid-cols-[2rem_2.5rem_minmax(0,1fr)_auto] items-center gap-3 px-3 py-2.5 transition-colors"
+                  >
+                    <span className="tabular font-display flex items-center gap-1.5 text-lg font-semibold">
+                      {fan.rank === 1 ? (
+                        <span className="bg-accent size-2" aria-hidden />
+                      ) : null}
+                      {fan.rank}
+                    </span>
+                    <ProfileAvatar
+                      look={fan.look}
+                      handle={fan.handle}
+                      className="size-10 p-0.5"
+                    />
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium">
+                        @{fan.handle}
+                      </span>
+                      {fan.tier ? (
+                        <span className="eyebrow block">{fan.tier}</span>
+                      ) : null}
+                    </span>
+                    <span className="text-right">
+                      <span className="tabular font-display block text-lg font-semibold">
+                        {fan.value}
+                      </span>
+                      <span className="eyebrow block">points</span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          </li>
+        ))}
+      </ul>
+      <More reveal={reveal} />
+    </>
   );
 }
 
@@ -212,6 +267,7 @@ function ListEntry({ list, ownerHandle }: PublicListEntry) {
 }
 
 function ListsPanel({ lists }: { lists: PublicListEntry[] }) {
+  const reveal = useReveal(lists.length);
   if (lists.length === 0) {
     return (
       <Empty
@@ -221,13 +277,16 @@ function ListsPanel({ lists }: { lists: PublicListEntry[] }) {
     );
   }
   return (
-    <ul className="mt-4 space-y-3">
-      {lists.map((entry) => (
-        <li key={entry.list.id}>
-          <ListEntry {...entry} />
-        </li>
-      ))}
-    </ul>
+    <>
+      <ul className="mt-4 space-y-3">
+        {lists.slice(0, reveal.count).map((entry) => (
+          <li key={entry.list.id}>
+            <ListEntry {...entry} />
+          </li>
+        ))}
+      </ul>
+      <More reveal={reveal} />
+    </>
   );
 }
 
@@ -240,7 +299,6 @@ export function BoardTabs({
 }) {
   const [key, setKey] = useState<TabKey>("glaze");
   const tab = TABS.find((t) => t.key === key)!;
-  const rows = key === "lists" || key === "fans" ? [] : boards[key];
 
   return (
     <div className="mt-8">
@@ -270,17 +328,8 @@ export function BoardTabs({
         <ListsPanel lists={lists} />
       ) : key === "fans" ? (
         <FansPanel groups={boards.fans} />
-      ) : rows.length === 0 ? (
-        <Empty
-          title="Nobody is on this board yet"
-          text="Play a battle and switch on boards above to take the first place."
-        />
       ) : (
-        <ol className="mt-2 border-t">
-          {rows.map((row) => (
-            <Row key={`${row.handle}-${row.slug ?? ""}`} row={row} unit={tab.unit} />
-          ))}
-        </ol>
+        <RowsPanel key={key} rows={boards[key]} unit={tab.unit} />
       )}
     </div>
   );
