@@ -7,9 +7,11 @@ import { Portrait } from "@/components/characters/portrait";
 import { ListItems } from "@/components/lists/list-card";
 import { ListReportButton } from "@/components/lists/list-report-button";
 import { ProfileAvatar } from "@/components/profile/banner";
-import { useReveal, type Reveal } from "@/hooks/use-reveal";
+import { usePaged } from "@/hooks/use-paged";
+import { useReveal } from "@/hooks/use-reveal";
 import type { FanGroup } from "@/lib/data/fan-groups";
 import type { PublicListEntry } from "@/lib/data/public-lists";
+import type { Page } from "@/lib/paging/rules";
 import type { BoardRow } from "@/lib/standing/types";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +19,7 @@ interface Boards {
   glaze: BoardRow[];
   week: BoardRow[];
   champions: BoardRow[];
-  fans: FanGroup[];
+  fans: Page<FanGroup, number>;
 }
 
 type TabKey = keyof Boards | "lists";
@@ -54,6 +56,20 @@ const TABS: ReadonlyArray<{
     hint: "The newest public lists, from public profiles. Open one to see its characters.",
   },
 ];
+
+async function getPage<T, N>(url: string): Promise<Page<T, N> | null> {
+  const response = await fetch(url);
+  return response.ok ? ((await response.json()) as Page<T, N>) : null;
+}
+
+const loadLists = (cursor: string) =>
+  getPage<PublicListEntry, string>(
+    `/api/leaderboard/lists?cursor=${encodeURIComponent(cursor)}`,
+  );
+const loadFans = (offset: number) =>
+  getPage<FanGroup, number>(`/api/leaderboard/fans?offset=${offset}`);
+const listKey = (entry: PublicListEntry) => entry.list.id;
+const fanKey = (group: FanGroup) => group.slug;
 
 function Row({ row, unit }: { row: BoardRow; unit: string }) {
   const top = row.rank === 1;
@@ -98,27 +114,49 @@ function Empty({ title, text }: { title: string; text: string }) {
   );
 }
 
-function More({ reveal }: { reveal: Reveal }) {
+interface MoreProps {
+  hasMore: boolean;
+  busy: boolean;
+  failed: boolean;
+  onMore: () => void;
+}
+
+/** Loads the next page when it scrolls into view. The button is the fallback and the retry after a failure. */
+function More({ hasMore, busy, failed, onMore }: MoreProps) {
   const [node, setNode] = useState<HTMLDivElement | null>(null);
-  const { more, showMore, count } = reveal;
 
   useEffect(() => {
-    if (!node || !more || typeof IntersectionObserver === "undefined") return;
+    if (
+      !node ||
+      !hasMore ||
+      busy ||
+      failed ||
+      typeof IntersectionObserver === "undefined"
+    )
+      return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) showMore();
+        if (entries.some((entry) => entry.isIntersecting)) onMore();
       },
       { rootMargin: "240px" },
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [node, more, showMore, count]);
+  }, [node, hasMore, busy, failed, onMore]);
 
-  if (!more) return null;
+  if (!hasMore) return null;
   return (
-    <div ref={setNode} className="mt-4 flex justify-center">
-      <button type="button" className="btn btn-line btn-sm" onClick={showMore}>
-        Show more
+    <div ref={setNode} className="mt-4 flex flex-col items-center gap-2">
+      {failed ? (
+        <p className="text-muted-foreground text-xs">Could not load more.</p>
+      ) : null}
+      <button
+        type="button"
+        className="btn btn-line btn-sm"
+        onClick={onMore}
+        disabled={busy}
+      >
+        {busy ? "Loading..." : failed ? "Try again" : "Show more"}
       </button>
     </div>
   );
@@ -141,14 +179,14 @@ function RowsPanel({ rows, unit }: { rows: BoardRow[]; unit: string }) {
           <Row key={`${row.handle}-${row.slug ?? ""}`} row={row} unit={unit} />
         ))}
       </ol>
-      <More reveal={reveal} />
+      <More hasMore={reveal.more} busy={false} failed={false} onMore={reveal.showMore} />
     </>
   );
 }
 
-function FansPanel({ groups }: { groups: FanGroup[] }) {
-  const reveal = useReveal(groups.length);
-  if (groups.length === 0) {
+function FansPanel({ page }: { page: Page<FanGroup, number> }) {
+  const paged = usePaged(page, loadFans, fanKey);
+  if (paged.items.length === 0) {
     return (
       <Empty
         title="No fans yet"
@@ -159,7 +197,7 @@ function FansPanel({ groups }: { groups: FanGroup[] }) {
   return (
     <>
       <ul className="mt-4 space-y-4">
-        {groups.slice(0, reveal.count).map((group) => (
+        {paged.items.map((group) => (
           <li key={group.slug} className="border">
             <div className="bg-muted/50 flex items-center gap-3 border-b p-3">
               <Portrait
@@ -219,7 +257,12 @@ function FansPanel({ groups }: { groups: FanGroup[] }) {
           </li>
         ))}
       </ul>
-      <More reveal={reveal} />
+      <More
+        hasMore={paged.hasMore}
+        busy={paged.busy}
+        failed={paged.failed}
+        onMore={paged.more}
+      />
     </>
   );
 }
@@ -266,9 +309,9 @@ function ListEntry({ list, ownerHandle }: PublicListEntry) {
   );
 }
 
-function ListsPanel({ lists }: { lists: PublicListEntry[] }) {
-  const reveal = useReveal(lists.length);
-  if (lists.length === 0) {
+function ListsPanel({ page }: { page: Page<PublicListEntry, string> }) {
+  const paged = usePaged(page, loadLists, listKey);
+  if (paged.items.length === 0) {
     return (
       <Empty
         title="No public lists yet"
@@ -279,13 +322,18 @@ function ListsPanel({ lists }: { lists: PublicListEntry[] }) {
   return (
     <>
       <ul className="mt-4 space-y-3">
-        {lists.slice(0, reveal.count).map((entry) => (
+        {paged.items.map((entry) => (
           <li key={entry.list.id}>
             <ListEntry {...entry} />
           </li>
         ))}
       </ul>
-      <More reveal={reveal} />
+      <More
+        hasMore={paged.hasMore}
+        busy={paged.busy}
+        failed={paged.failed}
+        onMore={paged.more}
+      />
     </>
   );
 }
@@ -295,7 +343,7 @@ export function BoardTabs({
   lists,
 }: {
   boards: Boards;
-  lists: PublicListEntry[];
+  lists: Page<PublicListEntry, string>;
 }) {
   const [key, setKey] = useState<TabKey>("glaze");
   const tab = TABS.find((t) => t.key === key)!;
@@ -325,9 +373,9 @@ export function BoardTabs({
       <p className="text-muted-foreground mt-3 text-xs">{tab.hint}</p>
 
       {key === "lists" ? (
-        <ListsPanel lists={lists} />
+        <ListsPanel page={lists} />
       ) : key === "fans" ? (
-        <FansPanel groups={boards.fans} />
+        <FansPanel page={boards.fans} />
       ) : (
         <RowsPanel key={key} rows={boards[key]} unit={tab.unit} />
       )}
