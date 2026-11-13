@@ -66,6 +66,7 @@ export function ProfileBanner({
           src={look.bannerUrl}
           alt=""
           fill
+          loading="eager"
           sizes={sizes}
           className={cn(
             "object-cover",

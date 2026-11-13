@@ -18,6 +18,12 @@ export function hasDuplicates(ids: readonly string[]): boolean {
   return new Set(ids).size !== ids.length;
 }
 
-export function withoutCharacter<T extends { characterId: string }>(items: readonly T[], characterId: string): T[] {
+export function withoutCharacter<T extends { characterId: string }>(
+  items: readonly T[],
+  characterId: string,
+): T[] {
   return items.filter((item) => item.characterId !== characterId);
 }
+/** A private account can only have private lists */
+export const listVisibility = (ownerPrivate: boolean, wanted: Visibility): Visibility =>
+  ownerPrivate ? "private" : wanted;

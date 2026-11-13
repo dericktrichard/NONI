@@ -28,8 +28,14 @@ interface Row {
 }
 
 const VISIBILITY_COPY: Record<Visibility, { label: string; hint: string }> = {
-  public: { label: "Public", hint: "Shown on your profile. Anyone can read it and report it." },
-  private: { label: "Private", hint: "Only you can see it. You can make it public later." },
+  public: {
+    label: "Public",
+    hint: "Shown on your profile. Anyone can read it and report it.",
+  },
+  private: {
+    label: "Private",
+    hint: "Only you can see it. You can make it public later.",
+  },
 };
 
 export function ListBuilder({ lists }: { lists: UserList[] }) {
@@ -41,8 +47,15 @@ export function ListBuilder({ lists }: { lists: UserList[] }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const ready =
-    title.trim().length >= TITLE_MIN && rows.length > 0 && rows.every((row) => row.reason.trim().length >= REASON_MIN);
+  const hint =
+    title.trim().length < TITLE_MIN
+      ? `Give the list a title of at least ${TITLE_MIN} characters.`
+      : rows.length === 0
+        ? "Add at least one character."
+        : rows.some((row) => row.reason.trim().length < REASON_MIN)
+          ? `Every character needs a reason of at least ${REASON_MIN} characters.`
+          : null;
+  const ready = hint === null;
 
   function startNew() {
     setEditing("new");
@@ -69,14 +82,25 @@ export function ListBuilder({ lists }: { lists: UserList[] }) {
 
   function add(character: CharacterSummary) {
     setRows((current) =>
-      current.length >= MAX_ITEMS || current.some((row) => row.characterId === character.id)
+      current.length >= MAX_ITEMS ||
+      current.some((row) => row.characterId === character.id)
         ? current
-        : [...current, { characterId: character.id, name: character.name, imageUrl: character.imageUrl, reason: "" }],
+        : [
+            ...current,
+            {
+              characterId: character.id,
+              name: character.name,
+              imageUrl: character.imageUrl,
+              reason: "",
+            },
+          ],
     );
   }
 
   function setReason(index: number, reason: string) {
-    setRows((current) => current.map((row, i) => (i === index ? { ...row, reason } : row)));
+    setRows((current) =>
+      current.map((row, i) => (i === index ? { ...row, reason } : row)),
+    );
   }
 
   function move(index: number, delta: number) {
@@ -93,7 +117,11 @@ export function ListBuilder({ lists }: { lists: UserList[] }) {
     setRows((current) => current.filter((_, i) => i !== index));
   }
 
-  async function call(url: string, method: "POST" | "PUT", body: unknown): Promise<boolean> {
+  async function call(
+    url: string,
+    method: "POST" | "PUT",
+    body: unknown,
+  ): Promise<boolean> {
     setBusy(true);
     setError(null);
     try {
@@ -125,10 +153,17 @@ export function ListBuilder({ lists }: { lists: UserList[] }) {
     const body = {
       title: title.trim(),
       visibility,
-      items: rows.map((row) => ({ characterId: row.characterId, reason: row.reason.trim() })),
+      items: rows.map((row) => ({
+        characterId: row.characterId,
+        reason: row.reason.trim(),
+      })),
     };
     const creating = editing === "new";
-    const ok = await call(creating ? "/api/lists" : `/api/lists/${editing}`, creating ? "POST" : "PUT", body);
+    const ok = await call(
+      creating ? "/api/lists" : `/api/lists/${editing}`,
+      creating ? "POST" : "PUT",
+      body,
+    );
     if (ok) {
       setEditing(null);
       router.refresh();
@@ -170,10 +205,20 @@ export function ListBuilder({ lists }: { lists: UserList[] }) {
                       ) : null}
                     </div>
                     <div className="flex gap-2">
-                      <button type="button" className="btn btn-line btn-sm" onClick={() => startEdit(list)} disabled={busy}>
+                      <button
+                        type="button"
+                        className="btn btn-line btn-sm"
+                        onClick={() => startEdit(list)}
+                        disabled={busy}
+                      >
                         Edit
                       </button>
-                      <button type="button" className="btn btn-quiet btn-sm" onClick={() => void remove(list.id)} disabled={busy}>
+                      <button
+                        type="button"
+                        className="btn btn-quiet btn-sm"
+                        onClick={() => void remove(list.id)}
+                        disabled={busy}
+                      >
                         Delete
                       </button>
                     </div>
@@ -181,7 +226,12 @@ export function ListBuilder({ lists }: { lists: UserList[] }) {
                   <ul className="mt-3 flex gap-1.5">
                     {list.items.slice(0, 6).map((item) => (
                       <li key={item.characterId}>
-                        <Portrait name={item.name} src={item.imageUrl} sizes="40px" className="aspect-2/3 w-8 border" />
+                        <Portrait
+                          name={item.name}
+                          src={item.imageUrl}
+                          sizes="40px"
+                          className="aspect-2/3 w-8 border"
+                        />
                       </li>
                     ))}
                   </ul>
@@ -189,11 +239,21 @@ export function ListBuilder({ lists }: { lists: UserList[] }) {
               ))}
             </ul>
           ) : (
-            <p className="border p-4 text-sm text-muted-foreground">No lists yet. Start one: your top five of a verse, or a pick of underrated characters.</p>
+            <p className="text-muted-foreground border p-4 text-sm">
+              No lists yet. Start one: your top five of a verse, or a pick of underrated
+              characters.
+            </p>
           )}
 
-          <button type="button" className="btn btn-solid" onClick={startNew} disabled={lists.length >= MAX_LISTS}>
-            {lists.length >= MAX_LISTS ? `Limit of ${MAX_LISTS} lists reached` : "New list"}
+          <button
+            type="button"
+            className="btn btn-solid"
+            onClick={startNew}
+            disabled={lists.length >= MAX_LISTS}
+          >
+            {lists.length >= MAX_LISTS
+              ? `Limit of ${MAX_LISTS} lists reached`
+              : "New list"}
           </button>
         </>
       ) : (
@@ -217,7 +277,11 @@ export function ListBuilder({ lists }: { lists: UserList[] }) {
 
           <div>
             <p className="eyebrow mb-2">Who can see it</p>
-            <div role="group" aria-label="Who can see this list" className="flex border-b">
+            <div
+              role="group"
+              aria-label="Who can see this list"
+              className="flex border-b"
+            >
               {(["public", "private"] as const).map((key) => (
                 <button
                   key={key}
@@ -225,7 +289,7 @@ export function ListBuilder({ lists }: { lists: UserList[] }) {
                   aria-pressed={visibility === key}
                   onClick={() => setVisibility(key)}
                   className={cn(
-                    "h-10 border-b-2 border-transparent px-4 text-sm font-medium transition-colors hover:bg-muted",
+                    "hover:bg-muted h-10 border-b-2 border-transparent px-4 text-sm font-medium transition-colors",
                     visibility === key && "border-b-accent",
                   )}
                 >
@@ -233,7 +297,9 @@ export function ListBuilder({ lists }: { lists: UserList[] }) {
                 </button>
               ))}
             </div>
-            <p className="mt-2 text-sm text-muted-foreground">{VISIBILITY_COPY[visibility].hint}</p>
+            <p className="text-muted-foreground mt-2 text-sm">
+              {VISIBILITY_COPY[visibility].hint}
+            </p>
           </div>
 
           <div>
@@ -241,18 +307,30 @@ export function ListBuilder({ lists }: { lists: UserList[] }) {
               Your ranking / {rows.length} of {MAX_ITEMS}
             </p>
             {rows.length === 0 ? (
-              <p className="border p-4 text-sm text-muted-foreground">Nothing here yet. Add your first character below.</p>
+              <p className="text-muted-foreground border p-4 text-sm">
+                Nothing here yet. Add your first character below.
+              </p>
             ) : (
               <ol className="space-y-3">
                 {rows.map((row, index) => (
-                  <li key={row.characterId} className="grid grid-cols-[2.5rem_1fr] border">
-                    <span className="tabular grid place-items-center border-r bg-muted font-display text-lg font-semibold">
+                  <li
+                    key={row.characterId}
+                    className="grid grid-cols-[2.5rem_1fr] border"
+                  >
+                    <span className="tabular bg-muted font-display grid place-items-center border-r text-lg font-semibold">
                       {index + 1}
                     </span>
                     <div className="flex gap-3 p-3">
-                      <Portrait name={row.name} src={row.imageUrl} sizes="48px" className="aspect-2/3 w-12 shrink-0" />
+                      <Portrait
+                        name={row.name}
+                        src={row.imageUrl}
+                        sizes="48px"
+                        className="aspect-2/3 w-12 shrink-0"
+                      />
                       <div className="min-w-0 flex-1 space-y-2">
-                        <p className="truncate font-display text-base font-semibold">{row.name}</p>
+                        <p className="font-display truncate text-base font-semibold">
+                          {row.name}
+                        </p>
                         <input
                           value={row.reason}
                           onChange={(event) => setReason(index, event.target.value)}
@@ -281,7 +359,11 @@ export function ListBuilder({ lists }: { lists: UserList[] }) {
                           >
                             <Tri dir="down" />
                           </button>
-                          <button type="button" className="btn btn-quiet btn-sm" onClick={() => removeRow(index)}>
+                          <button
+                            type="button"
+                            className="btn btn-quiet btn-sm"
+                            onClick={() => removeRow(index)}
+                          >
                             Remove
                           </button>
                         </div>
@@ -296,14 +378,23 @@ export function ListBuilder({ lists }: { lists: UserList[] }) {
           <CharacterFinder
             label={`Add a character (${rows.length} of ${MAX_ITEMS})`}
             onPick={add}
-            isDisabled={(c) => rows.length >= MAX_ITEMS || rows.some((row) => row.characterId === c.id)}
+            isDisabled={(c) =>
+              rows.length >= MAX_ITEMS || rows.some((row) => row.characterId === c.id)
+            }
           />
+
+          {hint ? <p className="text-muted-foreground text-sm">{hint}</p> : null}
 
           <div className="flex flex-wrap gap-3 border-t pt-5">
             <button type="submit" className="btn btn-solid" disabled={busy || !ready}>
               Save list
             </button>
-            <button type="button" className="btn btn-quiet" onClick={() => setEditing(null)} disabled={busy}>
+            <button
+              type="button"
+              className="btn btn-quiet"
+              onClick={() => setEditing(null)}
+              disabled={busy}
+            >
               Cancel
             </button>
           </div>
