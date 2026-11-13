@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { BoardTabs } from "@/components/standing/board-tabs";
 import { MyStanding } from "@/components/standing/my-standing";
-import { getFanGroups } from "@/lib/data/fan-groups";
-import { getRecentPublicLists } from "@/lib/data/public-lists";
+import { getFanPage } from "@/lib/data/fan-groups";
+import { getPublicListPage } from "@/lib/data/public-lists";
 import { getBoard } from "@/lib/data/standing";
 
 export const revalidate = 60;
@@ -18,8 +18,8 @@ export default async function LeaderboardPage() {
     getBoard("glaze"),
     getBoard("week"),
     getBoard("champions"),
-    getFanGroups(),
-    getRecentPublicLists(),
+    getFanPage(0),
+    getPublicListPage(null),
   ]);
 
   return (
