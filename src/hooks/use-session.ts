@@ -25,13 +25,20 @@ function publish(next: SessionState) {
 }
 
 async function request(): Promise<SessionState> {
-  try {
-    const response = await fetch("/api/auth/me", { cache: "no-store" });
-    const user = response.ok ? ((await response.json()) as SessionUser | null) : null;
-    return { status: "ready", user };
-  } catch {
-    return { status: "ready", user: null };
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const response = await fetch("/api/auth/me", { cache: "no-store" });
+      if (response.status === 503 && attempt < 2) {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        continue;
+      }
+      const user = response.ok ? ((await response.json()) as SessionUser | null) : null;
+      return { status: "ready", user };
+    } catch {
+      return { status: "ready", user: null };
+    }
   }
+  return { status: "ready", user: null };
 }
 
 const subscribe = (listener: () => void) => {
