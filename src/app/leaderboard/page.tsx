@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { BoardTabs } from "@/components/standing/board-tabs";
 import { MyStanding } from "@/components/standing/my-standing";
+import { getBankPage } from "@/lib/data/banks";
 import { getFanPage } from "@/lib/data/fan-groups";
 import { getPublicListPage } from "@/lib/data/public-lists";
 import { getBoard } from "@/lib/data/standing";
@@ -14,11 +15,12 @@ export const metadata: Metadata = {
 };
 
 export default async function LeaderboardPage() {
-  const [glaze, week, champions, fans, lists] = await Promise.all([
+  const [glaze, week, champions, fans, banks, lists] = await Promise.all([
     getBoard("glaze"),
     getBoard("week"),
     getBoard("champions"),
     getFanPage(0),
+    getBankPage("all", 0),
     getPublicListPage(null),
   ]);
 
@@ -29,7 +31,7 @@ export default async function LeaderboardPage() {
         Who is on top?
       </h1>
       <MyStanding />
-      <BoardTabs boards={{ glaze, week, champions, fans }} lists={lists} />
+      <BoardTabs boards={{ glaze, week, champions, fans, banks }} lists={lists} />
     </div>
   );
 }

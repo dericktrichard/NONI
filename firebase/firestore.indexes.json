@@ -363,6 +363,14 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "characterBanks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "weekKey", "order": "ASCENDING" },
+        { "fieldPath": "weekTotal", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [
