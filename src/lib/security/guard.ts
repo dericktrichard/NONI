@@ -6,7 +6,7 @@ import { isSameOrigin } from "@/lib/security/origin";
 import { consume } from "@/lib/security/rate-limit";
 import { createMemoryLimiter } from "@/lib/security/rate-limit-core";
 import { hasRole } from "@/lib/security/roles";
-import { getSessionUser } from "@/lib/security/session";
+import { getSessionUser, readSession } from "@/lib/security/session";
 
 export interface Rule {
   scope: string;
@@ -34,8 +34,11 @@ export async function guardRequest(request: Request, rule: Rule): Promise<Checke
   const ip = byIp(getClientIp(request));
   if (!ip.allowed) return fail(429, "Too many requests.", ip.retryAfterSeconds);
 
-  const user = await getSessionUser();
-  if (!user) return fail(401, "Sign in required.");
+  const session = await readSession(rule.role ? "strict" : "normal");
+  if (session.status === "unavailable")
+    return fail(503, "The sign-in check is slow right now. Try again in a moment.", 5);
+  if (session.status === "none") return fail(401, "Sign in required.");
+  const user = session.user;
   if (user.email_verified !== true) return fail(403, "Verify your email first.");
   if (rule.role && !hasRole(user, rule.role)) return fail(403, "Forbidden.");
 

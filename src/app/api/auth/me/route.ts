@@ -3,15 +3,21 @@ import { adminDb } from "@/lib/firebase/admin";
 import { COL } from "@/lib/firebase/paths";
 import { readLook } from "@/lib/profile/look";
 import { roleOf } from "@/lib/security/roles";
-import { getSessionUser } from "@/lib/security/session";
+import { readSession } from "@/lib/security/session";
 
 export const runtime = "nodejs";
 
 const HEADERS = { "Cache-Control": "no-store" };
 
 export async function GET() {
-  const user = await getSessionUser(false);
-  if (!user) return NextResponse.json(null, { headers: HEADERS });
+  const session = await readSession("local");
+  if (session.status === "unavailable")
+    return NextResponse.json(
+      { error: "Try again shortly." },
+      { status: 503, headers: HEADERS },
+    );
+  if (session.status === "none") return NextResponse.json(null, { headers: HEADERS });
+  const user = session.user;
 
   let handle: string | null = null;
   let avatarUrl: string | null = null;
