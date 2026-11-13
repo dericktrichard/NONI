@@ -2,7 +2,7 @@ import "server-only";
 import { Timestamp } from "firebase-admin/firestore";
 import { HttpError } from "@/lib/data/feats";
 import { listFavourites, type FavouriteCard } from "@/lib/data/favourites";
-import { getPublicLists, type UserList } from "@/lib/data/lists";
+import { getPublicLists, makeListsPrivate, type UserList } from "@/lib/data/lists";
 import { setBoards } from "@/lib/data/standing";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL } from "@/lib/firebase/paths";
@@ -93,7 +93,7 @@ export async function saveProfile(
     return { handle, previous: current, hid };
   });
 
-  if (result.hid) await setBoards(uid, false);
+  if (result.hid) await Promise.all([setBoards(uid, false), makeListsPrivate(uid)]);
   return { handle: result.handle, previous: result.previous };
 }
 

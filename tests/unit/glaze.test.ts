@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { GLAZE, climbNet, climbSettlement, clashSettlement, dayKey, grantable, isStake, stakeMultiplier, underdogFactor } from "@/lib/glaze/rules";
+import {
+  clashSettlement,
+  claimAmount,
+  climbNet,
+  climbSettlement,
+  dayKey,
+  isStake,
+  nextStreak,
+  splitSpend,
+  stakeMultiplier,
+} from "@/lib/glaze/rules";
 
 describe("stakes", () => {
   it("only allows the listed amounts", () => {
@@ -19,27 +29,37 @@ describe("stakes", () => {
 });
 
 describe("clashSettlement", () => {
-  const base = { chance: 0.5, survivors: 2, edge: 0.5 };
+  const base = { chance: 0.5 };
 
   it("takes the stake on a loss and pays on a win", () => {
-    expect(clashSettlement({ ...base, stake: 25, outcome: "loss" })).toEqual({ delta: -25, earned: false });
-    expect(clashSettlement({ ...base, stake: 25, outcome: "win" }).delta).toBeGreaterThan(0);
+    expect(clashSettlement({ ...base, stake: 25, outcome: "loss" })).toEqual({
+      delta: -25,
+    });
+    expect(clashSettlement({ ...base, stake: 25, outcome: "win" }).delta).toBeGreaterThan(
+      0,
+    );
     expect(clashSettlement({ ...base, stake: 25, outcome: "draw" }).delta).toBe(0);
   });
 
   it("pays an underdog win more than a favourite win", () => {
-    const long = clashSettlement({ ...base, stake: 50, outcome: "win", chance: 0.25 }).delta;
-    const short = clashSettlement({ ...base, stake: 50, outcome: "win", chance: 0.8 }).delta;
+    const long = clashSettlement({
+      ...base,
+      stake: 50,
+      outcome: "win",
+      chance: 0.25,
+    }).delta;
+    const short = clashSettlement({
+      ...base,
+      stake: 50,
+      outcome: "win",
+      chance: 0.8,
+    }).delta;
     expect(long).toBeGreaterThan(short);
   });
 
-  it("pays free play a capped reward that never goes negative", () => {
-    const win = clashSettlement({ ...base, stake: 0, outcome: "win" });
-    const loss = clashSettlement({ ...base, stake: 0, outcome: "loss" });
-    expect(win.earned).toBe(true);
-    expect(loss.delta).toBeGreaterThan(0);
-    expect(win.delta).toBeGreaterThan(loss.delta);
-    expect(underdogFactor(0.2)).toBeGreaterThan(underdogFactor(0.8));
+  it("pays nothing for practice play, win or lose", () => {
+    expect(clashSettlement({ ...base, stake: 0, outcome: "win" })).toEqual({ delta: 0 });
+    expect(clashSettlement({ ...base, stake: 0, outcome: "loss" })).toEqual({ delta: 0 });
   });
 });
 
@@ -58,21 +78,49 @@ describe("climbSettlement", () => {
   });
 
   it("pays hard counters more than fair ones", () => {
-    expect(climbNet(3, 3, "counters", "hard")).toBeGreaterThan(climbNet(3, 3, "counters", "fair"));
+    expect(climbNet(3, 3, "counters", "hard")).toBeGreaterThan(
+      climbNet(3, 3, "counters", "fair"),
+    );
   });
 
-  it("pays free play capped rewards", () => {
-    expect(climbSettlement({ ...input, stake: 0, wins: 0 })).toEqual({ delta: 1, earned: true });
+  it("pays nothing for practice play", () => {
+    expect(climbSettlement({ ...input, stake: 0, wins: 3 })).toEqual({ delta: 0 });
   });
 });
 
-describe("daily cap", () => {
-  it("never grants past the cap", () => {
-    expect(grantable(0, 20)).toBe(20);
-    expect(grantable(GLAZE.dailyEarnCap - 5, 20)).toBe(5);
-    expect(grantable(GLAZE.dailyEarnCap, 20)).toBe(0);
+describe("daily claim", () => {
+  it("pays 20 on day one and rises by 5 a day up to day seven", () => {
+    expect(claimAmount(0)).toBe(20);
+    expect(claimAmount(1)).toBe(20);
+    expect(claimAmount(2)).toBe(25);
+    expect(claimAmount(7)).toBe(50);
+    expect(claimAmount(30)).toBe(50);
   });
+
+  it("keeps the streak on consecutive days and restarts it after a gap", () => {
+    expect(nextStreak(null, "2026-11-13", 0)).toBe(1);
+    expect(nextStreak("2026-11-12", "2026-11-13", 3)).toBe(4);
+    expect(nextStreak("2026-11-12", "2026-11-13", 7)).toBe(7);
+    expect(nextStreak("2026-11-10", "2026-11-13", 5)).toBe(1);
+    expect(nextStreak("2026-10-31", "2026-11-01", 2)).toBe(3);
+    expect(nextStreak("2026-11-13", "2026-11-13", 4)).toBe(4);
+  });
+
   it("keys days in UTC", () => {
     expect(dayKey(new Date("2026-11-08T23:59:59Z"))).toBe("2026-11-08");
+  });
+});
+
+describe("splitSpend", () => {
+  it("spends bought Glaze before earned Glaze", () => {
+    expect(splitSpend(100, 30, 20)).toEqual({ bought: 20, earned: 0 });
+    expect(splitSpend(100, 30, 50)).toEqual({ bought: 30, earned: 20 });
+  });
+
+  it("refuses amounts that are invalid or more than the player has", () => {
+    expect(splitSpend(10, 5, 16)).toBeNull();
+    expect(splitSpend(10, 5, 0)).toBeNull();
+    expect(splitSpend(10, 5, -1)).toBeNull();
+    expect(splitSpend(10, 5, 1.5)).toBeNull();
   });
 });

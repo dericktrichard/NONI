@@ -8,7 +8,6 @@ import {
   checkTeams,
   estimateWin,
   simulateClash,
-  teamEdge,
   type ClashResult,
 } from "@/lib/battle/clash";
 import { buildClimb, type ClimbMode, type ClimbResult } from "@/lib/battle/climb";
@@ -101,8 +100,6 @@ export async function playClash(
     stake,
     chance,
     outcome: result.winner === "a" ? "win" : result.winner === "b" ? "loss" : "draw",
-    survivors: result.survivorsA.length,
-    edge: teamEdge(profilesA, profilesB),
   });
 
   const ref = adminDb().collection(BATTLES).doc();

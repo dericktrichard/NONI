@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { ListCard } from "@/components/lists/list-card";
 import { ProfileAvatar } from "@/components/profile/banner";
+import type { PublicListEntry } from "@/lib/data/public-lists";
 import type { BoardRow } from "@/lib/standing/types";
 import { cn } from "@/lib/utils";
 
@@ -13,8 +15,10 @@ interface Boards {
   fans: BoardRow[];
 }
 
+type TabKey = keyof Boards | "lists";
+
 const TABS: ReadonlyArray<{
-  key: keyof Boards;
+  key: TabKey;
   label: string;
   unit: string;
   hint: string;
@@ -37,6 +41,12 @@ const TABS: ReadonlyArray<{
     label: "Fans",
     unit: "points",
     hint: "The biggest fan of any one character.",
+  },
+  {
+    key: "lists",
+    label: "Lists",
+    unit: "",
+    hint: "The newest public lists, from public profiles.",
   },
 ];
 
@@ -74,10 +84,51 @@ function Row({ row, unit }: { row: BoardRow; unit: string }) {
   );
 }
 
-export function BoardTabs({ boards }: { boards: Boards }) {
-  const [key, setKey] = useState<keyof Boards>("glaze");
+function Empty({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="mt-4 border p-6">
+      <p className="font-display text-lg font-semibold">{title}</p>
+      <p className="text-muted-foreground mt-1 text-sm">{text}</p>
+    </div>
+  );
+}
+
+function ListsPanel({ lists }: { lists: PublicListEntry[] }) {
+  if (lists.length === 0) {
+    return (
+      <Empty
+        title="No public lists yet"
+        text="Make one from your profile and it will show up here."
+      />
+    );
+  }
+  return (
+    <ul className="mt-4 space-y-8">
+      {lists.map(({ list, ownerHandle }) => (
+        <li key={list.id}>
+          <p className="eyebrow mb-2">
+            by{" "}
+            <Link href={`/u/${ownerHandle}`} className="hover:underline">
+              @{ownerHandle}
+            </Link>
+          </p>
+          <ListCard list={list} isOwner={false} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function BoardTabs({
+  boards,
+  lists,
+}: {
+  boards: Boards;
+  lists: PublicListEntry[];
+}) {
+  const [key, setKey] = useState<TabKey>("glaze");
   const tab = TABS.find((t) => t.key === key)!;
-  const rows = boards[key];
+  const rows = key === "lists" ? [] : boards[key];
 
   return (
     <div className="mt-8">
@@ -103,15 +154,13 @@ export function BoardTabs({ boards }: { boards: Boards }) {
       </div>
       <p className="text-muted-foreground mt-3 text-xs">{tab.hint}</p>
 
-      {rows.length === 0 ? (
-        <div className="mt-4 border p-6">
-          <p className="font-display text-lg font-semibold">
-            Nobody is on this board yet
-          </p>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Play a battle and switch on boards above to take the first place.
-          </p>
-        </div>
+      {key === "lists" ? (
+        <ListsPanel lists={lists} />
+      ) : rows.length === 0 ? (
+        <Empty
+          title="Nobody is on this board yet"
+          text="Play a battle and switch on boards above to take the first place."
+        />
       ) : (
         <ol className="mt-2 border-t">
           {rows.map((row) => (
