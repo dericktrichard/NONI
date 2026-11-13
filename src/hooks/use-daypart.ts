@@ -8,7 +8,8 @@ const subscribe = (notify: () => void) => {
   return () => clearInterval(id);
 };
 
-const snapshot = () => daypartOf(new Date().getHours());
-const server = () => 0;
+const snapshot = (): number | null => daypartOf(new Date().getHours());
+/** The server cannot know the visitor's hour, so nothing is picked until the browser answers */
+const server = (): number | null => null;
 
 export const useDaypart = () => useSyncExternalStore(subscribe, snapshot, server);

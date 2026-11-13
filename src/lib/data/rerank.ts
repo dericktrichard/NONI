@@ -13,7 +13,10 @@ export interface RerankResult {
   skipped: string[];
 }
 
-export async function rerankAll(db: Firestore, options: { dryRun?: boolean } = {}): Promise<RerankResult> {
+export async function rerankAll(
+  db: Firestore,
+  options: { dryRun?: boolean } = {},
+): Promise<RerankResult> {
   const snapshot = await db.collection(COL.characters).get();
   const compiled: CombatProfile[] = [];
   const existing = new Map<string, ExistingRank>();
@@ -56,7 +59,10 @@ export async function rerankAll(db: Firestore, options: { dryRun?: boolean } = {
     for (let i = 0; i < updates.length; i += BATCH_SIZE) {
       const batch = db.batch();
       for (const { slug, ...fields } of updates.slice(i, i + BATCH_SIZE)) {
-        batch.update(db.collection(COL.characters).doc(slug), { ...fields, updatedAt: now });
+        batch.update(db.collection(COL.characters).doc(slug), {
+          ...fields,
+          updatedAt: now,
+        });
       }
       await batch.commit();
     }

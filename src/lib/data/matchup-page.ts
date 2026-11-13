@@ -60,7 +60,10 @@ export interface CitableFeat {
 const ARGUMENT_LIMIT = 20;
 const CITABLE_LIMIT = 25;
 
-async function fetchCitable(characterId: string, characterName: string): Promise<CitableFeat[]> {
+async function fetchCitable(
+  characterId: string,
+  characterName: string,
+): Promise<CitableFeat[]> {
   const snap = await adminDb()
     .collection(COL.characters)
     .doc(characterId)
@@ -123,7 +126,10 @@ async function fetchArguments(a: string, b: string): Promise<ArgumentView[]> {
   }
 }
 
-function load(slug: string, data: FirebaseFirestore.DocumentData): { combat: CombatProfile; view: MatchupSideView } | null {
+function load(
+  slug: string,
+  data: FirebaseFirestore.DocumentData,
+): { combat: CombatProfile; view: MatchupSideView } | null {
   const profile = data.profile as PowerProfile | undefined;
   if (!profile) return null;
 
@@ -168,7 +174,10 @@ function load(slug: string, data: FirebaseFirestore.DocumentData): { combat: Com
   }
 }
 
-export async function fetchMatchupPage(a: string, b: string): Promise<MatchupPageData | null> {
+export async function fetchMatchupPage(
+  a: string,
+  b: string,
+): Promise<MatchupPageData | null> {
   for (const slug of [a, b]) {
     if (slug.length > 80 || !SLUG_RE.test(slug)) return null;
   }
@@ -188,7 +197,10 @@ export async function fetchMatchupPage(a: string, b: string): Promise<MatchupPag
 
   const { flipped } = orderPair(a, b);
   const community = toViewTally(
-    { votesA: Number(matchup.get("votesA")) || 0, votesB: Number(matchup.get("votesB")) || 0 },
+    {
+      votesA: Number(matchup.get("votesA")) || 0,
+      votesB: Number(matchup.get("votesB")) || 0,
+    },
     flipped,
   );
 
@@ -209,7 +221,11 @@ export async function fetchMatchupPage(a: string, b: string): Promise<MatchupPag
 }
 
 export async function fetchCharacterOptions(): Promise<CharacterOption[]> {
-  const snap = await adminDb().collection(COL.characters).select("name", "rank").limit(500).get();
+  const snap = await adminDb()
+    .collection(COL.characters)
+    .select("name", "rank")
+    .limit(500)
+    .get();
 
   return snap.docs
     .map((doc) => ({

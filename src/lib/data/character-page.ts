@@ -1,5 +1,9 @@
 import "server-only";
-import type { DocumentData, DocumentReference, QueryDocumentSnapshot } from "firebase-admin/firestore";
+import type {
+  DocumentData,
+  DocumentReference,
+  QueryDocumentSnapshot,
+} from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL, SLUG_RE } from "@/lib/firebase/paths";
 import type { FeatClaim } from "@/lib/ranking/profile";
@@ -52,7 +56,10 @@ function toCharacter(id: string, d: DocumentData): CharacterView {
   };
 }
 
-async function featsWith(ref: DocumentReference, status: FeatStatus): Promise<FeatView[]> {
+async function featsWith(
+  ref: DocumentReference,
+  status: FeatStatus,
+): Promise<FeatView[]> {
   const snap = await ref
     .collection(COL.feats)
     .where("status", "==", status)
@@ -62,7 +69,9 @@ async function featsWith(ref: DocumentReference, status: FeatStatus): Promise<Fe
   return snap.docs.map(toFeat);
 }
 
-export async function fetchCharacterPage(slug: string): Promise<CharacterPageData | null> {
+export async function fetchCharacterPage(
+  slug: string,
+): Promise<CharacterPageData | null> {
   if (slug.length > 80 || !SLUG_RE.test(slug)) return null;
 
   const ref = adminDb().collection(COL.characters).doc(slug);
@@ -73,5 +82,8 @@ export async function fetchCharacterPage(slug: string): Promise<CharacterPageDat
   ]);
   if (!snap.exists) return null;
 
-  return { character: toCharacter(snap.id, snap.data() ?? {}), feats: [...verified, ...pending] };
+  return {
+    character: toCharacter(snap.id, snap.data() ?? {}),
+    feats: [...verified, ...pending],
+  };
 }

@@ -13,7 +13,7 @@ export interface HeroSlide {
 
 export function HeroArt({ slides }: { slides: HeroSlide[] }) {
   const part = useDaypart();
-  const active = Math.min(part, slides.length - 1);
+  const active = part === null ? -1 : Math.min(part, slides.length - 1);
 
   return (
     <>

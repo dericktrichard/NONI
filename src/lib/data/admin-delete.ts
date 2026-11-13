@@ -43,7 +43,10 @@ async function deleteMatching(db: Firestore, query: Query): Promise<number> {
   return total;
 }
 
-export async function deleteCharacter(actorUid: string, slug: string): Promise<DeleteResult> {
+export async function deleteCharacter(
+  actorUid: string,
+  slug: string,
+): Promise<DeleteResult> {
   const db = adminDb();
   const characterRef = db.collection(COL.characters).doc(slug);
   const character = await characterRef.get();

@@ -1,9 +1,13 @@
 "use client";
 
+import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { ListCard } from "@/components/lists/list-card";
+import { Portrait } from "@/components/characters/portrait";
+import { ListItems } from "@/components/lists/list-card";
+import { ListReportButton } from "@/components/lists/list-report-button";
 import { ProfileAvatar } from "@/components/profile/banner";
+import type { FanGroup } from "@/lib/data/fan-groups";
 import type { PublicListEntry } from "@/lib/data/public-lists";
 import type { BoardRow } from "@/lib/standing/types";
 import { cn } from "@/lib/utils";
@@ -12,7 +16,7 @@ interface Boards {
   glaze: BoardRow[];
   week: BoardRow[];
   champions: BoardRow[];
-  fans: BoardRow[];
+  fans: FanGroup[];
 }
 
 type TabKey = keyof Boards | "lists";
@@ -40,13 +44,13 @@ const TABS: ReadonlyArray<{
     key: "fans",
     label: "Fans",
     unit: "points",
-    hint: "The biggest fan of any one character.",
+    hint: "The biggest fans of each character. Points come from playing battles with that character.",
   },
   {
     key: "lists",
     label: "Lists",
     unit: "",
-    hint: "The newest public lists, from public profiles.",
+    hint: "The newest public lists, from public profiles. Open one to see its characters.",
   },
 ];
 
@@ -93,6 +97,120 @@ function Empty({ title, text }: { title: string; text: string }) {
   );
 }
 
+function FansPanel({ groups }: { groups: FanGroup[] }) {
+  if (groups.length === 0) {
+    return (
+      <Empty
+        title="No fans yet"
+        text="Play a battle and switch on boards above to become a character's first fan."
+      />
+    );
+  }
+  return (
+    <ul className="mt-4 space-y-4">
+      {groups.map((group) => (
+        <li key={group.slug} className="border">
+          <div className="bg-muted/50 flex items-center gap-3 border-b p-3">
+            <Portrait
+              name={group.name}
+              src={group.imageUrl}
+              sizes="48px"
+              className="aspect-2/3 w-10 shrink-0 border"
+            />
+            <div className="min-w-0 flex-1">
+              <Link
+                href={`/characters/${group.slug}`}
+                className="font-display block truncate text-lg font-semibold hover:underline"
+              >
+                {group.name}
+              </Link>
+              <p className="eyebrow">
+                {group.fans.length === 1 ? "Biggest fan" : "Biggest fans"}
+              </p>
+            </div>
+          </div>
+          <ol>
+            {group.fans.map((fan) => (
+              <li key={fan.handle} className="border-b last:border-b-0">
+                <Link
+                  href={`/u/${fan.handle}`}
+                  className="hover:bg-muted grid grid-cols-[2rem_2.5rem_minmax(0,1fr)_auto] items-center gap-3 px-3 py-2.5 transition-colors"
+                >
+                  <span className="tabular font-display flex items-center gap-1.5 text-lg font-semibold">
+                    {fan.rank === 1 ? (
+                      <span className="bg-accent size-2" aria-hidden />
+                    ) : null}
+                    {fan.rank}
+                  </span>
+                  <ProfileAvatar
+                    look={fan.look}
+                    handle={fan.handle}
+                    className="size-10 p-0.5"
+                  />
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-medium">
+                      @{fan.handle}
+                    </span>
+                    {fan.tier ? <span className="eyebrow block">{fan.tier}</span> : null}
+                  </span>
+                  <span className="text-right">
+                    <span className="tabular font-display block text-lg font-semibold">
+                      {fan.value}
+                    </span>
+                    <span className="eyebrow block">points</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function ListEntry({ list, ownerHandle }: PublicListEntry) {
+  const count = list.items.length;
+  return (
+    <details className="group border">
+      <summary className="hover:bg-muted flex cursor-pointer list-none items-center gap-3 px-4 py-3 transition-colors [&::-webkit-details-marker]:hidden">
+        <span className="min-w-0 flex-1">
+          <span className="font-display block truncate text-lg font-semibold">
+            {list.title}
+          </span>
+          <span className="eyebrow block truncate">
+            by @{ownerHandle} · {count} {count === 1 ? "character" : "characters"}
+          </span>
+        </span>
+        <span className="hidden gap-1 sm:flex" aria-hidden>
+          {list.items.slice(0, 4).map((item) => (
+            <Portrait
+              key={item.characterId}
+              name={item.name}
+              src={item.imageUrl}
+              sizes="24px"
+              className="aspect-2/3 w-6 border"
+            />
+          ))}
+        </span>
+        <ChevronDown
+          className="size-4 shrink-0 transition-transform group-open:rotate-180"
+          aria-hidden
+        />
+      </summary>
+      <div className="border-t">
+        <ListItems list={list} />
+      </div>
+      <div className="flex items-center justify-between gap-3 border-t px-4 py-2">
+        <Link href={`/u/${ownerHandle}`} className="eyebrow hover:underline">
+          View profile
+        </Link>
+        <ListReportButton listId={list.id} />
+      </div>
+    </details>
+  );
+}
+
 function ListsPanel({ lists }: { lists: PublicListEntry[] }) {
   if (lists.length === 0) {
     return (
@@ -103,16 +221,10 @@ function ListsPanel({ lists }: { lists: PublicListEntry[] }) {
     );
   }
   return (
-    <ul className="mt-4 space-y-8">
-      {lists.map(({ list, ownerHandle }) => (
-        <li key={list.id}>
-          <p className="eyebrow mb-2">
-            by{" "}
-            <Link href={`/u/${ownerHandle}`} className="hover:underline">
-              @{ownerHandle}
-            </Link>
-          </p>
-          <ListCard list={list} isOwner={false} />
+    <ul className="mt-4 space-y-3">
+      {lists.map((entry) => (
+        <li key={entry.list.id}>
+          <ListEntry {...entry} />
         </li>
       ))}
     </ul>
@@ -128,7 +240,7 @@ export function BoardTabs({
 }) {
   const [key, setKey] = useState<TabKey>("glaze");
   const tab = TABS.find((t) => t.key === key)!;
-  const rows = key === "lists" ? [] : boards[key];
+  const rows = key === "lists" || key === "fans" ? [] : boards[key];
 
   return (
     <div className="mt-8">
@@ -156,6 +268,8 @@ export function BoardTabs({
 
       {key === "lists" ? (
         <ListsPanel lists={lists} />
+      ) : key === "fans" ? (
+        <FansPanel groups={boards.fans} />
       ) : rows.length === 0 ? (
         <Empty
           title="Nobody is on this board yet"

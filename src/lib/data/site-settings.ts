@@ -16,7 +16,10 @@ function allowedImage(url: string): boolean {
   if (!base) return false;
   try {
     const target = new URL(url);
-    return target.host === new URL(base).host && ALLOWED_PATHS.some((prefix) => target.pathname.startsWith(prefix));
+    return (
+      target.host === new URL(base).host &&
+      ALLOWED_PATHS.some((prefix) => target.pathname.startsWith(prefix))
+    );
   } catch {
     return false;
   }

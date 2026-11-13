@@ -41,7 +41,8 @@ export async function castMatchupVote(
       tx.get(firstRef),
       tx.get(secondRef),
     ]);
-    if (!firstChar.exists || !secondChar.exists) throw new HttpError(404, "Character not found.");
+    if (!firstChar.exists || !secondChar.exists)
+      throw new HttpError(404, "Character not found.");
 
     const stored = vote.exists ? vote.get("side") : null;
     const previous: VotePick = stored === "a" || stored === "b" ? stored : null;

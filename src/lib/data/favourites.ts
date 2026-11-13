@@ -23,7 +23,10 @@ export interface FavouriteState {
 const image = (value: unknown): string | null =>
   typeof value === "string" && value.startsWith("https://") ? value : null;
 
-export async function readFavourite(uid: string, characterId: string): Promise<FavouriteState> {
+export async function readFavourite(
+  uid: string,
+  characterId: string,
+): Promise<FavouriteState> {
   const db = adminDb();
   const [fav, character] = await Promise.all([
     db.collection(COL.users).doc(uid).collection(FAVOURITES).doc(characterId).get(),
@@ -33,14 +36,22 @@ export async function readFavourite(uid: string, characterId: string): Promise<F
   return { favourited: fav.exists, fans: Number(character.get("fanCount")) || 0 };
 }
 
-export async function setFavourite(uid: string, characterId: string, on: boolean): Promise<FavouriteState> {
+export async function setFavourite(
+  uid: string,
+  characterId: string,
+  on: boolean,
+): Promise<FavouriteState> {
   const db = adminDb();
   const characterRef = db.collection(COL.characters).doc(characterId);
   const userRef = db.collection(COL.users).doc(uid);
   const favRef = userRef.collection(FAVOURITES).doc(characterId);
 
   return db.runTransaction(async (tx) => {
-    const [character, user, fav] = await Promise.all([tx.get(characterRef), tx.get(userRef), tx.get(favRef)]);
+    const [character, user, fav] = await Promise.all([
+      tx.get(characterRef),
+      tx.get(userRef),
+      tx.get(favRef),
+    ]);
     if (!character.exists) throw new HttpError(404, "Character not found.");
 
     const fans = Number(character.get("fanCount")) || 0;
