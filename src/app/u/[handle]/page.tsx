@@ -10,6 +10,7 @@ import { ProfileAvatar, ProfileBanner } from "@/components/profile/banner";
 import { OwnFeats } from "@/components/profile/own-feats";
 import { NewListButton } from "@/components/profile/new-list-button";
 import { OwnerTools } from "@/components/profile/owner-tools";
+import { ProfileTitle } from "@/components/profile/profile-title";
 import { ReportImageButton } from "@/components/profile/report-image-button";
 import { Badges } from "@/components/standing/badges";
 import { GlazePanel } from "@/components/standing/glaze-panel";
@@ -129,6 +130,7 @@ export default async function ProfilePage({ params }: Props) {
             <h1 className="font-display mt-1 text-3xl font-semibold tracking-tight wrap-break-word sm:text-5xl">
               @{profile.handle}
             </h1>
+            <ProfileTitle look={profile.look} />
             {profile.bio ? (
               <p className="mt-3 max-w-xl text-sm whitespace-pre-line">{profile.bio}</p>
             ) : null}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ListBuilder } from "@/components/lists/list-builder";
+import { FlairShop } from "@/components/profile/flair-shop";
 import { ProfileEditor } from "@/components/profile/profile-editor";
 import { Modal } from "@/components/ui/modal";
 import { useSession } from "@/hooks/use-session";
@@ -24,7 +25,7 @@ interface OwnerToolsProps {
 export function OwnerTools({ profile, look, verified, staff, lists }: OwnerToolsProps) {
   const router = useRouter();
   const { refresh } = useSession();
-  const [open, setOpen] = useState<"edit" | "lists" | null>(null);
+  const [open, setOpen] = useState<"edit" | "lists" | "flair" | null>(null);
   const [fresh, setFresh] = useState(false);
   const [leaving, setLeaving] = useState(false);
 
@@ -80,6 +81,13 @@ export function OwnerTools({ profile, look, verified, staff, lists }: OwnerTools
         >
           Edit lists
         </button>
+        <button
+          type="button"
+          className="btn btn-line btn-sm"
+          onClick={() => setOpen("flair")}
+        >
+          Flair
+        </button>
         {staff ? (
           <Link href="/admin" className="btn btn-line btn-sm">
             Admin
@@ -121,6 +129,10 @@ export function OwnerTools({ profile, look, verified, staff, lists }: OwnerTools
         title="Your lists"
       >
         <ListBuilder lists={lists} openNew={fresh} />
+      </Modal>
+
+      <Modal wide open={open === "flair"} onClose={close} eyebrow="Profile" title="Flair">
+        <FlairShop look={look} />
       </Modal>
     </>
   );

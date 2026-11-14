@@ -1,3 +1,5 @@
+import { isFrame, isTitle, type FrameId, type TitleId } from "@/lib/flair/rules";
+
 export const BANNER_THEMES = ["plain", "grid", "stripes", "dots", "bars", "ink"] as const;
 export type BannerTheme = (typeof BANNER_THEMES)[number];
 
@@ -19,6 +21,9 @@ export interface Look {
   bannerTheme: BannerTheme;
   bannerId: string | null;
   bannerUrl: string | null;
+  /** Bought flair, only present when the player has equipped one */
+  frame?: FrameId;
+  title?: TitleId;
 }
 
 const isTheme = (value: unknown): value is BannerTheme =>
@@ -37,5 +42,7 @@ export function readLook(data: { [key: string]: unknown }): Look {
     bannerTheme: isTheme(data.bannerTheme) ? data.bannerTheme : DEFAULT_THEME,
     bannerId: text(data.bannerId),
     bannerUrl: image(data.bannerUrl),
+    ...(isFrame(data.frame) ? { frame: data.frame } : {}),
+    ...(isTitle(data.flairTitle) ? { title: data.flairTitle } : {}),
   };
 }
