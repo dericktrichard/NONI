@@ -59,11 +59,16 @@ export default function RootLayout({
           <Header />
           <div className="flex min-h-svh flex-col">
             <div className="flex-1 pt-(--nav-space)">{children}</div>
-            <div className="pb-[calc(5rem+env(safe-area-inset-bottom))] sm:pb-0">
+            <div
+              data-chrome
+              className="pb-[calc(5rem+env(safe-area-inset-bottom))] sm:pb-0"
+            >
               <Footer />
             </div>
           </div>
-          <TabBar />
+          <div data-chrome>
+            <TabBar />
+          </div>
         </ThemeProvider>
       </body>
     </html>

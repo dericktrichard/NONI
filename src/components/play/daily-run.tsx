@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { PlayMode } from "@/components/battle/play-mode";
 import { DuelView } from "@/components/play/duel-view";
+import { MenuToggle } from "@/components/play/menu-toggle";
 import { ShareButton } from "@/components/share/share-button";
 import { savePlayStats, usePlayStats } from "@/hooks/use-play-stats";
 import {
@@ -76,6 +78,7 @@ export function DailyRun({ pool, day }: { pool: PlayCharacter[]; day: string }) 
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<boolean[]>([]);
   const [guess, setGuess] = useState<Guess | null>(null);
+  const [menu, setMenu] = useState(false);
 
   const yesterday = previousDay(day);
 
@@ -99,6 +102,7 @@ export function DailyRun({ pool, day }: { pool: PlayCharacter[]; day: string }) 
 
   const last = answers[index];
   const last_ = guess === null ? null : (last ?? null);
+  const started = guess !== null || answers.length > 0;
 
   function pick(next: Guess) {
     if (guess !== null || !duel) return;
@@ -117,11 +121,15 @@ export function DailyRun({ pool, day }: { pool: PlayCharacter[]; day: string }) 
 
   return (
     <div>
+      <PlayMode active={started && !menu} />
       <div className="mb-5 flex items-center justify-between gap-4">
         <p className="eyebrow">
           Round {index + 1} of {Math.min(DAILY_ROUNDS, duels.length)}
         </p>
-        <Squares answers={answers} total={duels.length} />
+        <div className="flex items-center gap-3">
+          {started ? <MenuToggle open={menu} onToggle={() => setMenu(!menu)} /> : null}
+          <Squares answers={answers} total={duels.length} />
+        </div>
       </div>
       <DuelView
         duel={duel}

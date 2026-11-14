@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { PlayMode } from "@/components/battle/play-mode";
 import { DuelView } from "@/components/play/duel-view";
+import { MenuToggle } from "@/components/play/menu-toggle";
 import { savePlayStats, usePlayStats } from "@/hooks/use-play-stats";
 import {
   firstDuel,
@@ -26,6 +28,7 @@ type State =
 export function EndlessRun({ pool }: { pool: PlayCharacter[] }) {
   const stats = usePlayStats();
   const [state, setState] = useState<State>({ phase: "idle" });
+  const [menu, setMenu] = useState(false);
 
   function start() {
     const duel = firstDuel(pool, Math.random);
@@ -50,6 +53,7 @@ export function EndlessRun({ pool }: { pool: PlayCharacter[] }) {
   }
 
   const { duel, streak, guess, correct } = state;
+  const over = guess !== null && !correct;
 
   function pick(next: Guess) {
     if (guess !== null) return;
@@ -76,9 +80,13 @@ export function EndlessRun({ pool }: { pool: PlayCharacter[] }) {
 
   return (
     <div>
+      <PlayMode active={!over && !menu} />
       <div className="mb-5 flex items-center justify-between gap-4">
         <p className="eyebrow">Streak {streak}</p>
-        <p className="eyebrow">Best {Math.max(stats.bestStreak, streak)}</p>
+        <div className="flex items-center gap-3">
+          <p className="eyebrow">Best {Math.max(stats.bestStreak, streak)}</p>
+          <MenuToggle open={menu} onToggle={() => setMenu(!menu)} />
+        </div>
       </div>
       <DuelView
         duel={duel}

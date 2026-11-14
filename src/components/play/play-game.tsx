@@ -29,8 +29,8 @@ export function PlayGame({ pool }: { pool: PlayCharacter[] }) {
   const streak = liveDailyStreak(stats, day, previousDay(day));
 
   return (
-    <div className="mt-8">
-      <dl className="bg-border grid grid-cols-2 gap-px border">
+    <div className="mt-8 [html[data-play=true]_&]:mt-0">
+      <dl data-chrome className="bg-border grid grid-cols-2 gap-px border">
         <div className="bg-background p-3 sm:p-4">
           <dt className="eyebrow">Daily streak</dt>
           <dd className="tabular font-display mt-1 text-xl font-semibold sm:text-3xl">
@@ -45,7 +45,7 @@ export function PlayGame({ pool }: { pool: PlayCharacter[] }) {
         </div>
       </dl>
 
-      <div role="group" aria-label="Game mode" className="mt-8 flex border-b">
+      <div data-chrome role="group" aria-label="Game mode" className="mt-8 flex border-b">
         {(["daily", "endless"] as const).map((key) => (
           <button
             key={key}

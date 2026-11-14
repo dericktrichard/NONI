@@ -25,7 +25,7 @@ export function BattleHub() {
 
   return (
     <div>
-      <div className="flex items-end justify-between gap-4 border-b">
+      <div data-chrome className="flex items-end justify-between gap-4 border-b">
         <div role="group" aria-label="Game mode" className="flex">
           {TABS.map(({ key, label }) => (
             <button

@@ -59,7 +59,10 @@ export function Header() {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-6"
       />
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-40 pt-[calc(0.75rem+env(safe-area-inset-top))]">
+      <header
+        data-chrome
+        className="pointer-events-none fixed inset-x-0 top-0 z-40 pt-[calc(0.75rem+env(safe-area-inset-top))]"
+      >
         <div className="mx-auto max-w-6xl px-4">
           <div
             data-scrolled={scrolled}
