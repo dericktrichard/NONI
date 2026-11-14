@@ -31,6 +31,7 @@ import { mulberry32 } from "@/lib/play/game";
 import { loadEntrants, loadPool } from "./battle-pool";
 import { addResult, getDaily, reserve } from "./daily";
 import { settleGlaze, type GlazeChange } from "./glaze";
+import { announce, watchBefore } from "./notices";
 import { recordBattle } from "./standing";
 
 const BATTLES = "battles";
@@ -52,6 +53,8 @@ export interface ClashOutcome {
   matchmade: boolean;
   repeat: boolean;
   notice: string | null;
+  /** Rank changes and badges earned by this match */
+  moves: string[];
   today: Today;
 }
 
@@ -62,6 +65,8 @@ export interface ClimbOutcome {
   settlement: GlazeChange;
   repeat: boolean;
   notice: string | null;
+  /** Rank changes and badges earned by this match */
+  moves: string[];
   today: Today;
 }
 
@@ -165,6 +170,7 @@ export async function playClash(
     key: matchupKey(slugsA, teamB),
     stake,
   });
+  const watch = repeat ? null : await watchBefore(uid, slugsA);
 
   const seed = newSeed();
   const result = simulateClash(profilesA, profilesB, { rng: mulberry32(seed) });
@@ -209,6 +215,7 @@ export async function playClash(
     createdAt: FieldValue.serverTimestamp(),
   });
 
+  let moves: string[] = [];
   if (!repeat) {
     const points = fanGrant("clash", slugsA, before.fan);
     await recordBattle(uid, {
@@ -220,6 +227,7 @@ export async function playClash(
       points,
     });
     await addResult(uid, { fan: points });
+    moves = await announce(uid, watch, points);
   }
 
   const today = todayOf({
@@ -241,6 +249,7 @@ export async function playClash(
     matchmade,
     repeat,
     notice,
+    moves,
     today,
   };
 }
@@ -280,6 +289,7 @@ export async function playClimb(
   });
   const title = result.beatenBy === null;
   const rewarded = !repeat && before.climbRuns < FAIR.climb.runsPerDay;
+  const watch = rewarded ? await watchBefore(uid, [hero]) : null;
   const delta = climbReward({
     wins: result.wins,
     size,
@@ -310,6 +320,7 @@ export async function playClimb(
     createdAt: FieldValue.serverTimestamp(),
   });
 
+  let moves: string[] = [];
   if (rewarded) {
     const points = fanGrant("climb", [hero], before.fan);
     await recordBattle(uid, {
@@ -321,6 +332,7 @@ export async function playClimb(
       points,
     });
     await addResult(uid, { fan: points });
+    moves = await announce(uid, watch, points);
   }
 
   return {
@@ -330,6 +342,7 @@ export async function playClimb(
     settlement: change,
     repeat,
     notice,
+    moves,
     today: todayOf({ ...before, climbRuns: before.climbRuns + 1 }),
   };
 }

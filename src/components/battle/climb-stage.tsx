@@ -246,7 +246,12 @@ export function ClimbStage({
                     ? ` ${upsets} upset${upsets > 1 ? "s" : ""} on the way.`
                     : ""}
                 </p>
-                <GlazeLine settlement={settlement} stake={0} notice={notice} />
+                <GlazeLine
+                  settlement={settlement}
+                  stake={0}
+                  notice={notice}
+                  moves={outcome.moves}
+                />
               </div>
             ) : match && heroCard && rivalCard ? (
               <div key={p.step} className="flex min-h-0 flex-1 flex-col">

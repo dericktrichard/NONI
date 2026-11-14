@@ -146,10 +146,12 @@ export function GlazeLine({
   settlement,
   stake,
   notice,
+  moves = [],
 }: {
   settlement: GlazeChange;
   stake: number;
   notice?: string | null;
+  moves?: string[];
 }) {
   const { change, balance, capped } = settlement;
   const text =
@@ -163,11 +165,23 @@ export function GlazeLine({
         ? `+${change} Glaze`
         : "No Glaze this time";
   return (
-    <p className="tabular mt-3 text-sm">
-      {text}
-      {capped ? ", daily limit reached" : ""}. Balance {balance.toLocaleString("en-US")}.
-      {notice ? " " + notice : ""}
-    </p>
+    <div className="mt-3">
+      <p className="tabular text-sm">
+        {text}
+        {capped ? ", daily limit reached" : ""}. Balance {balance.toLocaleString("en-US")}
+        .{notice ? " " + notice : ""}
+      </p>
+      {moves.length > 0 ? (
+        <ul className="mt-2 space-y-1">
+          {moves.map((line) => (
+            <li key={line} className="flex items-start gap-2 text-sm font-medium">
+              <span className="bg-accent mt-1.5 size-1.5 shrink-0" aria-hidden />
+              {line}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
   );
 }
 
