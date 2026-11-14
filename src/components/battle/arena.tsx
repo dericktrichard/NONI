@@ -209,7 +209,12 @@ export function Arena({
                   {upsets > 0 ? `${upsets} upset${upsets > 1 ? "s" : ""}. ` : ""}
                   Your team had a {Math.round(chance * 100)}% chance going in.
                 </p>
-                <GlazeLine settlement={settlement} stake={stake} notice={notice} />
+                <GlazeLine
+                  settlement={settlement}
+                  stake={stake}
+                  notice={notice}
+                  moves={outcome.moves}
+                />
               </div>
             ) : fight ? (
               <div key={p.step} className="flex min-h-0 flex-1 flex-col">

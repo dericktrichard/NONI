@@ -18,7 +18,7 @@ import type { Badge, BoardKey, BoardRow, Standing } from "@/lib/standing/types";
 
 const FANS = "fans";
 const LIMIT = 50;
-const FIELD: Record<BoardKey, string> = {
+export const FIELD: Record<BoardKey, string> = {
   glaze: "glaze",
   week: "weekGlaze",
   champions: "titles",
