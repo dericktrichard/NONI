@@ -347,13 +347,13 @@
     transform: none;
   }
   35% {
-    transform: translateX(18px) scale(1.04);
+    transform: translateX(var(--clash, 18px)) scale(1.04);
   }
   50% {
     transform: translateX(2px);
   }
   70% {
-    transform: translateX(14px);
+    transform: translateX(calc(var(--clash, 18px) * 0.78));
   }
 }
 @keyframes noni-clash-r {
@@ -362,13 +362,13 @@
     transform: none;
   }
   35% {
-    transform: translateX(-18px) scale(1.04);
+    transform: translateX(calc(var(--clash, 18px) * -1)) scale(1.04);
   }
   50% {
     transform: translateX(-2px);
   }
   70% {
-    transform: translateX(-14px);
+    transform: translateX(calc(var(--clash, 18px) * -0.78));
   }
 }
 @keyframes noni-sweep {
@@ -465,4 +465,33 @@ summary,
       scrollbar-color: color-mix(in srgb, var(--foreground) 30%, transparent) transparent;
     }
   }
+}
+
+/* Play mode: while a game runs on a small screen the nav bars hide so the stage gets the whole screen. They return when it ends. */
+@media (max-width: 1023px) {
+  html[data-play="true"] {
+    --nav-height: 0px;
+    --sticky-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+    --nav-space: calc(0.5rem + env(safe-area-inset-top));
+    --stage-gap: calc(2rem + env(safe-area-inset-top) + env(safe-area-inset-bottom));
+  }
+  html[data-play="true"] [data-chrome] {
+    display: none !important;
+  }
+  html[data-play="true"] [data-stage-page] {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+}
+
+/* How far the two fighters lunge at each other. Smaller on phones so they do not cover each other. */
+@media (max-width: 639px) {
+  :root {
+    --clash: 8px;
+  }
+}
+
+/* Where pinned action bars sit on a phone: above the bottom tab bar, or at the screen edge in play mode */
+:root {
+  --sticky-bottom: calc(5rem + env(safe-area-inset-bottom));
 }

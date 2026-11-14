@@ -11,6 +11,7 @@ import {
   Sweep,
   Tag,
 } from "@/components/battle/shared";
+import { PlayMode } from "@/components/battle/play-mode";
 import { usePlayback } from "@/hooks/use-playback";
 import type { ClimbResult } from "@/lib/battle/climb";
 import { heroMatch, heroRounds, roundName } from "@/lib/battle/rounds";
@@ -194,6 +195,7 @@ export function ClimbStage({
 
   return (
     <div className={STAGE}>
+      <PlayMode active={!finished} />
       <Ladder result={result} step={p.step} resolved={p.resolved} done={p.done} />
 
       <div className="lg:hidden">
@@ -261,8 +263,9 @@ export function ClimbStage({
                   </p>
                   <PhaseRail phase={p.phase} />
                 </div>
-                <div className="mt-3 flex min-h-0 flex-1 items-stretch gap-2 sm:gap-3">
+                <div className="mt-3 flex min-h-0 flex-1 items-center gap-2 sm:gap-3">
                   <Fighter
+                    compact
                     card={heroCard}
                     side="l"
                     phase={p.phase}
@@ -272,6 +275,7 @@ export function ClimbStage({
                     VS
                   </span>
                   <Fighter
+                    compact
                     card={rivalCard}
                     side="r"
                     phase={p.phase}

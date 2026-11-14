@@ -10,6 +10,8 @@ import { ProfileAvatar, ProfileBanner } from "@/components/profile/banner";
 import { OwnFeats } from "@/components/profile/own-feats";
 import { NewListButton } from "@/components/profile/new-list-button";
 import { OwnerTools } from "@/components/profile/owner-tools";
+import { PlusPanel } from "@/components/profile/plus-panel";
+import { ProfileTitle } from "@/components/profile/profile-title";
 import { ReportImageButton } from "@/components/profile/report-image-button";
 import { Badges } from "@/components/standing/badges";
 import { GlazePanel } from "@/components/standing/glaze-panel";
@@ -129,6 +131,7 @@ export default async function ProfilePage({ params }: Props) {
             <h1 className="font-display mt-1 text-3xl font-semibold tracking-tight wrap-break-word sm:text-5xl">
               @{profile.handle}
             </h1>
+            <ProfileTitle look={profile.look} />
             {profile.bio ? (
               <p className="mt-3 max-w-xl text-sm whitespace-pre-line">{profile.bio}</p>
             ) : null}
@@ -164,6 +167,7 @@ export default async function ProfilePage({ params }: Props) {
         {visibleStanding ? (
           <GlazePanel standing={visibleStanding} isOwner={isOwner} />
         ) : null}
+        {isOwner ? <PlusPanel /> : null}
 
         <dl className="bg-border mt-8 grid grid-cols-2 gap-px border sm:grid-cols-3">
           <Stat label="Member since">{profile.createdAt.slice(0, 10) || "--"}</Stat>

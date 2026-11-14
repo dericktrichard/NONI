@@ -36,7 +36,7 @@ function DuelCard({ c, known }: { c: PlayCharacter; known: "always" | boolean })
         name={c.name}
         src={c.imageUrl}
         sizes="(min-width: 640px) 360px, 50vw"
-        className="aspect-4/5 w-full"
+        className="aspect-square w-full sm:aspect-4/5"
       />
       <div className="p-3 sm:p-4">
         <p className="eyebrow truncate">{c.verse}</p>
@@ -84,33 +84,39 @@ export function DuelView({ duel, guess, correct, onGuess, action }: DuelViewProp
         <strong>{left.name}</strong>?
       </p>
 
-      {revealed ? (
-        <div role="status" className="mt-4 border p-4 text-center">
-          <p className="font-display flex items-center justify-center gap-2 text-xl font-semibold">
-            {correct ? <span className="bg-accent size-2.5" aria-hidden /> : null}
-            {correct ? "Correct" : "Wrong"}
-          </p>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {right.name} scores {right.score.toLocaleString("en-US")}, {relation}{" "}
-            {left.name}.
-          </p>
-        </div>
-      ) : (
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            className="btn btn-solid"
-            onClick={() => onGuess("higher")}
-          >
-            Higher
-          </button>
-          <button type="button" className="btn btn-line" onClick={() => onGuess("lower")}>
-            Lower
-          </button>
-        </div>
-      )}
+      <div className="bg-background/95 sticky bottom-(--sticky-bottom) z-30 -mx-4 mt-4 border-t px-4 pt-3 pb-2 backdrop-blur-sm sm:static sm:mx-0 sm:border-t-0 sm:p-0 sm:backdrop-blur-none">
+        {revealed ? (
+          <div role="status" className="border p-3 text-center sm:p-4">
+            <p className="font-display flex items-center justify-center gap-2 text-xl font-semibold">
+              {correct ? <span className="bg-accent size-2.5" aria-hidden /> : null}
+              {correct ? "Correct" : "Wrong"}
+            </p>
+            <p className="text-muted-foreground mt-1 text-sm">
+              {right.name} scores {right.score.toLocaleString("en-US")}, {relation}{" "}
+              {left.name}.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              className="btn btn-solid"
+              onClick={() => onGuess("higher")}
+            >
+              Higher
+            </button>
+            <button
+              type="button"
+              className="btn btn-line"
+              onClick={() => onGuess("lower")}
+            >
+              Lower
+            </button>
+          </div>
+        )}
 
-      {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
+        {action ? <div className="mt-3 flex justify-center">{action}</div> : null}
+      </div>
     </div>
   );
 }

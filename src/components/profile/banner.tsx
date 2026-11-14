@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
 import { Portrait } from "@/components/characters/portrait";
+import type { FrameId } from "@/lib/flair/rules";
 import type { BannerTheme, Look } from "@/lib/profile/look";
 import { cn } from "@/lib/utils";
 
@@ -78,6 +79,15 @@ export function ProfileBanner({
   );
 }
 
+/** Bought avatar frames. The decorations sit inside the avatar padding, so nothing overflows its container. */
+const FRAME_STYLES: Record<FrameId, string> = {
+  line: "border-foreground",
+  double:
+    "border-foreground before:pointer-events-none before:absolute before:inset-px before:z-10 before:border before:border-foreground/50",
+  heavy: "border-2 border-foreground",
+  mark: "border-foreground after:pointer-events-none after:absolute after:-top-px after:-left-px after:z-10 after:size-2 after:bg-accent",
+};
+
 export function ProfileAvatar({
   look,
   handle,
@@ -88,7 +98,13 @@ export function ProfileAvatar({
   className?: string;
 }) {
   return (
-    <div className={cn("bg-background relative shrink-0 border p-1", className)}>
+    <div
+      className={cn(
+        "bg-background relative shrink-0 border p-1",
+        look.frame && FRAME_STYLES[look.frame],
+        className,
+      )}
+    >
       {look.avatarUrl ? (
         <Portrait
           name={look.avatarName ?? handle}

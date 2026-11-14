@@ -11,6 +11,7 @@ import {
   Sweep,
   Tag,
 } from "@/components/battle/shared";
+import { PlayMode } from "@/components/battle/play-mode";
 import { usePlayback } from "@/hooks/use-playback";
 import { replayAt, type FighterState } from "@/lib/battle/replay";
 import type { BattleCard } from "@/lib/battle/view";
@@ -46,14 +47,14 @@ function Tile({
         src={card.imageUrl}
         sizes="64px"
         className={cn(
-          "aspect-square w-full transition-[filter] duration-500 lg:size-14 lg:shrink-0",
+          "mx-auto size-10 transition-[filter] duration-500 sm:size-12 lg:mx-0 lg:size-14 lg:shrink-0",
           fallen && "grayscale",
         )}
       />
       <div className="mt-1 min-w-0 flex-1 lg:mt-0">
         <p
           className={cn(
-            "truncate text-[11px] font-medium lg:text-sm",
+            "truncate text-center text-[11px] font-medium lg:text-left lg:text-sm",
             fallen && "line-through",
           )}
         >
@@ -110,7 +111,7 @@ function Scoreboard({ a, b }: { a: FighterState[]; b: FighterState[] }) {
     >
       <div>
         <p className="eyebrow">You</p>
-        <p className="tabular font-display text-4xl leading-none font-semibold sm:text-5xl">
+        <p className="tabular font-display text-3xl leading-none font-semibold sm:text-5xl">
           {alive(a)}
         </p>
       </div>
@@ -125,7 +126,7 @@ function Scoreboard({ a, b }: { a: FighterState[]; b: FighterState[] }) {
       </div>
       <div className="text-right">
         <p className="eyebrow">Them</p>
-        <p className="tabular font-display text-4xl leading-none font-semibold sm:text-5xl">
+        <p className="tabular font-display text-3xl leading-none font-semibold sm:text-5xl">
           {alive(b)}
         </p>
       </div>
@@ -177,9 +178,10 @@ export function Arena({
 
   return (
     <div className={STAGE}>
+      <PlayMode active={!finished} />
       <Scoreboard a={statesA} b={statesB} />
 
-      <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto] gap-3 lg:grid-cols-[1fr_minmax(0,28rem)_1fr] lg:grid-rows-1 lg:gap-6">
+      <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(11rem,1fr)_auto] gap-3 lg:grid-cols-[1fr_minmax(0,28rem)_1fr] lg:grid-rows-1 lg:gap-6">
         <Side
           title="Your team"
           cards={teamA}

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Portrait } from "@/components/characters/portrait";
 import { TierBadge } from "@/components/characters/tier-badge";
 import { HeroArt, type HeroSlide } from "@/components/home/hero-art";
+import { PersonalHero } from "@/components/home/personal-hero";
 import type { HeroSettings } from "@/lib/data/site-settings";
 import type { SiteStats } from "@/lib/data/site-stats";
 import { cn, formatScore } from "@/lib/utils";
@@ -82,6 +83,7 @@ export function HomeHero({ hero, cycle, pair, stats }: HomeHeroProps) {
         className="hero-fade hero-dim pointer-events-none absolute inset-x-0 top-0 -z-10 h-[min(88svh,60rem)]"
       >
         <HeroArt slides={slides} />
+        <PersonalHero />
       </div>
 
       <div className="relative mx-auto max-w-6xl px-4 pt-[calc(min(88svh,60rem)*0.66)] pb-10">

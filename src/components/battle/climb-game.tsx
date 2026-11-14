@@ -100,8 +100,8 @@ export function ClimbGame({ today, onSettled }: ClimbGameProps) {
           <p className="text-muted-foreground text-xs">
             Win {Math.log2(size)} rounds to reach No. 1. Every match can go either way.
             Each round won pays {FAIR.climb.perRound} Glaze and the title adds {title}.{" "}
-            {runsLeft} of {FAIR.climb.runsPerDay} rewarded runs left today. Repeating the
-            same fighter and field pays nothing.
+            {runsLeft} of {today?.limits?.climbRuns ?? FAIR.climb.runsPerDay} rewarded
+            runs left today. Repeating the same fighter and field pays nothing.
           </p>
 
           <section className="flex items-center gap-3 border p-2">

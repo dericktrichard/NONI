@@ -39,6 +39,7 @@ export function ClashGame({ balance, today, onSettled }: ClashGameProps) {
   const { busy, error, request } = useBattleApi();
 
   const matchmade = today?.matchmade ?? false;
+  const limits = today?.limits;
   const stakesLeft = today?.stakesLeft ?? FAIR.staked.perDay;
   const side: Side = matchmade ? "a" : target;
   const other = (s: Side): Side => (s === "a" ? "b" : "a");
@@ -168,9 +169,10 @@ export function ClashGame({ balance, today, onSettled }: ClashGameProps) {
             />
           </div>
           <p className="text-muted-foreground text-xs">
-            Practice wins pay {FAIR.practice.win} Glaze, up to {FAIR.practice.dailyCap} a
-            day, and a loss costs nothing. A stake pays by the odds and a lost stake is
-            gone. {stakesLeft} of {FAIR.staked.perDay} stakes left today. Repeating a
+            Practice wins pay {FAIR.practice.win} Glaze, up to{" "}
+            {limits?.practiceCap ?? FAIR.practice.dailyCap} a day, and a loss costs
+            nothing. A stake pays by the odds and a lost stake is gone. {stakesLeft} of{" "}
+            {limits?.stakesPerDay ?? FAIR.staked.perDay} stakes left today. Repeating a
             matchup pays nothing.
           </p>
           {row("a", "Your team")}

@@ -14,7 +14,9 @@ export function SetupShell({ top, picker, action }: SetupShellProps) {
       <div className="flex h-[clamp(12rem,calc(100dvh-var(--nav-height)-26rem),32rem)] flex-col lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-auto lg:min-h-0">
         {picker}
       </div>
-      <div className="lg:col-start-1 lg:row-start-2">{action}</div>
+      <div className="bg-background sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30 -mx-4 border-t px-4 py-2 lg:static lg:col-start-1 lg:row-start-2 lg:mx-0 lg:border-t-0 lg:px-0 lg:py-0">
+        {action}
+      </div>
     </div>
   );
 }

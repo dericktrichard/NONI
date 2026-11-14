@@ -24,7 +24,8 @@ function run(args: string[]): number {
   const a = compileProfile(seedA.profile);
   const b = compileProfile(seedB.profile);
   const result = resolveMatchup(a, b);
-  const winner = result.winner === null ? "no winner" : result.winner === "a" ? a.name : b.name;
+  const winner =
+    result.winner === null ? "no winner" : result.winner === "a" ? a.name : b.name;
 
   console.log(`\n${a.name}  vs  ${b.name}`);
   console.log(`Winner:  ${winner}  (${result.verdict})`);

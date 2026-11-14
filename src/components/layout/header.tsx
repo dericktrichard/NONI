@@ -9,6 +9,7 @@ import { AuthHost } from "@/components/auth/auth-host";
 import { GlobalSearch } from "@/components/layout/global-search";
 import { LogoMark } from "@/components/layout/logo-mark";
 import { NoticeBell } from "@/components/layout/notice-bell";
+import { PlusMark } from "@/components/layout/plus-mark";
 import { RankChip } from "@/components/layout/rank-chip";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { MatchupMaker } from "@/components/matchups/matchup-maker";
@@ -58,7 +59,10 @@ export function Header() {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-6"
       />
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-40 pt-[calc(0.75rem+env(safe-area-inset-top))]">
+      <header
+        data-chrome
+        className="pointer-events-none fixed inset-x-0 top-0 z-40 pt-[calc(0.75rem+env(safe-area-inset-top))]"
+      >
         <div className="mx-auto max-w-6xl px-4">
           <div
             data-scrolled={scrolled}
@@ -69,6 +73,7 @@ export function Header() {
               <span className="font-display text-lg font-semibold tracking-tight">
                 NONI
               </span>
+              <PlusMark />
             </Link>
 
             <nav

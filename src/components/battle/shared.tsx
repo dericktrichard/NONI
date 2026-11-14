@@ -11,7 +11,7 @@ type Playback = ReturnType<typeof usePlayback>;
 
 /** Fills the screen below the nav so a whole screen of the game is visible without page scrolling */
 export const STAGE =
-  "flex h-[calc(100dvh-var(--nav-height)-11rem)] min-h-144 flex-col lg:min-h-120 gap-3 lg:h-[calc(100dvh-var(--nav-height)-7.5rem)]";
+  "flex h-[calc(100dvh-var(--nav-height)-var(--stage-gap,11rem))] min-h-144 flex-col lg:min-h-120 gap-3 lg:h-[calc(100dvh-var(--nav-height)-7.5rem)]";
 
 interface SegmentedProps<T extends string | number> {
   label: string;
@@ -191,10 +191,12 @@ interface FighterProps {
   phase: number;
   result: "win" | "loss" | "draw";
   health?: { from: number; to: number };
+  /** Fixed, shorter card. Used by the tournament duel. */
+  compact?: boolean;
 }
 
 /** One fighter on the dark stage. The verdict only shows on the last beat. */
-export function Fighter({ card, side, phase, result, health }: FighterProps) {
+export function Fighter({ card, side, phase, result, health, compact }: FighterProps) {
   const down = phase === 2 && result !== "win";
   const won = phase === 2 && result === "win";
   return (
@@ -206,7 +208,8 @@ export function Fighter({ card, side, phase, result, health }: FighterProps) {
     >
       <div
         className={cn(
-          "border-background/40 relative min-h-16 flex-1 border",
+          "border-background/40 relative border",
+          compact ? "h-36 shrink-0 sm:h-44" : "min-h-16 flex-1",
           phase === 1 && (side === "l" ? "anim-clash-l" : "anim-clash-r"),
         )}
       >

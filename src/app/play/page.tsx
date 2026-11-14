@@ -25,9 +25,13 @@ export default async function PlayPage() {
   }));
 
   return (
-    <div className="mx-auto max-w-3xl px-4 pt-8 pb-24 sm:pt-12">
-      <SectionTabs />
-      <p className="eyebrow mt-8">Higher or lower</p>
+    <div data-stage-page className="mx-auto max-w-3xl px-4 pt-8 pb-24 sm:pt-12">
+      <div data-chrome>
+        <SectionTabs />
+      </div>
+      <p data-chrome className="eyebrow mt-8">
+        Higher or lower
+      </p>
       <PlayGame pool={pool} />
     </div>
   );
