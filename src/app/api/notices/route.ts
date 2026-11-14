@@ -17,8 +17,9 @@ export async function POST(request: Request) {
 
   try {
     const { uid } = guarded.user;
+    const inbox = await getNotices(uid);
     if (guarded.body.markRead) await markNoticesRead(uid);
-    return reply(await getNotices(uid));
+    return reply(inbox);
   } catch (error) {
     console.error("notices failed", error);
     return reply({ error: "Something went wrong." }, 500);

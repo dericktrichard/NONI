@@ -8,6 +8,7 @@ import { AccountButton } from "@/components/auth/account-button";
 import { AuthHost } from "@/components/auth/auth-host";
 import { GlobalSearch } from "@/components/layout/global-search";
 import { LogoMark } from "@/components/layout/logo-mark";
+import { NoticeBell } from "@/components/layout/notice-bell";
 import { RankChip } from "@/components/layout/rank-chip";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { MatchupMaker } from "@/components/matchups/matchup-maker";
@@ -104,6 +105,7 @@ export function Header() {
               >
                 <Search className="size-4" aria-hidden />
               </button>
+              <NoticeBell />
               <ThemeToggle />
               <div className="hidden sm:block">
                 <AccountButton />
