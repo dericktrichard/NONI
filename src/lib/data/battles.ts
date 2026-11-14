@@ -12,7 +12,6 @@ import {
 } from "@/lib/battle/clash";
 import { buildClimb, type ClimbMode, type ClimbResult } from "@/lib/battle/climb";
 import {
-  FAIR,
   capNetWin,
   fanGrant,
   climbKey,
@@ -20,7 +19,8 @@ import {
   isRepeat,
   matchupKey,
   practiceReward,
-  todayOf,
+  limitsFor,
+  todayFor,
   type Today,
 } from "@/lib/battle/fair-play";
 import type { Difficulty } from "@/lib/battle/types";
@@ -30,6 +30,7 @@ import { HttpError } from "@/lib/data/feats";
 import { mulberry32 } from "@/lib/play/game";
 import { loadEntrants, loadPool } from "./battle-pool";
 import { addResult, getDaily, reserve } from "./daily";
+import { hasPlus } from "./plus";
 import { settleGlaze, type GlazeChange } from "./glaze";
 import { announce, watchBefore } from "./notices";
 import { recordBattle } from "./standing";
@@ -148,7 +149,7 @@ export async function playClash(
   const loadedA = await loadEntrants(slugsA);
   if (!loadedA) throw new HttpError(400, "One of the characters does not exist.");
 
-  const daily = await getDaily(uid);
+  const [daily, plus] = await Promise.all([getDaily(uid), hasPlus(uid)]);
   const matchmade = daily.matches > 0;
   let loadedB: Item[] | null;
   if (matchmade) {
@@ -169,6 +170,7 @@ export async function playClash(
     kind: "clash",
     key: matchupKey(slugsA, teamB),
     stake,
+    plus,
   });
   const watch = repeat ? null : await watchBefore(uid, slugsA);
 
@@ -190,7 +192,7 @@ export async function playClash(
     delta = capNetWin({ delta: raw, netToday: before.net });
     if (delta < raw) notice = "Daily winnings limit reached.";
   } else {
-    delta = practiceReward({ won, repeat, earnedToday: before.practice });
+    delta = practiceReward({ won, repeat, earnedToday: before.practice, plus });
     if (repeat) notice = REPEAT_NOTICE;
     else if (won && delta === 0) notice = "Daily practice limit reached.";
   }
@@ -230,13 +232,16 @@ export async function playClash(
     moves = await announce(uid, watch, points);
   }
 
-  const today = todayOf({
-    ...before,
-    matches: before.matches + 1,
-    staked: before.staked + (stake > 0 ? 1 : 0),
-    net: before.net + (stake > 0 ? change.change : 0),
-    practice: before.practice + (stake === 0 ? change.change : 0),
-  });
+  const today = todayFor(
+    {
+      ...before,
+      matches: before.matches + 1,
+      staked: before.staked + (stake > 0 ? 1 : 0),
+      net: before.net + (stake > 0 ? change.change : 0),
+      practice: before.practice + (stake === 0 ? change.change : 0),
+    },
+    plus,
+  );
 
   return {
     id: ref.id,
@@ -261,6 +266,7 @@ export async function playClimb(
   mode: ClimbMode,
   difficulty: Difficulty,
 ): Promise<ClimbOutcome> {
+  const plus = await hasPlus(uid);
   const loadedHero = await loadEntrants([hero]);
   if (!loadedHero) throw new HttpError(400, "That character does not exist.");
 
@@ -288,7 +294,7 @@ export async function playClimb(
     stake: 0,
   });
   const title = result.beatenBy === null;
-  const rewarded = !repeat && before.climbRuns < FAIR.climb.runsPerDay;
+  const rewarded = !repeat && before.climbRuns < limitsFor(plus).climbRuns;
   const watch = rewarded ? await watchBefore(uid, [hero]) : null;
   const delta = climbReward({
     wins: result.wins,
@@ -296,6 +302,7 @@ export async function playClimb(
     champion: title,
     repeat,
     runsToday: before.climbRuns,
+    plus,
   });
   const notice = repeat
     ? REPEAT_NOTICE
@@ -343,6 +350,6 @@ export async function playClimb(
     repeat,
     notice,
     moves,
-    today: todayOf({ ...before, climbRuns: before.climbRuns + 1 }),
+    today: todayFor({ ...before, climbRuns: before.climbRuns + 1 }, plus),
   };
 }

@@ -9,6 +9,7 @@ import { AuthHost } from "@/components/auth/auth-host";
 import { GlobalSearch } from "@/components/layout/global-search";
 import { LogoMark } from "@/components/layout/logo-mark";
 import { NoticeBell } from "@/components/layout/notice-bell";
+import { PlusMark } from "@/components/layout/plus-mark";
 import { RankChip } from "@/components/layout/rank-chip";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { MatchupMaker } from "@/components/matchups/matchup-maker";
@@ -69,6 +70,7 @@ export function Header() {
               <span className="font-display text-lg font-semibold tracking-tight">
                 NONI
               </span>
+              <PlusMark />
             </Link>
 
             <nav

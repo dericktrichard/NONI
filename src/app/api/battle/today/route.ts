@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { todayOf } from "@/lib/battle/fair-play";
+import { todayFor } from "@/lib/battle/fair-play";
+import { hasPlus } from "@/lib/data/plus";
 import { getDaily } from "@/lib/data/daily";
 import { guardWrite, type Rule } from "@/lib/security/guard";
 import { todaySchema } from "@/lib/validation/battle";
@@ -14,9 +15,12 @@ export async function POST(request: Request) {
   if (!guarded.ok) return guarded.response;
 
   try {
-    return NextResponse.json(todayOf(await getDaily(guarded.user.uid)), {
-      headers: NO_STORE,
-    });
+    return NextResponse.json(
+      todayFor(await getDaily(guarded.user.uid), await hasPlus(guarded.user.uid)),
+      {
+        headers: NO_STORE,
+      },
+    );
   } catch (error) {
     console.error("battle-today failed", error);
     return NextResponse.json(

@@ -9,7 +9,9 @@ const MAX_BATCH = 400;
 async function main(): Promise<number> {
   const args = process.argv.slice(2);
   const write = args.includes("--write");
-  const confirmed = args.find((arg) => arg.startsWith("--project="))?.slice("--project=".length);
+  const confirmed = args
+    .find((arg) => arg.startsWith("--project="))
+    ?.slice("--project=".length);
   const docs = buildCharacterDocs(MOCK_SEEDS);
 
   if (docs.length > MAX_BATCH) {
@@ -25,7 +27,9 @@ async function main(): Promise<number> {
   }
 
   if (!write) {
-    console.log("\nDry run. To save: npm run seed -- --write --project=<your project id>");
+    console.log(
+      "\nDry run. To save: npm run seed -- --write --project=<your project id>",
+    );
     return 0;
   }
 
@@ -38,11 +42,15 @@ async function main(): Promise<number> {
     return 1;
   }
   if (confirmed !== projectId) {
-    console.error(`\nRefusing to write. Add --project=${projectId} to confirm the target.`);
+    console.error(
+      `\nRefusing to write. Add --project=${projectId} to confirm the target.`,
+    );
     return 1;
   }
 
-  const app = getApps()[0] ?? initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
+  const app =
+    getApps()[0] ??
+    initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
   const db = getFirestore(app);
 
   const refs = docs.map((doc) => db.collection(COL.characters).doc(doc.slug));

@@ -5,7 +5,9 @@ import { rerankAll } from "@/lib/data/rerank";
 async function main(): Promise<number> {
   const args = process.argv.slice(2);
   const write = args.includes("--write");
-  const confirmed = args.find((arg) => arg.startsWith("--project="))?.slice("--project=".length);
+  const confirmed = args
+    .find((arg) => arg.startsWith("--project="))
+    ?.slice("--project=".length);
 
   const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
@@ -20,12 +22,20 @@ async function main(): Promise<number> {
     return 1;
   }
 
-  const app = getApps()[0] ?? initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
+  const app =
+    getApps()[0] ??
+    initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
   const result = await rerankAll(getFirestore(app), { dryRun: !write });
 
-  console.log(`${result.total} characters ranked. ${result.changed} ${write ? "updated" : "would change"}.`);
-  if (result.skipped.length > 0) console.log(`Skipped (bad data): ${result.skipped.join(", ")}`);
-  if (!write) console.log("Dry run. To save: npm run rerank -- --write --project=<your project id>");
+  console.log(
+    `${result.total} characters ranked. ${result.changed} ${write ? "updated" : "would change"}.`,
+  );
+  if (result.skipped.length > 0)
+    console.log(`Skipped (bad data): ${result.skipped.join(", ")}`);
+  if (!write)
+    console.log(
+      "Dry run. To save: npm run rerank -- --write --project=<your project id>",
+    );
   return 0;
 }
 

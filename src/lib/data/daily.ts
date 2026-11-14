@@ -2,7 +2,7 @@ import "server-only";
 import { FieldValue, type DocumentSnapshot } from "firebase-admin/firestore";
 import {
   EMPTY_DAILY,
-  FAIR,
+  limitsFor,
   isRepeat,
   mayStake,
   type Daily,
@@ -54,7 +54,7 @@ export async function getDaily(uid: string): Promise<Daily> {
  */
 export async function reserve(
   uid: string,
-  input: { kind: "clash" | "climb"; key: string; stake: number },
+  input: { kind: "clash" | "climb"; key: string; stake: number; plus?: boolean },
 ): Promise<{ before: Daily; repeat: boolean }> {
   const doc = dailyRef(uid);
   return adminDb().runTransaction(async (tx) => {
@@ -64,12 +64,19 @@ export async function reserve(
       input.key,
     );
 
-    if (!mayStake({ stake: input.stake, stakedToday: before.staked, repeat }))
+    if (
+      !mayStake({
+        stake: input.stake,
+        stakedToday: before.staked,
+        repeat,
+        plus: input.plus,
+      })
+    )
       throw new HttpError(
         409,
         repeat
           ? "A repeated matchup cannot be staked."
-          : `Stakes are limited to your first ${FAIR.staked.perDay} new matches each day.`,
+          : `Stakes are limited to your first ${limitsFor(input.plus ?? false).stakesPerDay} new matches each day.`,
       );
 
     tx.set(

@@ -6,7 +6,9 @@ const ROLES = ["admin", "moderator", "user"];
 async function main(): Promise<number> {
   const args = process.argv.slice(2);
   const [email, role] = args.filter((arg) => !arg.startsWith("--"));
-  const confirmed = args.find((arg) => arg.startsWith("--project="))?.slice("--project=".length);
+  const confirmed = args
+    .find((arg) => arg.startsWith("--project="))
+    ?.slice("--project=".length);
 
   if (!email?.includes("@") || !role || !ROLES.includes(role)) {
     console.error("Usage: npm run role -- <email> <admin|moderator|user> --project=<id>");
@@ -26,7 +28,9 @@ async function main(): Promise<number> {
     return 1;
   }
 
-  const app = getApps()[0] ?? initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
+  const app =
+    getApps()[0] ??
+    initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
   const auth = getAuth(app);
 
   const user = await auth.getUserByEmail(email);

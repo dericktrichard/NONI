@@ -1,3 +1,4 @@
+import { PLUS } from "@/lib/plus/rules";
 import { fanPoints as wantedPoints, type BattleKind } from "@/lib/standing/rules";
 
 /** Every number of the anti-farming rules. Days are UTC days. */
@@ -7,6 +8,22 @@ export const FAIR = {
   fan: { perCharacterDay: 12 },
   climb: { perRound: 1, title: { 8: 10, 16: 20 }, runsPerDay: 2 },
 } as const;
+
+/** The daily numbers that depend on Plus. The winnings cap and fan caps are the same for everyone. */
+export interface Limits {
+  practiceCap: number;
+  stakesPerDay: number;
+  climbRuns: number;
+}
+
+export const limitsFor = (plus: boolean): Limits =>
+  plus
+    ? PLUS.limits
+    : {
+        practiceCap: FAIR.practice.dailyCap,
+        stakesPerDay: FAIR.staked.perDay,
+        climbRuns: FAIR.climb.runsPerDay,
+      };
 
 export interface Daily {
   matches: number;
@@ -41,14 +58,27 @@ export interface Today {
   practiceLeft: number;
   winsLeft: number;
   climbRunsLeft: number;
+  /** Set by `todayFor`: whether Plus is active and the limits that apply */
+  plus?: boolean;
+  limits?: Limits;
 }
 
-export const todayOf = (daily: Daily): Today => ({
-  matchmade: daily.matches > 0,
-  stakesLeft: Math.max(0, FAIR.staked.perDay - daily.staked),
-  practiceLeft: Math.max(0, FAIR.practice.dailyCap - daily.practice),
-  winsLeft: Math.max(0, FAIR.staked.netWinCap - daily.net),
-  climbRunsLeft: Math.max(0, FAIR.climb.runsPerDay - daily.climbRuns),
+export const todayOf = (daily: Daily, plus = false): Today => {
+  const limits = limitsFor(plus);
+  return {
+    matchmade: daily.matches > 0,
+    stakesLeft: Math.max(0, limits.stakesPerDay - daily.staked),
+    practiceLeft: Math.max(0, limits.practiceCap - daily.practice),
+    winsLeft: Math.max(0, FAIR.staked.netWinCap - daily.net),
+    climbRunsLeft: Math.max(0, limits.climbRuns - daily.climbRuns),
+  };
+};
+
+/** `todayOf` plus the limits in force, for the screens */
+export const todayFor = (daily: Daily, plus: boolean): Today => ({
+  ...todayOf(daily, plus),
+  plus,
+  limits: limitsFor(plus),
 });
 
 const side = (team: readonly string[]) => [...team].sort().join(",");
@@ -66,12 +96,11 @@ export function practiceReward(input: {
   won: boolean;
   repeat: boolean;
   earnedToday: number;
+  plus?: boolean;
 }): number {
   if (!input.won || input.repeat) return 0;
-  return Math.max(
-    0,
-    Math.min(FAIR.practice.win, FAIR.practice.dailyCap - input.earnedToday),
-  );
+  const cap = limitsFor(input.plus ?? false).practiceCap;
+  return Math.max(0, Math.min(FAIR.practice.win, cap - input.earnedToday));
 }
 
 /** A stake is only allowed on a fresh matchup and only for the first matches of the day */
@@ -79,9 +108,10 @@ export function mayStake(input: {
   stake: number;
   stakedToday: number;
   repeat: boolean;
+  plus?: boolean;
 }): boolean {
   if (input.stake === 0) return true;
-  return !input.repeat && input.stakedToday < FAIR.staked.perDay;
+  return !input.repeat && input.stakedToday < limitsFor(input.plus ?? false).stakesPerDay;
 }
 
 /** Losses are never reduced. Wins stop once the day's net winnings reach the cap. */
@@ -122,8 +152,10 @@ export function climbReward(input: {
   champion: boolean;
   repeat: boolean;
   runsToday: number;
+  plus?: boolean;
 }): number {
-  if (input.repeat || input.runsToday >= FAIR.climb.runsPerDay) return 0;
+  if (input.repeat || input.runsToday >= limitsFor(input.plus ?? false).climbRuns)
+    return 0;
   const title = FAIR.climb.title[input.size as 8 | 16] ?? 0;
   return input.wins * FAIR.climb.perRound + (input.champion ? title : 0);
 }
