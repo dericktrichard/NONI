@@ -431,3 +431,38 @@ summary,
     user-select: none;
   }
 }
+
+/* Thin square scrollbars: faint at rest, firmer while the pointer is over the scrolling area. Touch screens hide them above. */
+@layer base {
+  @supports selector(::-webkit-scrollbar) {
+    *::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    *::-webkit-scrollbar-track,
+    *::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    *::-webkit-scrollbar-thumb {
+      background-color: color-mix(in srgb, var(--foreground) 14%, transparent);
+      background-clip: padding-box;
+      border: 2px solid transparent;
+    }
+    *:not(html):hover::-webkit-scrollbar-thumb {
+      background-color: color-mix(in srgb, var(--foreground) 30%, transparent);
+    }
+    *:not(html):hover::-webkit-scrollbar-thumb:hover {
+      background-color: var(--foreground);
+    }
+  }
+
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: color-mix(in srgb, var(--foreground) 14%, transparent) transparent;
+    }
+    *:not(html):hover {
+      scrollbar-color: color-mix(in srgb, var(--foreground) 30%, transparent) transparent;
+    }
+  }
+}
