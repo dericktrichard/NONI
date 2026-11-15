@@ -95,6 +95,20 @@ const SECTIONS: DocSection[] = [
     ),
   },
   {
+    id: "versions",
+    title: "One character, several versions",
+    body: (
+      <p>
+        The same character can exist in more than one medium or continuity, such as
+        Superman in the comics and in live-action films. Each version is ranked on its own
+        evidence, so versions can sit in different places. Rankings show the best version
+        of each character, a character page links to the others, and search shows them
+        all. In a team battle one team cannot hold two versions of the same character, but
+        the two sides can.
+      </p>
+    ),
+  },
+  {
     id: "matchups",
     title: "How a matchup is decided",
     body: (
@@ -142,9 +156,11 @@ const SECTIONS: DocSection[] = [
         </p>
         <p>
           Payouts include a small house edge, so on average stakes lose a little over
-          time. Glaze is for play, not for earning. It cannot be bought, sold or
-          transferred, and a balance of zero can always be rebuilt through the daily claim
-          and practice wins.
+          time. Glaze is for play, not for earning. It cannot be exchanged for money or
+          transferred between accounts. Some Glaze, such as a welcome bonus with NONI
+          Plus, is spend-only: it can pay for flair, character banks and home banners but
+          cannot be staked. A balance of zero can always be rebuilt through the daily
+          claim and practice wins.
         </p>
       </>
     ),

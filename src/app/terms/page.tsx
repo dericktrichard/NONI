@@ -69,8 +69,8 @@ const SECTIONS: DocSection[] = [
     body: (
       <ul>
         <li>
-          Glaze is a virtual score with no cash value. It cannot be bought, sold,
-          exchanged or transferred.
+          Glaze is a virtual score with no cash value. It cannot be exchanged for money or
+          transferred between accounts.
         </li>
         <li>
           Stakes risk only Glaze. A balance can fall to zero, and practice wins and the
@@ -84,7 +84,35 @@ const SECTIONS: DocSection[] = [
           If we ever offer Glaze for sale we will update these terms first and ask you to
           accept them.
         </li>
+        <li>
+          Some Glaze is spend-only, for example a welcome bonus with NONI Plus. It can be
+          spent on flair, character banks and home banners, but it can never be staked.
+        </li>
+        <li>
+          Flair, character bank contributions and home banners are paid for with Glaze.
+          These purchases are final. They are not refundable and the Glaze spent on them
+          is not returned. Bank contributions do not change any ranking.
+        </li>
       </ul>
+    ),
+  },
+  {
+    id: "plus",
+    title: "NONI Plus",
+    body: (
+      <>
+        <p>
+          NONI Plus is an optional membership for a set period. While it is active it
+          gives higher daily play limits, a one-time welcome bonus of spend-only Glaze, a
+          mark beside the NONI name, and the option to show your own banner on your home
+          page.
+        </p>
+        <p>
+          When Plus ends the extra limits and the home banner stop. Glaze you already
+          earned or spent is not affected. We may change what Plus includes. How it is
+          offered, and what it costs, will be set out here before it is sold.
+        </p>
+      </>
     ),
   },
   {
