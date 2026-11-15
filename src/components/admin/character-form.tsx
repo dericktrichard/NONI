@@ -103,6 +103,10 @@ export function CharacterForm({ initial }: { initial?: CharacterEditData }) {
   const [slugText, setSlugText] = useState(initial?.slug ?? "");
   const [verse, setVerse] = useState(initial?.verse ?? "");
   const [media, setMedia] = useState<MediaType>(initial?.media ?? MEDIA_TYPES[0]);
+  const [entity, setEntity] = useState(
+    initial?.entity && initial.entity !== initial.slug ? initial.entity : "",
+  );
+  const [continuity, setContinuity] = useState(initial?.continuity ?? "");
   const [aliases, setAliases] = useState(initial?.aliases.join(", ") ?? "");
   const [tags, setTags] = useState(initial?.tags.join(", ") ?? "");
   const [attackPotency, setAttackPotency] = useState(initial?.attackPotency ?? "");
@@ -166,10 +170,22 @@ export function CharacterForm({ initial }: { initial?: CharacterEditData }) {
         .filter((row) => row.kind !== "")
         .map((row) => ({ kind: row.kind, power: row.power }));
 
+    const entityKey = slugify(entity.trim());
+    if (entity.trim() && !entityKey) {
+      setError("The main character needs letters or numbers, like superman.");
+      return;
+    }
+
     const fields = {
       name: name.trim(),
       verse: verse.trim(),
       media,
+      ...(editing
+        ? { entity: entityKey || slug }
+        : entityKey
+          ? { entity: entityKey }
+          : {}),
+      continuity: continuity.trim() || null,
       aliases: splitList(aliases),
       tags: splitList(tags),
       attackPotency,
@@ -291,6 +307,29 @@ export function CharacterForm({ initial }: { initial?: CharacterEditData }) {
             ))}
           </select>
         </Field>
+        <Field label="Version of (optional, slug of the main character)">
+          <input
+            value={entity}
+            onChange={(e) => setEntity(e.target.value)}
+            maxLength={80}
+            placeholder="superman"
+            className={controlClass}
+          />
+        </Field>
+        <Field label="Version label (optional)">
+          <input
+            value={continuity}
+            onChange={(e) => setContinuity(e.target.value)}
+            maxLength={40}
+            placeholder="DCEU"
+            className={controlClass}
+          />
+        </Field>
+        <p className="text-muted-foreground text-sm">
+          Use these when the same character exists in another medium or continuity. Give
+          every version the same &quot;Version of&quot; slug. Each version keeps its own
+          feats and ranking.
+        </p>
         <Field label="Aliases (comma separated)">
           <input
             value={aliases}

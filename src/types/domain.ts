@@ -42,6 +42,10 @@ export interface CharacterDoc {
   verseId: string;
   verseName: string;
   media: MediaType;
+  /** The shared character behind several versions. Missing means the slug. */
+  entity?: string;
+  /** Short version label, such as "DCEU" */
+  continuity?: string | null;
   tags: string[];
 
   /** Editor-managed baseline, used for anything with no verified feat yet */
@@ -77,7 +81,8 @@ export type FeatStatus = "pending" | "verified" | "rejected";
 
 export type ProofSource = "primary" | "secondary";
 
-export type ProofType = "panel" | "video" | "quote" | "official" | "wiki" | "thread" | "other";
+export type ProofType =
+  "panel" | "video" | "quote" | "official" | "wiki" | "thread" | "other";
 
 export interface Proof {
   /** Missing means primary, so feats saved before source types stay valid */
@@ -188,7 +193,8 @@ export interface UserDoc {
 }
 // Roles (moderator, admin) live in Auth custom claims, never in this document.
 
-export type CreatorPlatform = "youtube" | "tiktok" | "x" | "twitch" | "discord" | "website";
+export type CreatorPlatform =
+  "youtube" | "tiktok" | "x" | "twitch" | "discord" | "website";
 
 export interface CreatorDoc {
   /** Linked NONI account, if the creator has one */

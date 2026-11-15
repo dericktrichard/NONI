@@ -196,6 +196,7 @@ export function ClashGame({ balance, today, onSettled }: ClashGameProps) {
         <RosterPicker
           label={side === "a" ? "Adding to your team" : "Adding to the opponent"}
           taken={taken}
+          blocked={new Set(teams[side].map((card) => card.entity ?? card.slug))}
           onPick={(card) => teams[side].length < size && add(card)}
         />
       }

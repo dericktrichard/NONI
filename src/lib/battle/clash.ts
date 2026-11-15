@@ -7,6 +7,7 @@ import {
   type Verdict,
 } from "@/lib/ranking/matchup";
 import type { CombatProfile } from "@/lib/ranking/profile";
+import { hasDuplicateEntity } from "@/lib/versions/rules";
 import { BATTLE } from "./config";
 import { cmp } from "./types";
 
@@ -59,18 +60,20 @@ export interface ClashOptions {
   resolve?: Resolver;
 }
 
-export type TeamIssue = "empty" | "size" | "duplicate" | "overlap";
+export type TeamIssue = "empty" | "size" | "duplicate" | "overlap" | "versions";
 
 export const TEAM_MESSAGES: Record<TeamIssue, string> = {
   empty: "Each team needs at least one character.",
   size: `Teams must be the same size, up to ${BATTLE.maxTeam} characters.`,
   duplicate: "A character can only be on a team once.",
   overlap: "A character cannot be on both teams.",
+  versions: "A team cannot have two versions of the same character.",
 };
 
 export function checkTeams(
   a: readonly CombatProfile[],
   b: readonly CombatProfile[],
+  entityOf: (slug: string) => string = (slug) => slug,
 ): TeamIssue | null {
   if (a.length === 0 || b.length === 0) return "empty";
   if (a.length !== b.length || a.length > BATTLE.maxTeam) return "size";
@@ -79,6 +82,11 @@ export function checkTeams(
   if (new Set(slugsA).size !== slugsA.length || new Set(slugsB).size !== slugsB.length)
     return "duplicate";
   if (slugsA.some((slug) => slugsB.includes(slug))) return "overlap";
+  if (
+    hasDuplicateEntity(slugsA.map(entityOf)) ||
+    hasDuplicateEntity(slugsB.map(entityOf))
+  )
+    return "versions";
   return null;
 }
 

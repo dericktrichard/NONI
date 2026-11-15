@@ -4,4 +4,8 @@ export interface BattleCard {
   name: string;
   verse: string;
   imageUrl: string | null;
+  /** Shared by all versions of one character. Missing means the slug. */
+  entity?: string;
+  /** Medium and continuity, such as "Live-action, DCEU" */
+  version?: string;
 }

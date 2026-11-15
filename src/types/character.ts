@@ -1,12 +1,5 @@
 export type MediaType =
-  | "anime"
-  | "manga"
-  | "comic"
-  | "novel"
-  | "manhwa"
-  | "manhua"
-  | "donghua"
-  | "live-action";
+  "anime" | "manga" | "comic" | "novel" | "manhwa" | "manhua" | "donghua" | "live-action";
 
 /** Lightweight shape for list views. */
 export interface CharacterSummary {
@@ -26,4 +19,8 @@ export interface CharacterSummary {
   /** 0 to 1, share of feats that are community verified */
   evidence: number;
   imageUrl: string | null;
+  /** The shared character when this is one version of several. Missing means the id. */
+  entity?: string;
+  /** Short version label, such as "DCEU" */
+  continuity?: string;
 }

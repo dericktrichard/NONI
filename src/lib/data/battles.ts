@@ -23,7 +23,8 @@ import {
   todayFor,
   type Today,
 } from "@/lib/battle/fair-play";
-import type { Difficulty } from "@/lib/battle/types";
+import { entityOf, type Difficulty } from "@/lib/battle/types";
+import { bestPerEntity } from "@/lib/versions/rules";
 import type { BattleCard } from "@/lib/battle/view";
 import { clashSettlement } from "@/lib/glaze/rules";
 import { HttpError } from "@/lib/data/feats";
@@ -83,7 +84,10 @@ export async function suggestTeam(input: {
   if (!against) throw new HttpError(400, "One of the characters does not exist.");
 
   const exclude = new Set([...input.against, ...input.exclude]);
-  const request = { size: input.size, exclude, rng: Math.random };
+  const keys = new Map(pool.map((item) => [item.card.slug, entityOf(item.entrant)]));
+  for (const item of against) keys.set(item.card.slug, entityOf(item.entrant));
+  const excludeEntities = new Set([...exclude].map((slug) => keys.get(slug) ?? slug));
+  const request = { size: input.size, exclude, excludeEntities, rng: Math.random };
   const entrants = pool.map((item) => item.entrant);
 
   const team =
@@ -163,7 +167,12 @@ export async function playClash(
   const teamB = loadedB.map((item) => item.card.slug);
   const profilesA = loadedA.map((item) => item.entrant.profile);
   const profilesB = loadedB.map((item) => item.entrant.profile);
-  const issue = checkTeams(profilesA, profilesB);
+  const keys = new Map(
+    [...loadedA, ...loadedB].map(
+      (item) => [item.card.slug, entityOf(item.entrant)] as const,
+    ),
+  );
+  const issue = checkTeams(profilesA, profilesB, (slug) => keys.get(slug) ?? slug);
   if (issue) throw new HttpError(400, TEAM_MESSAGES[issue]);
 
   const { before, repeat } = await reserve(uid, {
@@ -259,6 +268,21 @@ export async function playClash(
   };
 }
 
+/** One version of each character in a bracket, and none that shares the hero's entity */
+function climbField(pool: Item[], hero: string, heroKey: string): Item[] {
+  const rows = pool
+    .filter((item) => entityOf(item.entrant) !== heroKey)
+    .map((item) => ({
+      id: item.card.slug,
+      entity: item.entrant.entity,
+      score: item.entrant.score,
+      item,
+    }));
+  const field = bestPerEntity(rows).map((row) => row.item);
+  const heroItem = pool.find((item) => item.card.slug === hero);
+  return heroItem ? [...field, heroItem] : field;
+}
+
 export async function playClimb(
   uid: string,
   hero: string,
@@ -270,7 +294,7 @@ export async function playClimb(
   const loadedHero = await loadEntrants([hero]);
   if (!loadedHero) throw new HttpError(400, "That character does not exist.");
 
-  const pool = await loadPool();
+  const pool = climbField(await loadPool(), hero, entityOf(loadedHero[0]!.entrant));
   const result = buildClimb(
     pool.map((item) => item.entrant),
     loadedHero[0]!.entrant,

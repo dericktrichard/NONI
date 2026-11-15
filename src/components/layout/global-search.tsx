@@ -11,6 +11,7 @@ import { useCharacterSearch } from "@/hooks/use-character-search";
 import { usePeopleSearch } from "@/hooks/use-people-search";
 import { peopleTerm } from "@/lib/people/term";
 import { OPEN_SEARCH } from "@/lib/ui/events";
+import { entityKey, sharedEntities, versionLabel } from "@/lib/versions/rules";
 import { cn } from "@/lib/utils";
 
 function SearchPanel({ onDone }: { onDone: () => void }) {
@@ -22,6 +23,7 @@ function SearchPanel({ onDone }: { onDone: () => void }) {
 
   const mention = typed.trim().startsWith("@");
   const characters = mention ? [] : list;
+  const shared = sharedEntities(characters);
   const targets = [
     ...characters.map((c) => `/characters/${c.id}`),
     ...people.map((p) => `/u/${p.handle}`),
@@ -113,7 +115,12 @@ function SearchPanel({ onDone }: { onDone: () => void }) {
                         <span className="font-display block truncate text-base font-semibold">
                           {c.name}
                         </span>
-                        <span className="eyebrow block truncate">{c.verse}</span>
+                        <span className="eyebrow block truncate">
+                          {c.verse}
+                          {c.entity !== undefined || shared.has(entityKey(c))
+                            ? `, ${versionLabel(c.media, c.continuity)}`
+                            : ""}
+                        </span>
                       </span>
                       <TierBadge tier={c.tier} />
                     </Link>
