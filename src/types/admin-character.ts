@@ -6,6 +6,8 @@ export interface CharacterEditData {
   name: string;
   verse: string;
   media: MediaType;
+  entity?: string;
+  continuity?: string | null;
   aliases: string[];
   tags: string[];
   attackPotency: string;

@@ -72,6 +72,8 @@ export async function createCharacter(input: CreateCharacterInput): Promise<stri
       featCount: 0,
       aliases: input.aliases,
       tags: input.tags,
+      entity: input.entity,
+      continuity: input.continuity ?? undefined,
     },
   ]);
 
@@ -149,6 +151,8 @@ export async function updateCharacter(
     verseName: input.verse,
     media: input.media,
     tags: input.tags,
+    ...(input.entity !== undefined ? { entity: input.entity } : {}),
+    ...(input.continuity !== undefined ? { continuity: input.continuity } : {}),
     seed,
     imageUrl: input.imageUrl,
     imageCredit: input.imageCredit,
@@ -234,6 +238,9 @@ export async function getCharacterForEdit(
     media: snapshot.get("media"),
     aliases: (snapshot.get("aliases") as string[] | undefined) ?? [],
     tags: (snapshot.get("tags") as string[] | undefined) ?? [],
+    entity: typeof snapshot.get("entity") === "string" ? snapshot.get("entity") : slug,
+    continuity:
+      typeof snapshot.get("continuity") === "string" ? snapshot.get("continuity") : null,
     attackPotency: seed.attackPotency,
     durability: seed.durability,
     speed: seed.speed,

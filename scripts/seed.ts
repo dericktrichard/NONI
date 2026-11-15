@@ -1,6 +1,7 @@
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { Timestamp, getFirestore } from "firebase-admin/firestore";
 import { MOCK_SEEDS } from "@/config/mock-characters";
+import { VERSION_SEEDS } from "@/config/mock-versions";
 import { COL } from "@/lib/firebase/paths";
 import { buildCharacterDocs } from "@/lib/ranking/character-doc";
 
@@ -12,7 +13,7 @@ async function main(): Promise<number> {
   const confirmed = args
     .find((arg) => arg.startsWith("--project="))
     ?.slice("--project=".length);
-  const docs = buildCharacterDocs(MOCK_SEEDS);
+  const docs = buildCharacterDocs([...MOCK_SEEDS, ...VERSION_SEEDS]);
 
   if (docs.length > MAX_BATCH) {
     console.error(`Too many documents for one batch (${docs.length}).`);

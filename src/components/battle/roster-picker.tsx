@@ -4,18 +4,24 @@ import { useState } from "react";
 import { Portrait } from "@/components/characters/portrait";
 import { useRoster } from "@/hooks/use-roster";
 import type { BattleCard } from "@/lib/battle/view";
+import { sharedEntities } from "@/lib/versions/rules";
 
 interface RosterPickerProps {
   label: string;
   taken: ReadonlySet<string>;
+  /** Entities already on the team being built, so their other versions are disabled */
+  blocked?: ReadonlySet<string>;
   onPick: (card: BattleCard) => void;
 }
 
 /** Alphabetical, searchable and deliberately free of ranks and stats */
-export function RosterPicker({ label, taken, onPick }: RosterPickerProps) {
+export function RosterPicker({ label, taken, blocked, onPick }: RosterPickerProps) {
   const { cards, failed } = useRoster();
   const [text, setText] = useState("");
   const query = text.trim().toLowerCase();
+  const shared = sharedEntities(
+    (cards ?? []).map((card) => ({ id: card.slug, entity: card.entity })),
+  );
   const shown = cards?.filter(
     (c) =>
       !query ||
@@ -51,8 +57,15 @@ export function RosterPicker({ label, taken, onPick }: RosterPickerProps) {
               <li key={card.slug}>
                 <button
                   type="button"
-                  title={`${card.name} (${card.verse})`}
-                  disabled={taken.has(card.slug)}
+                  title={
+                    blocked?.has(card.entity ?? card.slug) && !taken.has(card.slug)
+                      ? `${card.name}, another version is on this team`
+                      : `${card.name} (${card.verse})`
+                  }
+                  disabled={
+                    taken.has(card.slug) ||
+                    blocked?.has(card.entity ?? card.slug) === true
+                  }
                   onClick={() => onPick(card)}
                   className="group block w-full text-left disabled:opacity-30"
                 >
@@ -65,6 +78,11 @@ export function RosterPicker({ label, taken, onPick }: RosterPickerProps) {
                   <span className="mt-0.5 block truncate text-[10px] font-medium group-hover:underline">
                     {card.name}
                   </span>
+                  {shared.has(card.entity ?? card.slug) && card.version ? (
+                    <span className="text-muted-foreground block truncate text-[9px]">
+                      {card.version}
+                    </span>
+                  ) : null}
                 </button>
               </li>
             ))}

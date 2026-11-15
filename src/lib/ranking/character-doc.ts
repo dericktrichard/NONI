@@ -16,6 +16,10 @@ export interface CharacterSeed {
   previousRank?: number | null;
   aliases?: string[];
   tags?: string[];
+  /** Slug of the shared character when this is one version of several */
+  entity?: string;
+  /** Short version label, such as "DCEU" */
+  continuity?: string;
 }
 
 /** A character document without server-assigned timestamps */
@@ -38,12 +42,18 @@ function powerProfile(input: ProfileInput, dimension: number): PowerProfile {
  */
 export function buildCharacterDocs(seeds: readonly CharacterSeed[]): CharacterDocData[] {
   const bySlug = new Map<string, CharacterSeed>();
+  const versions = new Set<string>();
   for (const seed of seeds) {
     const slug = seed.profile.slug;
     if (!slugify(slug) || slugify(slug) !== slug)
       throw new Error(`Invalid character slug: ${slug}`);
     if (bySlug.has(slug)) throw new Error(`Duplicate character slug: ${slug}`);
     bySlug.set(slug, seed);
+    if (seed.entity !== undefined && slugify(seed.entity) !== seed.entity)
+      throw new Error(`Invalid entity: ${seed.entity}`);
+    const version = `${seed.entity ?? slug}|${seed.media}|${seed.continuity ?? ""}`;
+    if (versions.has(version)) throw new Error(`Duplicate version: ${version}`);
+    versions.add(version);
   }
 
   const compiled = seeds.map((seed) => compileProfile(seed.profile));
@@ -65,6 +75,8 @@ export function buildCharacterDocs(seeds: readonly CharacterSeed[]): CharacterDo
       verseId: slugify(seed.verse),
       verseName: seed.verse,
       media: seed.media,
+      entity: seed.entity ?? entry.slug,
+      continuity: seed.continuity ?? null,
       tags: seed.tags ?? [],
       seed: powerProfile(input, dimension),
       profile: powerProfile(input, dimension),

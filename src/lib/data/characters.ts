@@ -3,6 +3,7 @@ import type { Query } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL } from "@/lib/firebase/paths";
 import type { QueryPlan } from "./query";
+import { bestPerEntity } from "@/lib/versions/rules";
 import { SUMMARY_FIELDS, assemblePage, type CharacterPage } from "./summary";
 
 /**
@@ -22,8 +23,11 @@ export async function fetchCharacters(plan: QueryPlan): Promise<CharacterPage> {
     .limit(plan.fetch)
     .get();
 
-  return assemblePage(
+  const page = assemblePage(
     snapshot.docs.map((doc) => ({ id: doc.id, data: doc.data() })),
     plan.limit,
   );
+  return plan.facet.kind === "search"
+    ? page
+    : { ...page, items: bestPerEntity(page.items) };
 }

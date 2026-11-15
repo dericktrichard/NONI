@@ -1,7 +1,9 @@
 import "server-only";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL } from "@/lib/firebase/paths";
+import { isMediaType } from "@/config/media";
 import { compileProfile } from "@/lib/ranking/profile";
+import { versionLabel } from "@/lib/versions/rules";
 import type { Entrant } from "@/lib/battle/types";
 import type { BattleCard } from "@/lib/battle/view";
 import type { PowerProfile } from "@/types/domain";
@@ -16,6 +18,9 @@ const FIELDS = [
   "imageUrl",
   "profile",
   "verifiedFeatCount",
+  "entity",
+  "media",
+  "continuity",
 ];
 
 export interface Loaded {
@@ -41,13 +46,27 @@ function parse(slug: string, data: FirebaseFirestore.DocumentData): Loaded | nul
       verifiedFeatCount: Number(data.verifiedFeatCount) || 0,
     });
     const verse = String(data.verseName ?? "");
+    const entity = typeof data.entity === "string" ? data.entity : slug;
+    const version = isMediaType(data.media)
+      ? versionLabel(
+          data.media,
+          typeof data.continuity === "string" ? data.continuity : null,
+        )
+      : undefined;
     return {
-      entrant: { profile: combat, verse, score: Number(data.score) || 0 },
+      entrant: {
+        profile: combat,
+        verse,
+        score: Number(data.score) || 0,
+        entity,
+      },
       card: {
         slug,
         name,
         verse,
         imageUrl: typeof data.imageUrl === "string" ? data.imageUrl : null,
+        entity,
+        version,
       },
     };
   } catch {

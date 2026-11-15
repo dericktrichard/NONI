@@ -9,6 +9,8 @@ export interface CharacterView {
   verse: string;
   verseId: string;
   media: MediaType;
+  entity?: string;
+  continuity?: string | null;
   tags: string[];
   imageUrl: string | null;
   imageCredit: string | null;

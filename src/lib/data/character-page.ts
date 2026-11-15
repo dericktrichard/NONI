@@ -42,6 +42,8 @@ function toCharacter(id: string, d: DocumentData): CharacterView {
     verse: String(d.verseName ?? ""),
     verseId: String(d.verseId ?? ""),
     media: d.media as MediaType,
+    entity: typeof d.entity === "string" ? d.entity : id,
+    continuity: typeof d.continuity === "string" ? d.continuity : null,
     tags: Array.isArray(d.tags) ? d.tags.map(String) : [],
     imageUrl: typeof d.imageUrl === "string" ? d.imageUrl : null,
     imageCredit: typeof d.imageCredit === "string" ? d.imageCredit : null,

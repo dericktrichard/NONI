@@ -25,6 +25,8 @@ export const createCharacterSchema = z
     name: text(1, 80),
     verse: text(1, 80),
     media: z.enum(MEDIA_TYPES as [MediaType, ...MediaType[]]),
+    entity: z.string().max(80).regex(SLUG_RE).optional(),
+    continuity: text(1, 40).nullable().optional(),
     aliases: z.array(text(1, 80)).max(LIMITS.aliases),
     tags: z.array(text(1, 30)).max(LIMITS.tags),
     attackPotency: tier,

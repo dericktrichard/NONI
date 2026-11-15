@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { facetQueryString, searchTerm } from "@/lib/data/query";
 import type { CharacterPage } from "@/lib/data/summary";
+import { groupVersions } from "@/lib/versions/rules";
 import type { CharacterSummary } from "@/types/character";
 
 const DELAY_MS = 220;
@@ -51,7 +52,7 @@ export function useCharacterSearch(resultLimit = 12) {
           if (ticket !== latest.current) return;
           const words = value.toLowerCase().split(/\s+/).filter(Boolean);
           setResults(
-            page.items.filter((item) =>
+            groupVersions(page.items).filter((item) =>
               words.every((word) =>
                 `${item.name} ${item.verse}`.toLowerCase().includes(word),
               ),

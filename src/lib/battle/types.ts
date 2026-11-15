@@ -4,11 +4,15 @@ import type { CombatProfile } from "@/lib/ranking/profile";
 export interface Entrant {
   profile: CombatProfile;
   verse: string;
+  /** Shared by all versions of one character. Missing means the slug. */
+  entity?: string;
   /** 0 to 10,000 ranking score. Keeps random teams inside one power band and settles stalemates in a bracket. */
   score: number;
 }
 
 export type Difficulty = "fair" | "hard";
+
+export const entityOf = (e: Entrant): string => e.entity ?? e.profile.slug;
 
 export const cmp = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 

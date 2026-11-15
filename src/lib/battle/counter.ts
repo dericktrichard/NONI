@@ -1,17 +1,23 @@
 import { winProbability } from "@/lib/ranking/matchup";
 import { BATTLE } from "./config";
-import { cmp, shuffled, type Difficulty, type Entrant } from "./types";
+import { cmp, entityOf, shuffled, type Difficulty, type Entrant } from "./types";
 
 export interface TeamRequest {
   size: number;
   /** Slugs that may not be picked (the other team, the user's own picks) */
   exclude: ReadonlySet<string>;
+  /** Entities that may not be picked, so no version of them joins the team */
+  excludeEntities?: ReadonlySet<string>;
   rng?: () => number;
 }
 
-function candidates(pool: readonly Entrant[], exclude: ReadonlySet<string>): Entrant[] {
+function candidates(pool: readonly Entrant[], request: TeamRequest): Entrant[] {
   return pool
-    .filter((e) => !exclude.has(e.profile.slug))
+    .filter(
+      (e) =>
+        !request.exclude.has(e.profile.slug) &&
+        !request.excludeEntities?.has(entityOf(e)),
+    )
     .sort((x, y) => cmp(x.profile.slug, y.profile.slug));
 }
 
@@ -30,7 +36,7 @@ export function randomTeam(
   request: TeamRequest,
 ): Entrant[] | null {
   const rng = request.rng ?? Math.random;
-  const free = candidates(pool, request.exclude).sort(
+  const free = candidates(pool, request).sort(
     (x, y) => y.score - x.score || cmp(x.profile.slug, y.profile.slug),
   );
   if (free.length < request.size) return null;
@@ -44,6 +50,7 @@ export function randomTeam(
   for (const entrant of [...band, ...free]) {
     if (team.length === request.size) break;
     if (team.includes(entrant)) continue;
+    if (team.some((t) => entityOf(t) === entityOf(entrant))) continue;
     const used = perVerse.get(entrant.verse) ?? 0;
     if (
       used >= BATTLE.maxPerVerse &&
@@ -72,7 +79,7 @@ export function counterTeam(
   difficulty: Difficulty,
   request: TeamRequest,
 ): Entrant[] | null {
-  const free = candidates(pool, request.exclude);
+  const free = candidates(pool, request);
   if (free.length < request.size || against.length === 0) return null;
 
   const team: Entrant[] = [];
@@ -85,7 +92,10 @@ export function counterTeam(
 
     const ranked = free
       .filter(
-        (e) => !team.includes(e) && (perVerse.get(e.verse) ?? 0) < BATTLE.maxPerVerse,
+        (e) =>
+          !team.includes(e) &&
+          !team.some((t) => entityOf(t) === entityOf(e)) &&
+          (perVerse.get(e.verse) ?? 0) < BATTLE.maxPerVerse,
       )
       .map((e) => {
         const mean = meanAgainst(e, focus);
@@ -95,7 +105,8 @@ export function counterTeam(
       .sort((x, y) => x.rank - y.rank || cmp(x.e.profile.slug, y.e.profile.slug));
 
     const choice =
-      pickFrom(ranked, request.rng)?.e ?? free.find((e) => !team.includes(e));
+      pickFrom(ranked, request.rng)?.e ??
+      free.find((e) => !team.some((t) => entityOf(t) === entityOf(e)));
     if (!choice) return null;
 
     team.push(choice);

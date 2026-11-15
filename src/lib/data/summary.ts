@@ -15,6 +15,8 @@ export const SUMMARY_FIELDS = [
   "featCount",
   "verifiedFeatCount",
   "imageUrl",
+  "entity",
+  "continuity",
 ] as const;
 
 export interface CharacterPage {
@@ -50,6 +52,8 @@ export function toSummary(
     typeof data.imageUrl === "string" && data.imageUrl.startsWith("https://")
       ? data.imageUrl
       : null;
+  const entity = text(data.entity);
+  const continuity = text(data.continuity);
 
   return {
     id,
@@ -63,6 +67,8 @@ export function toSummary(
     featCount,
     evidence: evidenceShare(verified, featCount),
     imageUrl,
+    ...(entity && entity !== id ? { entity } : {}),
+    ...(continuity ? { continuity } : {}),
   };
 }
 

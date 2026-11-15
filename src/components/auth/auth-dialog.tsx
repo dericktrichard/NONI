@@ -187,6 +187,8 @@ export function AuthDialog({ open, onClose, onSignedIn }: AuthDialogProps) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              id="auth-email"
+              name="email"
               autoComplete="email"
               maxLength={254}
               required
@@ -199,6 +201,8 @@ export function AuthDialog({ open, onClose, onSignedIn }: AuthDialogProps) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              id="auth-password"
+              name="password"
               autoComplete={signup ? "new-password" : "current-password"}
               maxLength={128}
               required
