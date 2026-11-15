@@ -18,7 +18,7 @@ import type {
 } from "@/lib/validation/character";
 
 const FIRESTORE_ALREADY_EXISTS = 6;
-const LIST_LIMIT = 500;
+const LIST_LIMIT = 1000;
 
 function assertCharacterInput(
   input: Pick<
@@ -185,7 +185,15 @@ export async function updateCharacter(
 export async function listCharacters(): Promise<CharacterListItem[]> {
   const snapshot = await adminDb()
     .collection(COL.characters)
-    .select("name", "verseName", "rank", "tier", "featCount", "verifiedFeatCount")
+    .select(
+      "name",
+      "verseName",
+      "rank",
+      "tier",
+      "featCount",
+      "verifiedFeatCount",
+      "draft",
+    )
     .limit(LIST_LIMIT)
     .get();
 
@@ -198,6 +206,7 @@ export async function listCharacters(): Promise<CharacterListItem[]> {
       tier: String(doc.get("tier") ?? ""),
       featCount: Number(doc.get("featCount")) || 0,
       verifiedFeatCount: Number(doc.get("verifiedFeatCount")) || 0,
+      draft: doc.get("draft") === true,
     }))
     .sort((x, y) => {
       if (x.rank !== null && y.rank !== null) return x.rank - y.rank;

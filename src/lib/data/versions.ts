@@ -1,6 +1,7 @@
 import "server-only";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL, SLUG_RE } from "@/lib/firebase/paths";
+import { isPublished } from "@/lib/import/published";
 import type { CharacterSummary } from "@/types/character";
 import { SUMMARY_FIELDS, toSummary } from "./summary";
 
@@ -22,7 +23,7 @@ export async function getVersions(
       db
         .collection(COL.characters)
         .where("entity", "==", entity)
-        .select(...SUMMARY_FIELDS)
+        .select(...SUMMARY_FIELDS, "draft")
         .limit(MAX_VERSIONS + 1)
         .get(),
       entity === slug ? null : db.collection(COL.characters).doc(entity).get(),
@@ -34,6 +35,7 @@ export async function getVersions(
     docs.delete(slug);
 
     return [...docs]
+      .filter(([, data]) => isPublished(data))
       .map(([id, data]) => toSummary(id, data))
       .filter((item): item is CharacterSummary => item !== null)
       .sort((a, b) => b.score - a.score)

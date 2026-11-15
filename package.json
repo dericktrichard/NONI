@@ -13,7 +13,8 @@
     "seed": "tsx --env-file=.env.local scripts/seed.ts",
     "role": "tsx --env-file=.env.local scripts/role.ts",
     "rerank": "tsx --env-file=.env.local scripts/rerank.ts",
-    "plus": "tsx --env-file=.env.local scripts/plus.ts"
+    "plus": "tsx --env-file=.env.local scripts/plus.ts",
+    "wipe": "tsx --env-file=.env.local scripts/wipe-characters.ts"
   },
   "overrides": {
     "@grpc/grpc-js": "^1.14.0"

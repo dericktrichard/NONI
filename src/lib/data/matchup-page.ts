@@ -1,5 +1,6 @@
 import "server-only";
 import { adminDb } from "@/lib/firebase/admin";
+import { isPublished } from "@/lib/import/published";
 import { resolveMatchup, type MatchupResult } from "@/lib/ranking/matchup";
 import { compileProfile, type CombatProfile, type HaxClaim } from "@/lib/ranking/profile";
 import type { PowerProfile } from "@/types/domain";
@@ -190,6 +191,7 @@ export async function fetchMatchupPage(
     db.collection(COL.matchups).doc(matchupId(a, b)),
   );
   if (!snapA.exists || !snapB.exists) return null;
+  if (!isPublished(snapA.data()) || !isPublished(snapB.data())) return null;
 
   const sideA = load(a, snapA.data() ?? {});
   const sideB = load(b, snapB.data() ?? {});
@@ -223,6 +225,7 @@ export async function fetchMatchupPage(
 export async function fetchCharacterOptions(): Promise<CharacterOption[]> {
   const snap = await adminDb()
     .collection(COL.characters)
+    .orderBy("rank", "asc")
     .select("name", "rank")
     .limit(500)
     .get();

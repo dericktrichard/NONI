@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { AdminNav } from "@/components/admin/admin-nav";
 import { getSessionUser } from "@/lib/security/session";
 import { hasRole } from "@/lib/security/roles";
 
@@ -12,5 +13,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const user = await getSessionUser();
   if (!user || !hasRole(user, "moderator")) notFound();
 
-  return <div className="mx-auto max-w-6xl px-4 pt-8 pb-24">{children}</div>;
+  return (
+    <div className="mx-auto max-w-6xl px-4 pt-8 pb-24">
+      <AdminNav admin={hasRole(user, "admin")} />
+      {children}
+    </div>
+  );
 }

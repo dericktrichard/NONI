@@ -24,6 +24,7 @@ export async function rerankAll(
 
   for (const doc of snapshot.docs) {
     const data = doc.data();
+    if (data.draft === true) continue;
     const profile = data.profile as PowerProfile | undefined;
     try {
       if (!profile) throw new Error("missing profile");

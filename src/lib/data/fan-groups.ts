@@ -1,6 +1,7 @@
 import "server-only";
 import { memoAsync } from "@/lib/cache/memo";
 import { adminDb } from "@/lib/firebase/admin";
+import { isPublished } from "@/lib/import/published";
 import { COL } from "@/lib/firebase/paths";
 import { person } from "@/lib/data/standing";
 import type { Look } from "@/lib/profile/look";
@@ -67,7 +68,7 @@ async function loadFanGroups(): Promise<FanGroup[]> {
 
   return slugs.flatMap((slug, index) => {
     const character = characters[index];
-    if (!character?.exists) return [];
+    if (!character?.exists || !isPublished(character.data())) return [];
 
     const entries = bySlug
       .get(slug)!

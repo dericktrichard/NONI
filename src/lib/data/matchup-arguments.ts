@@ -1,6 +1,7 @@
 import "server-only";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { HttpError } from "@/lib/data/feats";
+import { isPublished } from "@/lib/import/published";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL, matchupId } from "@/lib/firebase/paths";
 import {
@@ -49,7 +50,12 @@ export async function createArgument(uid: string, input: ArgumentInput): Promise
     ]);
     const feats = await Promise.all(featRefs.map((ref) => tx.get(ref)));
 
-    if (!firstChar.exists || !secondChar.exists)
+    if (
+      !firstChar.exists ||
+      !secondChar.exists ||
+      !isPublished(firstChar.data()) ||
+      !isPublished(secondChar.data())
+    )
       throw new HttpError(404, "Character not found.");
     if (existing.exists)
       throw new HttpError(409, "You already posted an argument for this matchup.");

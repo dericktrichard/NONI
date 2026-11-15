@@ -1,6 +1,7 @@
 import "server-only";
 import { Timestamp } from "firebase-admin/firestore";
 import { HttpError } from "@/lib/data/feats";
+import { isPublished } from "@/lib/import/published";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL, matchupId } from "@/lib/firebase/paths";
 import {
@@ -41,7 +42,12 @@ export async function castMatchupVote(
       tx.get(firstRef),
       tx.get(secondRef),
     ]);
-    if (!firstChar.exists || !secondChar.exists)
+    if (
+      !firstChar.exists ||
+      !secondChar.exists ||
+      !isPublished(firstChar.data()) ||
+      !isPublished(secondChar.data())
+    )
       throw new HttpError(404, "Character not found.");
 
     const stored = vote.exists ? vote.get("side") : null;

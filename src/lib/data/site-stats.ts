@@ -23,10 +23,13 @@ async function safeCount(
 export async function fetchSiteStats(): Promise<SiteStats> {
   const db = adminDb();
   const [characters, verifiedFeats, matchups] = await Promise.all([
-    safeCount(
-      "characters",
-      async () => (await db.collection(COL.characters).count().get()).data().count,
-    ),
+    safeCount("characters", async () => {
+      const all = (await db.collection(COL.characters).count().get()).data().count;
+      const drafts = (
+        await db.collection(COL.characters).where("draft", "==", true).count().get()
+      ).data().count;
+      return all - drafts;
+    }),
     safeCount(
       "verifiedFeats",
       async () =>

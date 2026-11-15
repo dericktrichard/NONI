@@ -3,6 +3,7 @@ import { FieldValue, type Query } from "firebase-admin/firestore";
 import { BANK, weekTotalAfter } from "@/lib/bank/rules";
 import { memoAsync } from "@/lib/cache/memo";
 import { HttpError } from "@/lib/data/feats";
+import { isPublished } from "@/lib/import/published";
 import { person } from "@/lib/data/standing";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL } from "@/lib/firebase/paths";
@@ -49,7 +50,8 @@ export async function contribute(
 ): Promise<{ balance: number; total: number }> {
   const db = adminDb();
   const character = await db.collection(COL.characters).doc(slug).get();
-  if (!character.exists) throw new HttpError(404, "Character not found.");
+  if (!character.exists || !isPublished(character.data()))
+    throw new HttpError(404, "Character not found.");
 
   const userRef = db.collection(COL.users).doc(uid);
   const bankRef = db.collection(COL.banks).doc(slug);
@@ -191,7 +193,7 @@ async function loadBanks(kind: BankKind): Promise<BankRow[]> {
   );
   const rows = entries.flatMap((entry, index) => {
     const character = characters[index];
-    if (!character?.exists) return [];
+    if (!character?.exists || !isPublished(character.data())) return [];
     const image = character.get("imageUrl");
     return [
       {

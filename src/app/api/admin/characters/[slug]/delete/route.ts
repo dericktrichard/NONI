@@ -31,7 +31,7 @@ export async function POST(
       { status: 404, headers: NO_STORE },
     );
   }
-  if (guarded.body.confirm !== slug) {
+  if (guarded.body.confirm.trim().toLowerCase() !== slug) {
     return NextResponse.json(
       { error: "Type the slug to confirm." },
       { status: 400, headers: NO_STORE },
