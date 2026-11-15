@@ -62,6 +62,13 @@ export default async function CharacterPage({ params }: Props) {
         </p>
       ) : null}
 
+      {!data.character.draft && data.character.evidence === 0 ? (
+        <p className="eyebrow mb-4">
+          Baseline estimate. No verified feats yet, so this rank comes from an editor
+          estimate. Treat it as a starting point and add a feat with proof to improve it.
+        </p>
+      ) : null}
+
       <CharacterHero c={data.character} />
 
       <div className="mt-12 grid gap-10 lg:grid-cols-[1fr_18rem]">

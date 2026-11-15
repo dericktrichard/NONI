@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PublishAllButton } from "@/components/admin/publish-all-button";
 import { PublishButton } from "@/components/admin/publish-button";
 import { TierBadge } from "@/components/characters/tier-badge";
 import { buttonStyles } from "@/components/ui/button";
@@ -34,6 +35,7 @@ export default async function AdminCharactersPage() {
         </div>
       </div>
       <p className="eyebrow mt-3">{characters.length} total</p>
+      <PublishAllButton count={characters.filter((c) => c.draft).length} />
 
       <ul className="mt-6 divide-y border-y">
         {characters.map((character) => (

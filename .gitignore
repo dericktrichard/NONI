@@ -48,3 +48,6 @@ next-env.d.ts
 firestore-debug.log
 *-debug.log
 .firebase/
+
+# data
+/datajsons

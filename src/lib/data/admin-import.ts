@@ -178,3 +178,47 @@ export async function publishCharacter(
 
   await rerankAll(db).catch((error) => console.error("rerank failed", error));
 }
+
+const PUBLISH_ALL_LIMIT = 1000;
+const CHUNK = 400;
+
+/** Moves every draft into the ranking at once, then ranks the field one time */
+export async function publishAllDrafts(actorUid: string): Promise<number> {
+  const db = adminDb();
+  const drafts = await db
+    .collection(COL.characters)
+    .where("draft", "==", true)
+    .select("name")
+    .limit(PUBLISH_ALL_LIMIT)
+    .get();
+  if (drafts.empty) return 0;
+
+  const total = (await db.collection(COL.characters).count().get()).data().count;
+  const now = Timestamp.now();
+  for (let i = 0; i < drafts.docs.length; i += CHUNK) {
+    const batch = db.batch();
+    drafts.docs.slice(i, i + CHUNK).forEach((doc, j) => {
+      batch.update(doc.ref, {
+        draft: FieldValue.delete(),
+        rank: total + i + j + 1,
+        updatedAt: now,
+      });
+    });
+    await batch.commit();
+  }
+
+  await db
+    .collection(COL.modLog)
+    .doc()
+    .create({
+      targetType: "character",
+      action: "publish-baseline",
+      actorUid,
+      count: drafts.size,
+      slugs: drafts.docs.slice(0, 200).map((doc) => doc.id),
+      at: FieldValue.serverTimestamp(),
+    });
+
+  await rerankAll(db).catch((error) => console.error("rerank failed", error));
+  return drafts.size;
+}
