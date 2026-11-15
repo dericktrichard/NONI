@@ -2,5 +2,5 @@
 export const LEGAL = {
   operator: "NONI",
   contact: "legal@noni.example",
-  updated: "10 November 2026",
+  updated: "15 November 2026",
 } as const;

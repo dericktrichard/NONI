@@ -16,8 +16,9 @@ const SECTIONS: DocSection[] = [
     title: "What NONI hosts",
     body: (
       <p>
-        Short text from our users (feats, arguments, lists and bios), links to proof, and
-        character images with credits. We link to original works rather than copying them.
+        Short text from our users (feats, arguments, lists and bios), avatars and banners
+        that users upload, links to proof, and character images with credits. We link to
+        original works rather than copying them.
       </p>
     ),
   },
@@ -52,13 +53,32 @@ const SECTIONS: DocSection[] = [
     ),
   },
   {
+    id: "images",
+    title: "Profile images",
+    body: (
+      <>
+        <p>
+          You can upload an avatar and a banner. Upload only images you have the right to
+          use, and keep to the list above: nothing sexual, nothing that harasses or
+          targets someone, and no private photos of other people.
+        </p>
+        <p>
+          Images are not reviewed before they appear, so reports matter. A moderator can
+          remove an image and, if needed, stop that account from uploading again. The
+          removal is logged like any other moderation action.
+        </p>
+      </>
+    ),
+  },
+  {
     id: "reporting",
     title: "Reporting and moderation",
     body: (
       <>
         <p>
-          Every feat, argument and list has a report button. Moderators review reports and
-          can hide or restore content. Every moderator action is logged.
+          Every feat, argument, list and profile image has a report button. Moderators
+          review reports and can hide or restore content. Every moderator action is
+          logged.
         </p>
         <p>
           If your content is hidden you can reply to the notice or write to {mail}, and a
