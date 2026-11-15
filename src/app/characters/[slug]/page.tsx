@@ -5,6 +5,7 @@ import { CharacterAside } from "@/components/characters/character-aside";
 import { CharacterHero } from "@/components/characters/character-hero";
 import { PowerProfileCard } from "@/components/characters/power-profile";
 import { FeatSection } from "@/components/feats/feat-section";
+import { AdminBar } from "@/components/admin/admin-bar";
 import { PageTop } from "@/components/layout/page-top";
 import { BankPanel } from "@/components/bank/bank-panel";
 import { TopFans } from "@/components/standing/top-fans";
@@ -28,6 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${character.name} | NONI`,
     description: `${character.name} from ${character.verse}: tier ${character.tier}, ${character.speed}.`,
+    ...(character.draft ? { robots: { index: false, follow: false } } : {}),
   };
 }
 
@@ -51,6 +53,14 @@ export default async function CharacterPage({ params }: Props) {
           { label: data.character.name },
         ]}
       />
+
+      <AdminBar slug={data.character.id} draft={data.character.draft === true} />
+
+      {data.character.draft ? (
+        <p className="eyebrow mb-4">
+          Draft, not ranked yet. It joins the ranking once its feats are verified.
+        </p>
+      ) : null}
 
       <CharacterHero c={data.character} />
 

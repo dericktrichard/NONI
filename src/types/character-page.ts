@@ -11,6 +11,8 @@ export interface CharacterView {
   media: MediaType;
   entity?: string;
   continuity?: string | null;
+  /** Imported and not ranked yet */
+  draft?: boolean;
   tags: string[];
   imageUrl: string | null;
   imageCredit: string | null;

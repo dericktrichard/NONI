@@ -29,4 +29,5 @@ export interface CharacterListItem {
   tier: string;
   featCount: number;
   verifiedFeatCount: number;
+  draft?: boolean;
 }

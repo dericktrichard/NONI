@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PublishButton } from "@/components/admin/publish-button";
 import { TierBadge } from "@/components/characters/tier-badge";
 import { buttonStyles } from "@/components/ui/button";
 import { listCharacters } from "@/lib/data/admin-characters";
@@ -17,12 +18,20 @@ export default async function AdminCharactersPage() {
       <p className="eyebrow">Admin</p>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
         <h1 className="font-display text-4xl font-semibold tracking-tight">Characters</h1>
-        <Link
-          href="/admin/characters/new"
-          className={buttonStyles({ variant: "primary" })}
-        >
-          Add a character
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/admin/characters/import"
+            className={buttonStyles({ variant: "outline" })}
+          >
+            Import
+          </Link>
+          <Link
+            href="/admin/characters/new"
+            className={buttonStyles({ variant: "primary" })}
+          >
+            Add a character
+          </Link>
+        </div>
       </div>
       <p className="eyebrow mt-3">{characters.length} total</p>
 
@@ -32,8 +41,8 @@ export default async function AdminCharactersPage() {
             key={character.slug}
             className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3"
           >
-            <span className="eyebrow tabular w-10 shrink-0">
-              {character.rank ?? "--"}
+            <span className="eyebrow tabular w-12 shrink-0">
+              {character.draft ? "Draft" : (character.rank ?? "--")}
             </span>
             <div className="min-w-0 flex-1">
               <Link
@@ -48,6 +57,7 @@ export default async function AdminCharactersPage() {
               </p>
             </div>
             <TierBadge tier={character.tier} />
+            {character.draft ? <PublishButton slug={character.slug} /> : null}
             <Link
               href={`/admin/characters/${character.slug}/edit`}
               className="min-h-11 px-2 py-3 text-sm underline underline-offset-4"

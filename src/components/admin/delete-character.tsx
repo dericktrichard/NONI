@@ -45,7 +45,9 @@ export function DeleteCharacter({ slug, name }: { slug: string; name: string }) 
         be undone.
       </p>
       <label className="mt-4 block">
-        <span className="eyebrow">Type {slug} to confirm</span>
+        <span className="eyebrow">
+          Type <span className="font-mono normal-case">{slug}</span> to confirm
+        </span>
         <input
           value={typed}
           onChange={(event) => setTyped(event.target.value)}
@@ -57,7 +59,7 @@ export function DeleteCharacter({ slug, name }: { slug: string; name: string }) 
       <div className="mt-4">
         <Button
           variant="outline"
-          disabled={busy || typed !== slug}
+          disabled={busy || typed.trim().toLowerCase() !== slug}
           onClick={() => void remove()}
         >
           Delete permanently

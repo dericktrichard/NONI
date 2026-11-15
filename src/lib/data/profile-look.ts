@@ -1,4 +1,5 @@
 import "server-only";
+import { isPublished } from "@/lib/import/published";
 import type { DocumentSnapshot } from "firebase-admin/firestore";
 import { HttpError } from "@/lib/data/feats";
 import { adminDb } from "@/lib/firebase/admin";
@@ -49,7 +50,9 @@ export async function saveLook(uid: string, input: LookInput): Promise<void> {
       ? await db.getAll(...wanted.map((id) => db.collection(COL.characters).doc(id)))
       : [];
   const byId = new Map(
-    snaps.filter((snap) => snap.exists).map((snap) => [snap.id, snap] as const),
+    snaps
+      .filter((snap) => snap.exists && isPublished(snap.data()))
+      .map((snap) => [snap.id, snap] as const),
   );
 
   const resolve = (id: string | null): DocumentSnapshot | null => {

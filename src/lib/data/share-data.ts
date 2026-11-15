@@ -1,6 +1,7 @@
 import "server-only";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL, SLUG_RE } from "@/lib/firebase/paths";
+import { isPublished } from "@/lib/import/published";
 
 export interface CharacterCardData {
   name: string;
@@ -20,7 +21,7 @@ export async function fetchCharacterCard(
 
   try {
     const doc = await adminDb().collection(COL.characters).doc(slug).get();
-    if (!doc.exists) return null;
+    if (!doc.exists || !isPublished(doc.data())) return null;
 
     const image = doc.get("imageUrl");
     const rank = doc.get("rank");

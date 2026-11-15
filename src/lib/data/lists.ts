@@ -1,6 +1,7 @@
 import "server-only";
 import { Timestamp, type Firestore } from "firebase-admin/firestore";
 import { HttpError } from "@/lib/data/feats";
+import { isPublished } from "@/lib/import/published";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL } from "@/lib/firebase/paths";
 import type { ListInput } from "@/lib/validation/list";
@@ -41,7 +42,7 @@ async function resolveItems(db: Firestore, input: ListInput): Promise<UserListIt
   const snaps = await db.getAll(...refs);
   return input.items.map((item, index) => {
     const snap = snaps[index];
-    if (!snap || !snap.exists)
+    if (!snap || !snap.exists || !isPublished(snap.data()))
       throw new HttpError(400, "One of the characters does not exist.");
     return {
       characterId: item.characterId,

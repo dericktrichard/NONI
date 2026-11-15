@@ -1,6 +1,7 @@
 import "server-only";
 import { Timestamp } from "firebase-admin/firestore";
 import { HttpError } from "@/lib/data/feats";
+import { isPublished } from "@/lib/import/published";
 import { adminDb } from "@/lib/firebase/admin";
 import { COL } from "@/lib/firebase/paths";
 
@@ -32,7 +33,8 @@ export async function readFavourite(
     db.collection(COL.users).doc(uid).collection(FAVOURITES).doc(characterId).get(),
     db.collection(COL.characters).doc(characterId).get(),
   ]);
-  if (!character.exists) throw new HttpError(404, "Character not found.");
+  if (!character.exists || !isPublished(character.data()))
+    throw new HttpError(404, "Character not found.");
   return { favourited: fav.exists, fans: Number(character.get("fanCount")) || 0 };
 }
 
@@ -52,7 +54,8 @@ export async function setFavourite(
       tx.get(userRef),
       tx.get(favRef),
     ]);
-    if (!character.exists) throw new HttpError(404, "Character not found.");
+    if (!character.exists || !isPublished(character.data()))
+      throw new HttpError(404, "Character not found.");
 
     const fans = Number(character.get("fanCount")) || 0;
     const count = Number(user.get("favouriteCount")) || 0;

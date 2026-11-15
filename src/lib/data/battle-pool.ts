@@ -19,6 +19,7 @@ const FIELDS = [
   "profile",
   "verifiedFeatCount",
   "entity",
+  "draft",
   "media",
   "continuity",
 ];
@@ -30,7 +31,7 @@ export interface Loaded {
 
 function parse(slug: string, data: FirebaseFirestore.DocumentData): Loaded | null {
   const profile = data.profile as PowerProfile | undefined;
-  if (!profile) return null;
+  if (!profile || data.draft === true) return null;
   const name = String(data.name ?? slug);
 
   try {

@@ -22,6 +22,12 @@ const ADMIN_TILES: Tile[] = [
     title: "Add a character",
     text: "Create a profile and upload its art.",
   },
+  {
+    href: "/admin/characters/import",
+    eyebrow: "Catalogue",
+    title: "Import characters",
+    text: "Add many characters from a JSON file as drafts.",
+  },
 ];
 
 const MOD_TILES: Tile[] = [
