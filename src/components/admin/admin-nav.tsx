@@ -10,6 +10,7 @@ const ITEMS = [
   { href: "/admin/characters", label: "Characters", admin: true },
   { href: "/admin/characters/new", label: "Add", admin: true },
   { href: "/admin/characters/import", label: "Import", admin: true },
+  { href: "/admin/feats/import", label: "Import feats", admin: true },
 ] as const;
 
 export function AdminNav({ admin }: { admin: boolean }) {
