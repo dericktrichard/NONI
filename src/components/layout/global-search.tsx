@@ -224,11 +224,11 @@ export function GlobalSearch() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Search"
-        className="text-muted-foreground hover:border-foreground hover:text-foreground hidden h-10 items-center gap-3 border px-3 text-sm transition-colors sm:flex"
+        className="text-muted-foreground hover:border-foreground hover:text-foreground hidden h-8 w-48 items-center gap-3 border px-3 text-sm transition-colors sm:flex lg:w-64"
       >
         <Search className="size-4" aria-hidden />
         <span>Search</span>
-        <kbd className="eyebrow border px-1.5">/</kbd>
+        <kbd className="eyebrow ml-auto border px-1.5">/</kbd>
       </button>
 
       <dialog

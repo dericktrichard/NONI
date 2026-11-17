@@ -59,11 +59,11 @@ export function NoticeBell() {
         type="button"
         onClick={show}
         aria-label={inbox.unread > 0 ? `Notices, ${inbox.unread} unread` : "Notices"}
-        className="hover:border-foreground relative grid size-10 place-items-center border transition-colors"
+        className="hover:border-foreground relative grid size-8 place-items-center border transition-colors"
       >
         <Bell className="size-4" aria-hidden />
         {inbox.unread > 0 ? (
-          <span className="bg-accent absolute top-1.5 right-1.5 size-2" aria-hidden />
+          <span className="bg-accent absolute top-1 right-1 size-2" aria-hidden />
         ) : null}
       </button>
 

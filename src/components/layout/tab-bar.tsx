@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NavAvatar } from "@/components/auth/nav-avatar";
+import { usePlus } from "@/hooks/use-plus";
 import { useSession } from "@/hooks/use-session";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import { OPEN_PROFILE_SETUP } from "@/lib/ui/events";
@@ -17,6 +18,7 @@ function Mark() {
 export function TabBar() {
   const pathname = usePathname();
   const { state } = useSession();
+  const plus = usePlus();
   const user = state.status === "ready" ? state.user : null;
 
   const tabs = [
@@ -67,7 +69,12 @@ export function TabBar() {
           >
             {meActive ? <Mark /> : null}
             {user.avatarUrl ? (
-              <span className="bg-muted relative block size-8 overflow-hidden border">
+              <span
+                className={cn(
+                  "bg-muted relative block size-8 overflow-hidden border",
+                  plus && "ring-accent ring-2",
+                )}
+              >
                 <NavAvatar user={user} />
               </span>
             ) : (

@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { MARK_BOX, MARK_PATH } from "@/lib/brand/mark";
 
 export const runtime = "nodejs";
 
@@ -13,13 +14,10 @@ export async function GET(
   if (!SIZES.has(size) || raw !== `${size}.png`)
     return new Response("Not found", { status: 404 });
 
-  const w = size * 0.38;
-  const h = size * 0.44;
-  const bar = size * 0.09;
-  const mark = size * 0.075;
-  const length = Math.hypot(w - bar, h);
-  const tilt = (-Math.atan((w - bar) / h) * 180) / Math.PI;
-  const white = "#ffffff";
+  /** Kept inside the middle 60 percent so the same file works as a maskable icon */
+  const height = size * 0.5;
+  const width = (height * MARK_BOX.w) / MARK_BOX.h;
+  const mark = size * 0.07;
 
   return new ImageResponse(
     <div
@@ -29,52 +27,27 @@ export async function GET(
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        position: "relative",
         background: "#000000",
       }}
     >
-      <div style={{ position: "relative", display: "flex", width: w, height: h }}>
-        <div
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: bar,
-            height: h,
-            background: white,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            right: 0,
-            top: 0,
-            width: bar,
-            height: h,
-            background: white,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            left: (w - bar) / 2,
-            top: (h - length) / 2,
-            width: bar,
-            height: length,
-            background: white,
-            transform: `rotate(${tilt}deg)`,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            right: -mark * 1.8,
-            bottom: 0,
-            width: mark,
-            height: mark,
-            background: "#c8ff00",
-          }}
-        />
-      </div>
+      <svg
+        width={width}
+        height={height}
+        viewBox={`${MARK_BOX.x} ${MARK_BOX.y} ${MARK_BOX.w} ${MARK_BOX.h}`}
+      >
+        <path d={MARK_PATH} fill="#ffffff" />
+      </svg>
+      <div
+        style={{
+          position: "absolute",
+          top: size * 0.2,
+          right: size * 0.2,
+          width: mark,
+          height: mark,
+          background: "#c8ff00",
+        }}
+      />
     </div>,
     {
       width: size,

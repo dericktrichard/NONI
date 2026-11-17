@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { MARK_BOX, MARK_PATH } from "@/lib/brand/mark";
 
 export const runtime = "nodejs";
 
@@ -23,6 +24,8 @@ export async function GET(
 
   const wide = shot.width > shot.height;
   const u = Math.min(shot.width, shot.height);
+  const markHeight = u * 0.06;
+  const markWidth = (markHeight * MARK_BOX.w) / MARK_BOX.h;
 
   return new ImageResponse(
     <div
@@ -38,17 +41,31 @@ export async function GET(
       }}
     >
       <div style={{ display: "flex", alignItems: "center" }}>
+        <svg
+          width={markWidth}
+          height={markHeight}
+          viewBox={`${MARK_BOX.x} ${MARK_BOX.y} ${MARK_BOX.w} ${MARK_BOX.h}`}
+        >
+          <path d={MARK_PATH} fill="#ffffff" />
+        </svg>
         <div
           style={{
-            width: u * 0.035,
-            height: u * 0.035,
-            background: "#c8ff00",
-            marginRight: u * 0.025,
+            display: "flex",
+            marginLeft: u * 0.025,
+            fontSize: u * 0.04,
+            letterSpacing: u * 0.008,
           }}
-        />
-        <div style={{ display: "flex", fontSize: u * 0.04, letterSpacing: u * 0.008 }}>
+        >
           NONI
         </div>
+        <div
+          style={{
+            width: u * 0.014,
+            height: u * 0.014,
+            marginLeft: u * 0.015,
+            background: "#c8ff00",
+          }}
+        />
       </div>
 
       <div style={{ display: "flex", flexDirection: "column" }}>

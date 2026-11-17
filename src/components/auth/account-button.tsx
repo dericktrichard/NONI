@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { NavAvatar } from "@/components/auth/nav-avatar";
+import { usePlus } from "@/hooks/use-plus";
 import { useSession } from "@/hooks/use-session";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import { OPEN_PROFILE_SETUP } from "@/lib/ui/events";
 
 export function AccountButton() {
   const { state } = useSession();
+  const plus = usePlus();
 
   if (state.status === "loading") return <div className="h-10 w-20" aria-hidden />;
 
@@ -38,7 +40,7 @@ export function AccountButton() {
           href={`/u/${user.handle}`}
           aria-label="Your profile"
           title={`@${user.handle}`}
-          className="bg-muted hover:border-foreground relative block size-10 overflow-hidden border transition-colors"
+          className={`bg-muted hover:border-foreground relative block size-9 overflow-hidden border transition-colors${plus ? "ring-accent ring-2" : ""}`}
         >
           <NavAvatar user={user} />
         </Link>

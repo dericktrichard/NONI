@@ -1,9 +1,13 @@
 import { ImageResponse } from "next/og";
+import { MARK_BOX, MARK_PATH } from "@/lib/brand/mark";
 
 export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
 
 export default function AppleIcon() {
+  const height = 104;
+  const width = (height * MARK_BOX.w) / MARK_BOX.h;
+
   return new ImageResponse(
     <div
       style={{
@@ -16,16 +20,20 @@ export default function AppleIcon() {
         position: "relative",
       }}
     >
-      <div style={{ fontSize: 112, fontWeight: 700, color: "#fafaf7", lineHeight: 1 }}>
-        N
-      </div>
+      <svg
+        width={width}
+        height={height}
+        viewBox={`${MARK_BOX.x} ${MARK_BOX.y} ${MARK_BOX.w} ${MARK_BOX.h}`}
+      >
+        <path d={MARK_PATH} fill="#fafaf7" />
+      </svg>
       <div
         style={{
           position: "absolute",
-          top: 30,
-          right: 30,
-          width: 22,
-          height: 22,
+          top: 24,
+          right: 24,
+          width: 20,
+          height: 20,
           background: "#c8ff00",
         }}
       />
