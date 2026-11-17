@@ -3,7 +3,9 @@ import Link from "next/link";
 import { Portrait } from "@/components/characters/portrait";
 import { TierBadge } from "@/components/characters/tier-badge";
 import { HeroArt, type HeroSlide } from "@/components/home/hero-art";
+import { NoticePanel } from "@/components/home/notice-panel";
 import { PersonalHero } from "@/components/home/personal-hero";
+import type { SiteNotice } from "@/lib/data/site-notice";
 import type { HeroSettings } from "@/lib/data/site-settings";
 import type { SiteStats } from "@/lib/data/site-stats";
 import { cn, formatScore } from "@/lib/utils";
@@ -14,6 +16,7 @@ interface HomeHeroProps {
   cycle: CharacterSummary[];
   pair: [CharacterSummary, CharacterSummary] | null;
   stats: SiteStats;
+  notice: SiteNotice | null;
 }
 
 const step = (index: number) => ({ "--i": index }) as React.CSSProperties;
@@ -71,7 +74,7 @@ function Side({ c, flip }: { c: CharacterSummary; flip?: boolean }) {
 const arrow =
   "size-6 shrink-0 transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1";
 
-export function HomeHero({ hero, cycle, pair, stats }: HomeHeroProps) {
+export function HomeHero({ hero, cycle, pair, stats, notice }: HomeHeroProps) {
   const items = statItems(stats);
   const slides = buildSlides(hero, cycle);
   const credit = slides[0]?.credit ?? null;
@@ -86,6 +89,11 @@ export function HomeHero({ hero, cycle, pair, stats }: HomeHeroProps) {
         <PersonalHero />
       </div>
 
+      {notice ? (
+        <div className="pointer-events-none absolute inset-x-0 top-(--nav-space) z-10 flex h-[calc(min(88svh,60rem)*0.66-var(--nav-space))] items-center px-4">
+          <NoticePanel title={notice.title} body={notice.body} />
+        </div>
+      ) : null}
       <div className="relative mx-auto max-w-6xl px-4 pt-[calc(min(88svh,60rem)*0.66)] pb-10">
         {credit ? (
           <p className="eyebrow mb-2 text-right [text-shadow:0_1px_12px_var(--background)]">
