@@ -66,11 +66,11 @@ export function Header() {
         <div className="mx-auto max-w-6xl px-4">
           <div
             data-scrolled={scrolled}
-            className="acrylic pointer-events-auto flex h-(--nav-height) items-center px-4 transition-[background-color] duration-200"
+            className="acrylic pointer-events-auto flex h-(--nav-height) items-center px-2.5 transition-[background-color] duration-200"
           >
             <Link href="/" className="flex items-center gap-2" aria-label="NONI home">
-              <LogoMark className="size-7" />
-              <span className="font-display text-lg font-semibold tracking-tight">
+              <LogoMark className="size-9" />
+              <span className="font-display text-xl font-semibold tracking-[0.14em]">
                 NONI
               </span>
               <PlusMark />
@@ -106,7 +106,7 @@ export function Header() {
                 type="button"
                 aria-label="Search characters"
                 onClick={() => window.dispatchEvent(new Event(OPEN_SEARCH))}
-                className="hover:border-foreground grid size-10 place-items-center border transition-colors sm:hidden"
+                className="hover:border-foreground grid size-8 place-items-center border transition-colors sm:hidden"
               >
                 <Search className="size-4" aria-hidden />
               </button>
