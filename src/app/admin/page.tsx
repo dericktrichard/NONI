@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { fetchSiteStats } from "@/lib/data/site-stats";
 import { getSessionUser } from "@/lib/security/session";
 import { hasRole, roleOf } from "@/lib/security/roles";
 
@@ -58,12 +59,28 @@ export default async function AdminHome() {
   const user = await getSessionUser();
   const role = user ? roleOf(user) : "user";
   const isAdmin = user ? hasRole(user, "admin") : false;
+  const stats = await fetchSiteStats();
+  const counts: [string, number | null][] = [
+    ["Characters", stats.characters],
+    ["Verified feats", stats.verifiedFeats],
+    ["Matchups", stats.matchups],
+  ];
   const tiles = isAdmin ? [...MOD_TILES, ...ADMIN_TILES] : MOD_TILES;
 
   return (
     <>
       <p className="eyebrow">Signed in as {role}</p>
       <h1 className="font-display mt-2 text-4xl font-semibold tracking-tight">Admin</h1>
+      <dl className="mt-8 grid grid-cols-3 divide-x border">
+        {counts.map(([label, value]) => (
+          <div key={label} className="p-3 sm:p-4">
+            <dt className="eyebrow">{label}</dt>
+            <dd className="tabular font-display mt-1 text-3xl font-semibold">
+              {value === null ? "-" : value.toLocaleString("en-US")}
+            </dd>
+          </div>
+        ))}
+      </dl>
       <ul className="mt-8 grid gap-3 sm:grid-cols-2">
         {tiles.map((tile) => (
           <TileLink key={tile.href} tile={tile} />

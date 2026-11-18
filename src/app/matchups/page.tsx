@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Portrait } from "@/components/characters/portrait";
-import { TierBadge } from "@/components/characters/tier-badge";
 import { SectionHeading } from "@/components/home/section-heading";
 import { SectionTabs } from "@/components/layout/section-tabs";
 import { NewMatchupButton, SurpriseButton } from "@/components/matchups/matchup-actions";
@@ -10,7 +9,7 @@ import { fetchCharacters } from "@/lib/data/characters";
 import { DEFAULT_PLAN } from "@/lib/data/query";
 import { fetchMatchupFeed } from "@/lib/data/matchup-feed";
 import { currentDay, pickPair } from "@/lib/matchup/daily";
-import { cn, formatScore } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { CharacterSummary } from "@/types/character";
 
 export const revalidate = 600;
@@ -39,8 +38,7 @@ function DailySide({ c, flip }: { c: CharacterSummary; flip?: boolean }) {
         <p className="font-display truncate text-lg font-semibold sm:text-xl">{c.name}</p>
         <p className="eyebrow truncate">{c.verse}</p>
         <div className={cn("mt-2 flex items-center gap-2", flip && "sm:justify-end")}>
-          <TierBadge tier={c.tier} />
-          <span className="tabular text-sm">{formatScore(c.score)}</span>
+          <span className="eyebrow">Feats {c.featCount}</span>
         </div>
       </div>
     </div>
@@ -90,7 +88,7 @@ export default async function MatchupsPage() {
           <div className="grid sm:grid-cols-[1fr_auto_1fr]">
             <DailySide c={pair[0]} />
             <span
-              className="bg-foreground font-display text-background grid h-8 place-items-center text-sm font-semibold sm:h-auto sm:w-14 sm:text-xl"
+              className="font-display text-accent-foreground grid h-8 place-items-center bg-(--spark) text-sm font-semibold sm:h-auto sm:w-14 sm:text-xl"
               aria-hidden
             >
               VS
