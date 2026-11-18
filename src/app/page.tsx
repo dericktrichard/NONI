@@ -12,7 +12,6 @@ import { getBoard } from "@/lib/data/standing";
 import { DEFAULT_PLAN, PAGE } from "@/lib/data/query";
 import { fetchNotice } from "@/lib/data/site-notice";
 import { fetchHero } from "@/lib/data/site-settings";
-import { fetchSiteStats } from "@/lib/data/site-stats";
 import type { CharacterPage } from "@/lib/data/summary";
 import { buildRails } from "@/lib/home/rails";
 import { currentDay, pickPair } from "@/lib/matchup/daily";
@@ -26,9 +25,8 @@ export const revalidate = 600;
 const POOL_SIZE = 60;
 
 export default async function Home() {
-  const [pool, stats, hero, glaze, champions, fans, banks, notice] = await Promise.all([
+  const [pool, hero, glaze, champions, fans, banks, notice] = await Promise.all([
     fetchCharacters({ ...DEFAULT_PLAN, limit: POOL_SIZE, fetch: POOL_SIZE + 1 }),
-    fetchSiteStats(),
     fetchHero(),
     getBoard("glaze", 3),
     getBoard("champions", 3),
@@ -47,24 +45,22 @@ export default async function Home() {
   };
 
   const heroNode = (
-    <HomeHero
-      hero={hero}
-      cycle={items.slice(0, 3)}
-      pair={pair}
-      stats={stats}
-      notice={notice}
-    />
+    <>
+      <HomeHero hero={hero} cycle={items.slice(0, 3)} pair={pair} notice={notice} />
+      <div className="mx-auto max-w-6xl px-4 pb-2">
+        <LeaderboardStrip
+          glaze={glaze}
+          champions={champions}
+          fan={fans.items[0] ?? null}
+          banks={banks.items}
+        />
+      </div>
+    </>
   );
 
   const overviewNode = (
     <>
       <GuestStrip />
-      <LeaderboardStrip
-        glaze={glaze}
-        champions={champions}
-        fan={fans.items[0] ?? null}
-        banks={banks.items}
-      />
       {rails.map((rail) => (
         <RailSection
           key={rail.id}

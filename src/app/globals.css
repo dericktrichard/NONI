@@ -11,8 +11,10 @@
   --border: #d9d9d3;
   --accent: #c8ff00;
   --accent-foreground: #0a0a0a;
-  --danger: #dc143c;
-  --accent-ink: #4f6600;
+  --danger: #fa2448;
+  --accent-ink: #c4f22c;
+  --spark: #f45d37;
+  --spark-ink: #f35d34;
   --nav-height: 3.5rem;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --nav-space: calc(var(--nav-height) + 0.75rem + env(safe-area-inset-top));
@@ -26,8 +28,10 @@
   --border: #262626;
   --accent: #c8ff00;
   --accent-foreground: #0a0a0a;
-  --danger: #ff3b5c;
+  --danger: #fa2448;
   --accent-ink: #c8ff00;
+  --spark: #f63d0f;
+  --spark-ink: #f94412;
 }
 
 /* Maps tokens to Tailwind utilities: bg-background, text-muted-foreground, etc. */

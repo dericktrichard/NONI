@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Portrait } from "@/components/characters/portrait";
-import { TierBadge } from "@/components/characters/tier-badge";
 import { Modal } from "@/components/ui/modal";
 import { useCharacterSearch } from "@/hooks/use-character-search";
 import type { MatchupPreset } from "@/lib/matchup/preset";
@@ -163,7 +162,6 @@ function MakerPanel({
                     </span>
                     <span className="eyebrow block truncate">{c.verse}</span>
                   </span>
-                  <TierBadge tier={c.tier} />
                 </button>
               </li>
             ))}

@@ -1,33 +1,22 @@
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { Portrait } from "@/components/characters/portrait";
-import { TierBadge } from "@/components/characters/tier-badge";
 import { HeroArt, type HeroSlide } from "@/components/home/hero-art";
 import { NoticePanel } from "@/components/home/notice-panel";
 import { PersonalHero } from "@/components/home/personal-hero";
 import type { SiteNotice } from "@/lib/data/site-notice";
 import type { HeroSettings } from "@/lib/data/site-settings";
-import type { SiteStats } from "@/lib/data/site-stats";
-import { cn, formatScore } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { CharacterSummary } from "@/types/character";
 
 interface HomeHeroProps {
   hero: HeroSettings | null;
   cycle: CharacterSummary[];
   pair: [CharacterSummary, CharacterSummary] | null;
-  stats: SiteStats;
   notice: SiteNotice | null;
 }
 
 const step = (index: number) => ({ "--i": index }) as React.CSSProperties;
-
-function statItems(stats: SiteStats) {
-  return [
-    { label: "Characters", value: stats.characters },
-    { label: "Verified feats", value: stats.verifiedFeats },
-    { label: "Matchups", value: stats.matchups },
-  ].filter((item): item is { label: string; value: number } => item.value !== null);
-}
 
 function buildSlides(hero: HeroSettings | null, cycle: CharacterSummary[]): HeroSlide[] {
   if (hero) {
@@ -63,8 +52,7 @@ function Side({ c, flip }: { c: CharacterSummary; flip?: boolean }) {
         <p className="font-display truncate text-lg font-semibold sm:text-xl">{c.name}</p>
         <p className="eyebrow truncate">{c.verse}</p>
         <div className={cn("mt-2 flex items-center gap-2", flip && "sm:justify-end")}>
-          <TierBadge tier={c.tier} />
-          <span className="tabular text-sm">{formatScore(c.score)}</span>
+          <span className="eyebrow">Feats {c.featCount}</span>
         </div>
       </div>
     </div>
@@ -74,8 +62,7 @@ function Side({ c, flip }: { c: CharacterSummary; flip?: boolean }) {
 const arrow =
   "size-6 shrink-0 transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1";
 
-export function HomeHero({ hero, cycle, pair, stats, notice }: HomeHeroProps) {
-  const items = statItems(stats);
+export function HomeHero({ hero, cycle, pair, notice }: HomeHeroProps) {
   const slides = buildSlides(hero, cycle);
   const credit = slides[0]?.credit ?? null;
 
@@ -117,7 +104,7 @@ export function HomeHero({ hero, cycle, pair, stats, notice }: HomeHeroProps) {
               <div className="grid sm:grid-cols-[1fr_auto_1fr]">
                 <Side c={pair[0]} />
                 <span
-                  className="bg-accent font-display text-accent-foreground grid h-8 place-items-center text-sm font-semibold sm:h-auto sm:w-14 sm:text-xl"
+                  className="font-display text-accent-foreground grid h-8 place-items-center bg-(--spark) text-sm font-semibold sm:h-auto sm:w-14 sm:text-xl"
                   aria-hidden
                 >
                   VS
@@ -128,45 +115,23 @@ export function HomeHero({ hero, cycle, pair, stats, notice }: HomeHeroProps) {
           ) : null}
 
           <div className="grid sm:grid-cols-[1fr_auto] sm:divide-x">
-            <div className="flex flex-col justify-center gap-1 p-4 sm:p-5">
-              <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+            <div className="flex items-center px-4 py-3 sm:px-5">
+              <h1 className="font-display text-xl font-semibold tracking-tight sm:text-2xl">
                 Evidence decides.
               </h1>
-              <p className="text-muted-foreground text-sm">
-                Every ranking traces back to a cited feat. No proof, no points.
-              </p>
             </div>
             <Link
               href="/matchups"
-              className="group bg-accent text-accent-foreground flex items-center justify-between gap-6 p-4 transition-[filter] hover:brightness-95 sm:min-w-72 sm:p-5"
+              className="group text-accent-foreground flex items-center justify-between gap-6 bg-accent px-4 py-3 transition-[filter] hover:brightness-95 sm:min-w-72 sm:px-5"
             >
               <span>
-                <span className="block font-mono text-[0.6875rem] tracking-[0.08em] uppercase opacity-70">
-                  Head to head
-                </span>
-                <span className="font-display mt-1 block text-2xl leading-tight font-semibold">
+                <span className="font-display block text-xl leading-tight font-semibold">
                   Start a matchup
                 </span>
               </span>
               <ArrowUpRight className={arrow} aria-hidden />
             </Link>
           </div>
-
-          {items.length > 0 ? (
-            <dl
-              className="grid divide-x"
-              style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
-            >
-              {items.map((item) => (
-                <div key={item.label} className="p-3 sm:p-4">
-                  <dt className="eyebrow">{item.label}</dt>
-                  <dd className="tabular font-display mt-1 text-3xl font-semibold">
-                    {item.value.toLocaleString("en-US")}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          ) : null}
         </div>
       </div>
     </section>
