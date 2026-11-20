@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { MEDIA_TYPES } from "@/config/media";
 import { Explore } from "@/components/characters/explore";
 import { GuestStrip } from "@/components/home/guest-strip";
 import { HomeHero } from "@/components/home/home-hero";
@@ -9,7 +10,7 @@ import { fetchCharacters } from "@/lib/data/characters";
 import { getBankPage } from "@/lib/data/banks";
 import { getFanPage } from "@/lib/data/fan-groups";
 import { getBoard } from "@/lib/data/standing";
-import { DEFAULT_PLAN, PAGE } from "@/lib/data/query";
+import { DEFAULT_PLAN, PAGE, makePlan } from "@/lib/data/query";
 import { fetchNotice } from "@/lib/data/site-notice";
 import { fetchHero } from "@/lib/data/site-settings";
 import type { CharacterPage } from "@/lib/data/summary";
@@ -23,21 +24,31 @@ import { currentDay, pickPair } from "@/lib/matchup/daily";
 export const revalidate = 600;
 
 const POOL_SIZE = 60;
+const RAIL_SIZE = 12;
 
 export default async function Home() {
-  const [pool, hero, glaze, champions, fans, banks, notice] = await Promise.all([
-    fetchCharacters({ ...DEFAULT_PLAN, limit: POOL_SIZE, fetch: POOL_SIZE + 1 }),
-    fetchHero(),
-    getBoard("glaze", 3),
-    getBoard("champions", 3),
-    getFanPage(0, 1),
-    getBankPage("all", 0, 3),
-    fetchNotice(),
-  ]);
+  const [pool, hero, glaze, champions, fans, banks, notice, mediaLists] =
+    await Promise.all([
+      fetchCharacters({ ...DEFAULT_PLAN, limit: POOL_SIZE, fetch: POOL_SIZE + 1 }),
+      fetchHero(),
+      getBoard("glaze", 3),
+      getBoard("champions", 3),
+      getFanPage(0, 1),
+      getBankPage("all", 0, 3),
+      fetchNotice(),
+      Promise.all(
+        MEDIA_TYPES.map((type) =>
+          fetchCharacters(makePlan({ kind: "media", media: type }, RAIL_SIZE, null)),
+        ),
+      ),
+    ]);
 
   const items = pool.items;
   const pair = pickPair(items, currentDay());
-  const rails = buildRails(items);
+  const rails = buildRails(items, {
+    limit: RAIL_SIZE,
+    media: Object.fromEntries(MEDIA_TYPES.map((type, i) => [type, mediaLists[i].items])),
+  });
 
   const initial: CharacterPage = {
     items: items.slice(0, PAGE.default),
