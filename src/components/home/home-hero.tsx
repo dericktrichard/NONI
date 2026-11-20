@@ -122,7 +122,7 @@ export function HomeHero({ hero, cycle, pair, notice }: HomeHeroProps) {
             </div>
             <Link
               href="/matchups"
-              className="group text-accent-foreground flex items-center justify-between gap-6 bg-accent px-4 py-3 transition-[filter] hover:brightness-95 sm:min-w-72 sm:px-5"
+              className="group text-accent-foreground bg-accent flex items-center justify-between gap-6 px-4 py-3 transition-[filter] hover:brightness-95 sm:min-w-72 sm:px-5"
             >
               <span>
                 <span className="font-display block text-xl leading-tight font-semibold">

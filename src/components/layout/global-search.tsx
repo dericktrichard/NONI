@@ -234,6 +234,9 @@ export function GlobalSearch() {
       <dialog
         ref={ref}
         onClose={() => setOpen(false)}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) event.currentTarget.close();
+        }}
         aria-label="Search"
         className="bg-background text-foreground mx-auto mt-[12svh] mb-auto w-[calc(100%-2rem)] max-w-xl border p-0 backdrop:bg-black/60 backdrop:backdrop-blur-sm"
       >

@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutGrid, List, Search } from "lucide-react";
+import { ChevronDown, LayoutGrid, List, Search } from "lucide-react";
 import { MEDIA_LABELS, MEDIA_TYPES } from "@/config/media";
 import { TIER_GROUPS } from "@/config/scales";
 import type { View } from "@/lib/explore/params";
@@ -29,28 +29,34 @@ export function ExploreToolbar({ tier, onTier }: ToolbarProps) {
       <button
         type="button"
         onClick={() => window.dispatchEvent(new Event(OPEN_SEARCH))}
-        className="text-muted-foreground hover:border-foreground hover:text-foreground flex h-11 min-w-0 flex-1 items-center gap-3 border px-3 text-left text-sm transition-colors"
+        className="text-muted-foreground hover:border-foreground hover:text-foreground flex h-11 min-w-0 shrink-0 items-center gap-3 border px-3 text-left text-sm transition-colors sm:flex-1"
       >
         <Search className="size-4 shrink-0" aria-hidden />
         <span className="flex-1 truncate">Search characters or verses</span>
         <kbd className="eyebrow hidden border px-1.5 sm:block">/</kbd>
       </button>
 
-      <select
-        value={tier === null ? "" : String(tier)}
-        onChange={(event) =>
-          onTier(event.target.value === "" ? null : Number(event.target.value))
-        }
-        aria-label="Filter by power scale"
-        className="bg-background focus:border-foreground h-11 border px-3 text-sm outline-none sm:w-56"
-      >
-        <option value="">All power scales</option>
-        {TIER_OPTIONS.map(({ group, name }) => (
-          <option key={group} value={group}>
-            {`Tier ${group}: ${name}`}
-          </option>
-        ))}
-      </select>
+      <div className="relative shrink-0 sm:w-56">
+        <select
+          value={tier === null ? "" : String(tier)}
+          onChange={(event) =>
+            onTier(event.target.value === "" ? null : Number(event.target.value))
+          }
+          aria-label="Filter by power scale"
+          className="bg-background focus:border-foreground h-11 w-full appearance-none border pr-10 pl-3 text-sm outline-none"
+        >
+          <option value="">All power scales</option>
+          {TIER_OPTIONS.map(({ group, name }) => (
+            <option key={group} value={group}>
+              {`Tier ${group}: ${name}`}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          className="text-muted-foreground pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2"
+          aria-hidden
+        />
+      </div>
     </div>
   );
 }

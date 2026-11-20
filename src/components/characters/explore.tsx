@@ -1,11 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { ChevronLeft } from "lucide-react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { SectionHeading } from "@/components/home/section-heading";
-import { MEDIA_LABELS } from "@/config/media";
-import { TIER_GROUPS } from "@/config/scales";
-import type { Facet } from "@/lib/data/query";
 import type { CharacterPage } from "@/lib/data/summary";
 import {
   exploreHref,
@@ -25,19 +23,6 @@ interface ExploreProps {
   initial: CharacterPage;
 }
 
-function facetTitle(facet: Facet): string {
-  switch (facet.kind) {
-    case "all":
-      return "All characters";
-    case "media":
-      return `${MEDIA_LABELS[facet.media]} ranking`;
-    case "tier":
-      return `Tier ${facet.group}: ${TIER_GROUPS[facet.group] ?? "Unknown"}`;
-    default:
-      return "Results";
-  }
-}
-
 function go(href: string, options: { scroll: boolean; replace?: boolean }) {
   if (options.replace) window.history.replaceState(null, "", href);
   else window.history.pushState(null, "", href);
@@ -48,6 +33,13 @@ export function Explore({ hero, overview, initial }: ExploreProps) {
   const params = useSearchParams();
   const state = useMemo(() => parseExplore(params), [params]);
   const { mode, facet, view } = state;
+  const toOverview = useRef(false);
+
+  useEffect(() => {
+    if (mode !== "overview" || !toOverview.current) return;
+    toOverview.current = false;
+    document.getElementById("overview-start")?.scrollIntoView({ block: "start" });
+  }, [mode]);
 
   const active: ChipKey | null =
     mode === "overview"
@@ -65,7 +57,8 @@ export function Explore({ hero, overview, initial }: ExploreProps) {
         : key === "all"
           ? exploreHref({ all: true }, view)
           : exploreHref({ media: key }, view);
-    go(href, { scroll: true });
+    if (key === "overview") toOverview.current = true;
+    go(href, { scroll: key !== "overview" });
   }
 
   function chooseTier(group: number | null) {
@@ -92,8 +85,20 @@ export function Explore({ hero, overview, initial }: ExploreProps) {
         )}
       >
         {mode === "list" ? (
-          <div className="mb-6">
-            <SectionHeading title={facetTitle(facet)} aside="Ranking" />
+          <div className="mb-6 flex items-center justify-between border-b pb-3">
+            <Link
+              href="/"
+              scroll={false}
+              onClick={(event) => {
+                event.preventDefault();
+                select("overview");
+              }}
+              className="eyebrow inline-flex items-center gap-1 hover:underline"
+            >
+              <ChevronLeft className="size-3.5" aria-hidden />
+              Overview
+            </Link>
+            <span className="eyebrow">Ranking</span>
           </div>
         ) : null}
 
@@ -109,7 +114,12 @@ export function Explore({ hero, overview, initial }: ExploreProps) {
           onView={changeView}
         />
 
-        <div className={mode === "list" ? "mt-6" : undefined}>
+        <div
+          id="overview-start"
+          className={
+            mode === "list" ? "mt-6" : "scroll-mt-[calc(var(--nav-space)+4.5rem)]"
+          }
+        >
           {mode === "overview" ? (
             overview
           ) : (
