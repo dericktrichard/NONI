@@ -1,6 +1,5 @@
 "use client";
 
-import { X } from "lucide-react";
 import { useEffect, useId, useRef } from "react";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +27,9 @@ export function Modal({ open, onClose, title, eyebrow, wide, children }: ModalPr
     <dialog
       ref={ref}
       onClose={onClose}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) event.currentTarget.close();
+      }}
       aria-labelledby={titleId}
       className={cn(
         "bg-background text-foreground m-auto max-h-[calc(100svh-2rem)] w-[calc(100%-2rem)] overflow-y-auto border p-0 backdrop:bg-black/60 backdrop:backdrop-blur-sm",
@@ -45,9 +47,9 @@ export function Modal({ open, onClose, title, eyebrow, wide, children }: ModalPr
           type="button"
           onClick={() => ref.current?.close()}
           aria-label="Close"
-          className="hover:bg-muted -my-3 grid size-14 shrink-0 place-items-center"
+          className="eyebrow hover:bg-muted mr-5 border px-2 py-1"
         >
-          <X className="size-5" />
+          Esc
         </button>
       </div>
       <div className="p-5">{open ? children : null}</div>
