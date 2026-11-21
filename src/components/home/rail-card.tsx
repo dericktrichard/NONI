@@ -66,6 +66,7 @@ export function RailMore({
 }) {
   const stack = images.slice(0, 4);
   const spread = Math.max(stack.length - 1, 1);
+  const last = stack[stack.length - 1];
 
   return (
     <li className="w-36 shrink-0 snap-start sm:w-40 lg:w-44">
@@ -73,8 +74,15 @@ export function RailMore({
         href={href}
         className="group hover:border-foreground relative block aspect-2/3 w-full overflow-hidden border transition-colors"
       >
-        {stack.length > 0 ? (
+        {last ? (
           <div aria-hidden className="bg-muted absolute inset-0">
+            <Image
+              src={last.src}
+              alt=""
+              fill
+              sizes="120px"
+              className="scale-125 object-cover opacity-70 blur-2xl"
+            />
             {stack.map((image, index) => (
               <div
                 key={image.src}

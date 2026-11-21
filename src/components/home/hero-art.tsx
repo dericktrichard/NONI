@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useDaypart } from "@/hooks/use-daypart";
+import { useBanner, useBannerPending } from "@/hooks/use-personal-banner";
 import { cn } from "@/lib/utils";
 
 export interface HeroSlide {
@@ -13,7 +14,10 @@ export interface HeroSlide {
 
 export function HeroArt({ slides }: { slides: HeroSlide[] }) {
   const part = useDaypart();
-  const active = part === null ? -1 : Math.min(part, slides.length - 1);
+  const pending = useBannerPending();
+  const { banner } = useBanner();
+  const hidden = pending || banner !== null;
+  const active = hidden || part === null ? -1 : Math.min(part, slides.length - 1);
 
   return (
     <>

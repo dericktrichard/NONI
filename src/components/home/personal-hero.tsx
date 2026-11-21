@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useBanner, publishBanner } from "@/hooks/use-personal-banner";
 import { useSession } from "@/hooks/use-session";
 import { postJson } from "@/lib/battle/client";
 import type { PlusState } from "@/lib/data/plus";
@@ -10,27 +11,33 @@ import { cn } from "@/lib/utils";
 /** The owner's own banner over the home hero. The page stays cached for everyone, so this runs in the browser. */
 export function PersonalHero() {
   const { state } = useSession();
+  const { banner } = useBanner();
   const uid = state.status === "ready" ? (state.user?.uid ?? null) : null;
-  const [banner, setBanner] = useState<{ url: string; position: string } | null>(null);
+  const signedOut = state.status === "ready" && state.user === null;
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    if (signedOut) {
+      publishBanner(null);
+      return;
+    }
     if (!uid) return;
     let live = true;
     void postJson<PlusState>("/api/plus", { op: "state" }).then((reply) => {
       if (!live) return;
       const mine = reply.ok ? reply.data.banner : null;
-      setBanner(mine?.url ? { url: mine.url, position: mine.position } : null);
+      publishBanner(mine?.url ? { url: mine.url, position: mine.position } : null);
     });
     return () => {
       live = false;
     };
-  }, [uid]);
+  }, [uid, signedOut]);
 
-  if (!uid || !banner) return null;
+  if (!banner) return null;
 
   return (
     <Image
+      key={banner.url}
       src={banner.url}
       alt=""
       fill
