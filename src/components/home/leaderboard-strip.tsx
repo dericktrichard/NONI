@@ -13,7 +13,7 @@ const ROW =
 function Rank({ rank }: { rank: number }) {
   return (
     <span
-      className={`tabular font-display text-lg font-semibold${rank === 1 ? "text-(--spark-ink)" : ""}`}
+      className={`tabular font-display text-lg font-semibold ${rank === 1 ? "text-(--spark-ink)" : ""}`}
     >
       {rank}
     </span>
