@@ -11,7 +11,7 @@ export function ThemeToggle() {
       type="button"
       aria-label="Toggle theme"
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-      className="hover:border-foreground grid size-8 place-items-center border transition-colors"
+      className="hover:border-foreground grid size-9 place-items-center border transition-colors sm:size-8"
     >
       {/* CSS decides which icon shows, so there is no hydration mismatch */}
       <Sun className="size-4 dark:hidden" strokeWidth={1.75} aria-hidden />

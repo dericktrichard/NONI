@@ -15,6 +15,7 @@ const imageHost = process.env.R2_PUBLIC_URL ? new URL(process.env.R2_PUBLIC_URL)
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  compress: process.env.NODE_ENV === "production",
   images: {
     remotePatterns: imageHost
       ? [

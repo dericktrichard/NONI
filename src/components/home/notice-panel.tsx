@@ -8,7 +8,7 @@ export function NoticePanel({ title, body }: NoticePanelProps) {
   return (
     <aside
       aria-label="Notice"
-      className="reveal acrylic pointer-events-auto mx-auto w-full max-w-2xl p-4 sm:p-5"
+      className="reveal acrylic pointer-events-auto relative mx-auto w-full max-w-2xl p-4 sm:p-5"
     >
       <div className="flex items-center justify-between gap-4">
         <p className="eyebrow flex items-center gap-2">
@@ -24,6 +24,7 @@ export function NoticePanel({ title, body }: NoticePanelProps) {
         {title}
       </h2>
       <p className="text-muted-foreground mt-2 text-sm whitespace-pre-line">{body}</p>
+      <span aria-hidden className="absolute inset-x-0 bottom-0 h-1 bg-(--coral)" />
     </aside>
   );
 }
