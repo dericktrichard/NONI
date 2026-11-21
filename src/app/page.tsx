@@ -19,9 +19,9 @@ import { currentDay, pickPair } from "@/lib/matchup/daily";
 
 /**
  * One query of the top 60 feeds the hero pair, every rail and the first page of the full list.
- * Cached ten minutes, so the page costs at most about 9k reads a day however many people visit.
+ * Cached thirty minutes: about 180 reads per refresh, so roughly 9k reads a day however many people visit.
  */
-export const revalidate = 600;
+export const revalidate = 1800;
 
 const POOL_SIZE = 60;
 const RAIL_SIZE = 12;
@@ -83,6 +83,11 @@ export default async function Home() {
             <RailCard key={c.id} c={c} position={position} />
           ))}
           <RailMore
+            images={rail.items
+              .slice(0, 4)
+              .flatMap(({ c }) =>
+                c.imageUrl ? [{ src: c.imageUrl, name: c.name }] : [],
+              )}
             href={rail.href}
             label={rail.id === "top" ? "Full ranking" : `All ${rail.title}`}
           />

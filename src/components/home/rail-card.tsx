@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Portrait } from "@/components/characters/portrait";
 import { RankMovement } from "@/components/characters/rank-movement";
@@ -46,21 +47,76 @@ export function RailCard({ c, position }: { c: CharacterSummary; position: numbe
   );
 }
 
-export function RailMore({ href, label }: { href: string; label: string }) {
+interface StackImage {
+  src: string;
+  name: string;
+}
+
+/** Back to front: the deeper the picture, the softer it is */
+const BLUR = ["blur-sm", "blur-[3px]", "blur-[1.5px]", "blur-none"];
+
+export function RailMore({
+  href,
+  label,
+  images = [],
+}: {
+  href: string;
+  label: string;
+  images?: StackImage[];
+}) {
+  const stack = images.slice(0, 4);
+  const spread = Math.max(stack.length - 1, 1);
+
   return (
     <li className="w-36 shrink-0 snap-start sm:w-40 lg:w-44">
       <Link
         href={href}
-        className="group hover:bg-muted flex aspect-2/3 w-full flex-col justify-end border p-3 transition-colors"
+        className="group hover:border-foreground relative block aspect-2/3 w-full overflow-hidden border transition-colors"
       >
-        <span className="eyebrow block">Browse</span>
-        <span className="font-display mt-1 block text-xl leading-tight font-semibold">
-          {label}
-        </span>
-        <span
-          aria-hidden
-          className="bg-foreground mt-3 block h-px w-6 transition-[width] duration-200 group-hover:w-14"
-        />
+        {stack.length > 0 ? (
+          <div aria-hidden className="bg-muted absolute inset-0">
+            {stack.map((image, index) => (
+              <div
+                key={image.src}
+                className="bg-muted absolute top-[6%] aspect-2/3 w-[58%] overflow-hidden border shadow-lg transition-transform duration-300 group-hover:-translate-y-1"
+                style={{
+                  left: `${(index / spread) * 38}%`,
+                  transform: `rotate(${(index - (stack.length - 1) / 2) * 6}deg)`,
+                  zIndex: index,
+                }}
+              >
+                <Image
+                  src={image.src}
+                  alt=""
+                  fill
+                  sizes="120px"
+                  className={cn(
+                    "object-cover object-top",
+                    BLUR[BLUR.length - stack.length + index],
+                  )}
+                />
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        <div
+          className={cn(
+            "relative z-10 flex h-full flex-col justify-end p-3",
+            stack.length > 0 && "pointer-events-none",
+          )}
+        >
+          <div className="bg-background/85 -mx-3 -mb-3 p-3 backdrop-blur-md">
+            <span className="eyebrow block">Browse</span>
+            <span className="font-display mt-1 block text-xl leading-tight font-semibold">
+              {label}
+            </span>
+            <span
+              aria-hidden
+              className="bg-foreground mt-3 block h-px w-6 transition-[width] duration-200 group-hover:w-14"
+            />
+          </div>
+        </div>
       </Link>
     </li>
   );
