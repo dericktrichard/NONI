@@ -24,45 +24,47 @@ export function PlayGame({ pool }: { pool: PlayCharacter[] }) {
       </p>
     );
   }
-  if (day === null) return <div className="mt-8 h-96 border" aria-hidden />;
+  if (day === null) return <div className="mt-6 h-96 border" aria-hidden />;
 
   const streak = liveDailyStreak(stats, day, previousDay(day));
 
   return (
-    <div className="mt-8 [html[data-play=true]_&]:mt-0">
-      <dl data-chrome className="bg-border grid grid-cols-2 gap-px border">
-        <div className="bg-background p-3 sm:p-4">
-          <dt className="eyebrow">Daily streak</dt>
-          <dd className="tabular font-display mt-1 text-xl font-semibold sm:text-3xl">
-            {streak}
-          </dd>
+    <div className="mt-4 sm:mt-6 [html[data-play=true]_&]:mt-0">
+      <div
+        data-chrome
+        className="flex flex-wrap items-center justify-between gap-x-6 border-b"
+      >
+        <div role="group" aria-label="Game mode" className="flex">
+          {(["daily", "endless"] as const).map((key) => (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={mode === key}
+              onClick={() => setMode(key)}
+              className={cn(
+                "hover:bg-muted h-10 border-b-2 border-transparent px-4 text-sm font-medium capitalize transition-colors",
+                mode === key && "border-b-accent",
+              )}
+            >
+              {key}
+            </button>
+          ))}
         </div>
-        <div className="bg-background p-3 sm:p-4">
-          <dt className="eyebrow">Best endless streak</dt>
-          <dd className="tabular font-display mt-1 text-xl font-semibold sm:text-3xl">
-            {stats.bestStreak}
-          </dd>
-        </div>
-      </dl>
-
-      <div data-chrome role="group" aria-label="Game mode" className="mt-8 flex border-b">
-        {(["daily", "endless"] as const).map((key) => (
-          <button
-            key={key}
-            type="button"
-            aria-pressed={mode === key}
-            onClick={() => setMode(key)}
-            className={cn(
-              "hover:bg-muted h-11 border-b-2 border-transparent px-5 text-sm font-medium capitalize transition-colors",
-              mode === key && "border-b-accent",
-            )}
-          >
-            {key}
-          </button>
-        ))}
+        <dl className="flex items-baseline gap-5 py-2">
+          <div className="flex items-baseline gap-2">
+            <dt className="eyebrow">Daily streak</dt>
+            <dd className="tabular font-display text-lg font-semibold">{streak}</dd>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <dt className="eyebrow">Best endless</dt>
+            <dd className="tabular font-display text-lg font-semibold">
+              {stats.bestStreak}
+            </dd>
+          </div>
+        </dl>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-5 [html[data-play=true]_&]:mt-0">
         <div className={cn(mode !== "daily" && "hidden")}>
           <DailyRun pool={pool} day={day} />
         </div>

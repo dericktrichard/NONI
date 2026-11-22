@@ -78,17 +78,21 @@ export function EndlessRun({ pool }: { pool: PlayCharacter[] }) {
     });
   }
 
+  const header = (
+    <div className="mb-4 flex items-center justify-between gap-4 lg:mb-0 lg:flex-col lg:items-start lg:gap-2">
+      <p className="eyebrow">Streak {streak}</p>
+      <div className="flex items-center gap-3">
+        <p className="eyebrow">Best {Math.max(stats.bestStreak, streak)}</p>
+        <MenuToggle open={menu} onToggle={() => setMenu(!menu)} />
+      </div>
+    </div>
+  );
+
   return (
     <div>
       <PlayMode active={!over && !menu} />
-      <div className="mb-5 flex items-center justify-between gap-4">
-        <p className="eyebrow">Streak {streak}</p>
-        <div className="flex items-center gap-3">
-          <p className="eyebrow">Best {Math.max(stats.bestStreak, streak)}</p>
-          <MenuToggle open={menu} onToggle={() => setMenu(!menu)} />
-        </div>
-      </div>
       <DuelView
+        header={header}
         duel={duel}
         guess={guess}
         correct={correct}
@@ -99,7 +103,7 @@ export function EndlessRun({ pool }: { pool: PlayCharacter[] }) {
               Next
             </button>
           ) : (
-            <div className="flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-3 lg:items-start">
               <p className="font-display text-lg font-semibold">
                 Game over. Streak: {streak}
               </p>

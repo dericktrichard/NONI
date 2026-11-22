@@ -7,8 +7,10 @@ import { Portrait } from "@/components/characters/portrait";
 import { ListItems } from "@/components/lists/list-card";
 import { ListReportButton } from "@/components/lists/list-report-button";
 import { ProfileAvatar } from "@/components/profile/banner";
+import { MyStanding } from "@/components/standing/my-standing";
 import { usePaged } from "@/hooks/use-paged";
 import { useReveal } from "@/hooks/use-reveal";
+import { useSession } from "@/hooks/use-session";
 import type { BankRow } from "@/lib/data/banks";
 import type { FanGroup } from "@/lib/data/fan-groups";
 import type { PublicListEntry } from "@/lib/data/public-lists";
@@ -86,26 +88,119 @@ const bankKey = (row: BankRow) => row.slug;
 /** The week view has no server page, so it starts empty and loads its first page when shown */
 const UNLOADED: Page<BankRow, number> = { items: [], next: 0 };
 
-function Row({ row, unit }: { row: BoardRow; unit: string }) {
-  const top = row.rank === 1;
-  const note = row.note ? `${row.note}${row.tier ? ` · ${row.tier}` : ""}` : null;
+const ACTIVE_CHIP =
+  "border-foreground bg-foreground text-background [box-shadow:inset_0_-2px_0_var(--color-accent)]";
+
+function useMyHandle(): string | null {
+  const { state } = useSession();
+  return state.status === "ready" ? (state.user?.handle ?? null) : null;
+}
+
+/** The top three, big. On a wide screen the leader stands in the middle, taller. */
+function Podium({
+  rows,
+  unit,
+  me,
+}: {
+  rows: BoardRow[];
+  unit: string;
+  me: string | null;
+}) {
+  return (
+    <ol className="mt-6 grid gap-3 sm:grid-cols-3 sm:items-end">
+      {rows.map((row) => {
+        const first = row.rank === 1;
+        const mine = me !== null && row.handle === me;
+        return (
+          <li
+            key={`${row.handle}-${row.slug ?? ""}`}
+            className={cn(
+              row.rank === 1 && "sm:order-2",
+              row.rank === 2 && "sm:order-1",
+              row.rank === 3 && "sm:order-3",
+            )}
+          >
+            <Link
+              href={`/u/${row.handle}`}
+              className={cn(
+                "group hover:border-foreground relative flex items-center gap-4 overflow-hidden border p-4 transition-colors sm:flex-col sm:gap-3 sm:text-center",
+                first ? "sm:py-10" : "sm:py-6",
+                mine && "border-foreground",
+              )}
+            >
+              {first ? (
+                <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-(--spark)" />
+              ) : null}
+              <span
+                className={cn(
+                  "tabular font-display text-4xl leading-none font-semibold sm:text-6xl",
+                  first ? "text-(--spark-ink)" : "text-muted-foreground",
+                )}
+              >
+                {row.rank}
+              </span>
+              <ProfileAvatar
+                look={row.look}
+                handle={row.handle}
+                className={cn(
+                  "size-14 shrink-0 p-0.5",
+                  first ? "sm:size-24" : "sm:size-20",
+                )}
+              />
+              <span className="min-w-0 flex-1 sm:flex-none">
+                <span className="block truncate text-base font-medium group-hover:underline">
+                  @{row.handle}
+                </span>
+                {mine ? <span className="eyebrow block">You</span> : null}
+                <span className="tabular font-display mt-1 block text-2xl font-semibold sm:text-3xl">
+                  {row.value.toLocaleString("en-US")}
+                </span>
+                <span className="eyebrow block">{unit}</span>
+                {row.note ? (
+                  <span className="text-muted-foreground block truncate text-xs">
+                    {row.note}
+                  </span>
+                ) : null}
+              </span>
+            </Link>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+function Row({
+  row,
+  unit,
+  top,
+  me,
+}: {
+  row: BoardRow;
+  unit: string;
+  top: number;
+  me: string | null;
+}) {
+  const mine = me !== null && row.handle === me;
+  const note = row.note ? `${row.note}${row.tier ? ` \u00b7 ${row.tier}` : ""}` : null;
+  const share = top > 0 ? Math.max(3, Math.round((row.value / top) * 100)) : 0;
   return (
     <li>
       <Link
         href={`/u/${row.handle}`}
         className={cn(
-          "group hover:bg-muted grid grid-cols-[3rem_2.5rem_minmax(0,1fr)_auto] items-center gap-3 border-b px-2 py-3 transition-colors sm:px-3",
-          top && "bg-muted",
+          "group hover:bg-muted relative grid grid-cols-[2.5rem_2.5rem_minmax(0,1fr)_auto] items-center gap-3 border-b px-2 py-3 transition-colors sm:px-3",
+          mine && "bg-muted",
         )}
       >
-        <span className="tabular font-display flex items-center gap-1.5 text-xl font-semibold sm:text-2xl">
-          {top ? <span className="bg-accent size-2" aria-hidden /> : null}
+        <span className="tabular font-display text-muted-foreground text-lg font-semibold sm:text-xl">
           {row.rank}
         </span>
         <ProfileAvatar look={row.look} handle={row.handle} className="size-10 p-0.5" />
         <span className="min-w-0">
           <span className="block truncate text-sm font-medium group-hover:underline sm:text-base">
             @{row.handle}
+            {mine ? <span className="eyebrow ml-2">You</span> : null}
           </span>
           {note ? <span className="eyebrow block truncate">{note}</span> : null}
         </span>
@@ -115,6 +210,11 @@ function Row({ row, unit }: { row: BoardRow; unit: string }) {
           </span>
           <span className="eyebrow block">{unit}</span>
         </span>
+        <span
+          aria-hidden
+          className="bg-foreground/40 absolute bottom-0 left-0 h-px"
+          style={{ width: `${share}%` }}
+        />
       </Link>
     </li>
   );
@@ -178,22 +278,35 @@ function More({ hasMore, busy, failed, onMore }: MoreProps) {
 }
 
 function RowsPanel({ rows, unit }: { rows: BoardRow[]; unit: string }) {
-  const reveal = useReveal(rows.length, 10);
+  const me = useMyHandle();
+  const podium = rows.slice(0, 3);
+  const rest = rows.slice(3);
+  const reveal = useReveal(rest.length, 10);
   if (rows.length === 0) {
     return (
       <Empty
         title="Nobody is on this board yet"
-        text="Play a battle and switch on boards above to take the first place."
+        text="Play a battle and join the boards from your profile to take the first place."
       />
     );
   }
+  const top = rows[0]?.value ?? 0;
   return (
     <>
-      <ol className="mt-2 border-t">
-        {rows.slice(0, reveal.count).map((row) => (
-          <Row key={`${row.handle}-${row.slug ?? ""}`} row={row} unit={unit} />
-        ))}
-      </ol>
+      <Podium rows={podium} unit={unit} me={me} />
+      {rest.length > 0 ? (
+        <ol className="mt-6 border-t">
+          {rest.slice(0, reveal.count).map((row) => (
+            <Row
+              key={`${row.handle}-${row.slug ?? ""}`}
+              row={row}
+              unit={unit}
+              top={top}
+              me={me}
+            />
+          ))}
+        </ol>
+      ) : null}
       <More hasMore={reveal.more} busy={false} failed={false} onMore={reveal.showMore} />
     </>
   );
@@ -457,26 +570,29 @@ export function BoardTabs({
   const tab = TABS.find((t) => t.key === key)!;
 
   return (
-    <div className="mt-8">
-      <div
-        role="group"
-        aria-label="Leaderboard"
-        className="flex overflow-x-auto border-b"
-      >
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            aria-pressed={key === t.key}
-            onClick={() => setKey(t.key)}
-            className={cn(
-              "hover:bg-muted h-11 shrink-0 border-b-2 border-transparent px-3 text-sm font-medium whitespace-nowrap transition-colors sm:px-5",
-              key === t.key && "border-b-accent",
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
+    <div>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+        <div
+          role="group"
+          aria-label="Leaderboard"
+          className="no-scrollbar -mx-4 flex min-w-0 gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0 lg:flex-1"
+        >
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              aria-pressed={key === t.key}
+              onClick={() => setKey(t.key)}
+              className={cn(
+                "inline-flex h-10 shrink-0 items-center border px-3 text-sm font-medium whitespace-nowrap transition-colors",
+                key === t.key ? ACTIVE_CHIP : "border-border hover:bg-foreground/10",
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <MyStanding />
       </div>
       <p className="text-muted-foreground mt-3 text-xs">{tab.hint}</p>
 
