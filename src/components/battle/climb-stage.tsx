@@ -7,7 +7,6 @@ import {
   PhaseRail,
   PlaybackBar,
   STAGE,
-  Segmented,
   Sweep,
   Tag,
 } from "@/components/battle/shared";
@@ -198,16 +197,24 @@ export function ClimbStage({
       <PlayMode active={!finished} />
       <Ladder result={result} step={p.step} resolved={p.resolved} done={p.done} />
 
-      <div className="lg:hidden">
-        <Segmented
-          label="View"
-          value={view}
-          options={[
-            { value: "duel", label: "Duel" },
-            { value: "bracket", label: "Bracket" },
-          ]}
-          onChange={setView}
-        />
+      <div className="flex items-center justify-between gap-3 lg:hidden">
+        <span className="eyebrow">View</span>
+        <div role="group" aria-label="View" className="flex border">
+          {(["duel", "bracket"] as const).map((key) => (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={view === key}
+              onClick={() => setView(key)}
+              className={cn(
+                "h-9 px-4 text-sm font-medium capitalize transition-colors",
+                view === key ? "bg-foreground text-background" : "hover:bg-foreground/10",
+              )}
+            >
+              {key}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1fr)_26rem] lg:gap-6">

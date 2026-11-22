@@ -1,7 +1,7 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { StandingToggle } from "@/components/standing/standing-toggle";
 import { useSession } from "@/hooks/use-session";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import type { Place, Standing } from "@/lib/standing/types";
@@ -9,24 +9,24 @@ import { OPEN_PROFILE_SETUP } from "@/lib/ui/events";
 
 function Cell({ label, place, unit }: { label: string; place: Place; unit: string }) {
   return (
-    <div className="bg-background p-3">
+    <div className="px-4 py-2">
       <dt className="eyebrow">{label}</dt>
-      <dd className="tabular font-display mt-1 text-xl font-semibold">
+      <dd className="tabular font-display text-xl leading-tight font-semibold">
         {place.rank === null ? "--" : `#${place.rank}`}
       </dd>
-      <p className="tabular text-muted-foreground text-xs">
+      <p className="tabular text-muted-foreground text-[11px]">
         {place.value.toLocaleString("en-US")} {unit}
       </p>
     </div>
   );
 }
 
+/** A slim line about the signed-in visitor. The "show me on boards" switch lives in profile settings. */
 export function MyStanding() {
   const { state } = useSession();
   const user = state.status === "ready" ? state.user : null;
   const signedIn = user !== null;
   const [data, setData] = useState<Standing | null>(null);
-  const [version, setVersion] = useState(0);
 
   useEffect(() => {
     if (!signedIn) return;
@@ -38,16 +38,17 @@ export function MyStanding() {
     return () => {
       live = false;
     };
-  }, [signedIn, version]);
+  }, [signedIn]);
 
-  const shell = "mt-8 border p-4";
+  const strip = "flex flex-wrap items-center gap-3 border p-3";
 
-  if (state.status === "loading") return <div className={`${shell} h-24`} aria-hidden />;
+  if (state.status === "loading")
+    return <div className="h-14 w-full border sm:w-80" aria-hidden />;
 
   if (!user) {
     return (
-      <div className={`${shell} flex flex-wrap items-center justify-between gap-3`}>
-        <p className="text-sm">Sign in to get on the boards and earn fan badges.</p>
+      <div className={strip}>
+        <p className="text-sm">Sign in to join the boards.</p>
         <button
           type="button"
           className="btn btn-solid btn-sm"
@@ -61,7 +62,7 @@ export function MyStanding() {
 
   if (!user.handle) {
     return (
-      <div className={`${shell} flex flex-wrap items-center justify-between gap-3`}>
+      <div className={strip}>
         <p className="text-sm">Choose a handle to appear on the boards.</p>
         <button
           type="button"
@@ -74,22 +75,24 @@ export function MyStanding() {
     );
   }
 
-  if (!data) return <div className={`${shell} h-24`} aria-hidden />;
+  if (!data) return <div className="h-14 w-full border sm:w-80" aria-hidden />;
+
+  if (!data.boards) {
+    return (
+      <div className={strip}>
+        <p className="text-sm">You are not on the boards.</p>
+        <Link href={`/u/${user.handle}`} className="btn btn-line btn-sm">
+          Your profile
+        </Link>
+      </div>
+    );
+  }
 
   return (
-    <div className={shell}>
-      {data.boards ? (
-        <dl className="bg-border mb-4 grid grid-cols-3 gap-px border">
-          <Cell label="Glaze" place={data.glaze} unit="Glaze" />
-          <Cell label="This week" place={data.week} unit="net" />
-          <Cell label="Titles" place={data.champions} unit="won" />
-        </dl>
-      ) : (
-        <p className="mb-4 text-sm">
-          Turn this on to join the boards. Your rank appears here once you do.
-        </p>
-      )}
-      <StandingToggle initial={data.boards} onChange={() => setVersion((v) => v + 1)} />
-    </div>
+    <dl className="flex divide-x border">
+      <Cell label="Glaze" place={data.glaze} unit="Glaze" />
+      <Cell label="This week" place={data.week} unit="net" />
+      <Cell label="Titles" place={data.champions} unit="won" />
+    </dl>
   );
 }

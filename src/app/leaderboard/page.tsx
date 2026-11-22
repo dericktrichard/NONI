@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { BoardTabs } from "@/components/standing/board-tabs";
-import { MyStanding } from "@/components/standing/my-standing";
 import { getBankPage } from "@/lib/data/banks";
 import { getFanPage } from "@/lib/data/fan-groups";
 import { getPublicListPage } from "@/lib/data/public-lists";
@@ -25,12 +24,7 @@ export default async function LeaderboardPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 pt-8 pb-24 sm:pt-12">
-      <p className="eyebrow mt-8">Standing</p>
-      <h1 className="font-display mt-2 text-4xl font-semibold tracking-tight sm:text-6xl">
-        Who is on top?
-      </h1>
-      <MyStanding />
+    <div className="mx-auto max-w-5xl px-4 pt-6 pb-16 sm:pt-8">
       <BoardTabs boards={{ glaze, week, champions, fans, banks }} lists={lists} />
     </div>
   );

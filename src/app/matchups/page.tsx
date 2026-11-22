@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { Portrait } from "@/components/characters/portrait";
 import { SectionHeading } from "@/components/home/section-heading";
@@ -55,34 +56,31 @@ export default async function MatchupsPage() {
   const empty = feed.hot.length === 0 && feed.recent.length === 0;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 pt-8 pb-24 sm:pt-12">
+    <div className="mx-auto max-w-5xl px-4 pt-6 pb-16 sm:pt-8">
       <SectionTabs />
-      <p className="eyebrow mt-8">Head to head</p>
-      <h1 className="font-display mt-2 text-4xl font-semibold tracking-tight sm:text-6xl">
-        Who wins?
-      </h1>
-
-      <div className="mt-6 flex flex-wrap gap-2">
-        <NewMatchupButton className="btn btn-solid">New matchup</NewMatchupButton>
-        <SurpriseButton className="btn btn-line">Surprise me</SurpriseButton>
+      <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
+        <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-5xl">
+          Who wins?
+        </h1>
+        <div className="flex flex-wrap gap-2">
+          <NewMatchupButton className="btn btn-solid">New matchup</NewMatchupButton>
+          <SurpriseButton className="btn btn-line">Surprise me</SurpriseButton>
+        </div>
       </div>
 
       {pair ? (
         <Link
           href={`/matchups/${pair[0].id}/${pair[1].id}`}
-          className="group hover:border-foreground mt-10 block border transition-colors"
+          className="group hover:border-foreground mt-6 block border transition-colors"
         >
           <div className="flex items-center justify-between gap-4 border-b px-4 py-3">
             <span className="eyebrow flex items-center gap-2">
               <span className="bg-accent size-2" aria-hidden />
               Matchup of the day
             </span>
-            <span className="eyebrow flex items-center gap-2 group-hover:underline">
+            <span className="eyebrow flex items-center gap-1 group-hover:underline">
               See the verdict
-              <span
-                aria-hidden
-                className="h-px w-5 bg-current transition-[width] duration-200 group-hover:w-8"
-              />
+              <ArrowUpRight className="size-4" aria-hidden />
             </span>
           </div>
           <div className="grid sm:grid-cols-[1fr_auto_1fr]">
@@ -99,7 +97,7 @@ export default async function MatchupsPage() {
       ) : null}
 
       {empty ? (
-        <div className="mt-10 border p-6">
+        <div className="mt-6 border p-4">
           <p className="font-display text-lg font-semibold">No community matchups yet</p>
           <p className="text-muted-foreground mt-1 text-sm">
             A matchup appears here once someone votes or makes an argument. Start one and
@@ -109,7 +107,7 @@ export default async function MatchupsPage() {
       ) : null}
 
       {feed.hot.length > 0 ? (
-        <section className="mt-12">
+        <section className="mt-8">
           <SectionHeading title="Hot right now" aside="Votes and arguments" />
           <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {feed.hot.map((m) => (
@@ -120,7 +118,7 @@ export default async function MatchupsPage() {
       ) : null}
 
       {feed.recent.length > 0 ? (
-        <section className="mt-12">
+        <section className="mt-8">
           <SectionHeading title="Recently active" />
           <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {feed.recent.map((m) => (
