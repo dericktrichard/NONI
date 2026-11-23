@@ -22,7 +22,7 @@ export function GlazePanel({
   ];
 
   return (
-    <section aria-label="Glaze" className="mt-8 border">
+    <section aria-label="Glaze" className="border">
       <div className="flex items-end justify-between gap-4 p-4 sm:p-5">
         <div>
           <p className="eyebrow">Glaze</p>
@@ -50,7 +50,7 @@ export function GlazePanel({
       {isOwner ? <TopReward boards={standing.boards} /> : null}
       {isOwner && !standing.boards ? (
         <p className="text-muted-foreground border-t p-3 text-xs">
-          Your rank shows once you switch on leaderboards below.
+          Your rank shows once you switch on leaderboards in Settings.
         </p>
       ) : null}
     </section>

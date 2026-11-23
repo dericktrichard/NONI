@@ -9,10 +9,23 @@ interface ModalProps {
   title: string;
   eyebrow?: string;
   wide?: boolean;
+  /** One line title in the small uppercase style */
+  slim?: boolean;
+  /** Buttons shown in the header, before Esc */
+  actions?: React.ReactNode;
   children: React.ReactNode;
 }
 
-export function Modal({ open, onClose, title, eyebrow, wide, children }: ModalProps) {
+export function Modal({
+  open,
+  onClose,
+  title,
+  eyebrow,
+  wide,
+  slim,
+  actions,
+  children,
+}: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -36,21 +49,34 @@ export function Modal({ open, onClose, title, eyebrow, wide, children }: ModalPr
         wide ? "max-w-2xl" : "max-w-lg",
       )}
     >
-      <div className="bg-background sticky top-0 z-10 flex items-start justify-between gap-4 border-b py-3 pl-5">
+      <div
+        className={cn(
+          "bg-background sticky top-0 z-10 flex justify-between gap-4 border-b py-3 pl-5",
+          slim ? "items-center" : "items-start",
+        )}
+      >
         <div className="min-w-0">
-          {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
-          <h2 id={titleId} className="font-display text-xl font-semibold tracking-tight">
+          {eyebrow && !slim ? <p className="eyebrow">{eyebrow}</p> : null}
+          <h2
+            id={titleId}
+            className={
+              slim ? "eyebrow" : "font-display text-xl font-semibold tracking-tight"
+            }
+          >
             {title}
           </h2>
         </div>
-        <button
-          type="button"
-          onClick={() => ref.current?.close()}
-          aria-label="Close"
-          className="eyebrow hover:bg-muted mr-5 border px-2 py-1"
-        >
-          Esc
-        </button>
+        <div className="mr-5 flex shrink-0 items-center gap-2">
+          {actions}
+          <button
+            type="button"
+            onClick={() => ref.current?.close()}
+            aria-label="Close"
+            className="eyebrow hover:bg-muted border px-2 py-1"
+          >
+            Esc
+          </button>
+        </div>
       </div>
       <div className="p-5">{open ? children : null}</div>
     </dialog>
