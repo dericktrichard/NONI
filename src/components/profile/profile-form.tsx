@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useId, useState } from "react";
+import { createPortal } from "react-dom";
 import { controlClass } from "@/components/ui/fields";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import type { OwnProfile } from "@/lib/data/profile";
@@ -30,10 +31,13 @@ interface ProfileFormProps {
   initial: OwnProfile;
   verified: boolean;
   onSaved?: () => void;
+  /** undefined keeps the button inside the form, an element moves it there, null shows none */
+  slot?: HTMLElement | null;
 }
 
-export function ProfileForm({ initial, verified, onSaved }: ProfileFormProps) {
+export function ProfileForm({ initial, verified, onSaved, slot }: ProfileFormProps) {
   const router = useRouter();
+  const formId = useId();
   const [handle, setHandle] = useState(initial.handle ?? "");
   const [bio, setBio] = useState(initial.bio);
   const [hidden, setHidden] = useState(initial.private);
@@ -83,7 +87,7 @@ export function ProfileForm({ initial, verified, onSaved }: ProfileFormProps) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-6">
+    <form id={formId} onSubmit={submit} className="space-y-6">
       {!verified ? (
         <p className="border-foreground bg-muted border-l-2 p-3 text-sm">
           Verify your email and sign in again before saving your profile.
@@ -160,15 +164,29 @@ export function ProfileForm({ initial, verified, onSaved }: ProfileFormProps) {
         </div>
       </fieldset>
 
-      <div className="border-t pt-5">
-        <button
-          type="submit"
-          className="btn btn-solid"
-          disabled={busy || issue !== null || normalized === "" || locked}
-        >
-          Save profile
-        </button>
-      </div>
+      {slot === undefined ? (
+        <div className="border-t pt-5">
+          <button
+            type="submit"
+            className="btn btn-solid"
+            disabled={busy || issue !== null || normalized === "" || locked}
+          >
+            Save profile
+          </button>
+        </div>
+      ) : slot ? (
+        createPortal(
+          <button
+            type="submit"
+            form={formId}
+            className="btn btn-solid btn-sm"
+            disabled={busy || issue !== null || normalized === "" || locked}
+          >
+            Save
+          </button>,
+          slot,
+        )
+      ) : null}
     </form>
   );
 }

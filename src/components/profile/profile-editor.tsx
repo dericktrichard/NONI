@@ -20,9 +20,10 @@ interface ProfileEditorProps {
   look: Look;
   verified: boolean;
   onSaved: () => void;
+  slot?: HTMLElement | null;
 }
 
-export function ProfileEditor({ profile, look, verified, onSaved }: ProfileEditorProps) {
+export function ProfileEditor({ profile, look, verified, onSaved, slot }: ProfileEditorProps) {
   const [tab, setTab] = useState<Tab>("details");
 
   return (
@@ -45,7 +46,12 @@ export function ProfileEditor({ profile, look, verified, onSaved }: ProfileEdito
       </div>
 
       <div className={cn(tab !== "details" && "hidden")}>
-        <ProfileForm initial={profile} verified={verified} onSaved={onSaved} />
+        <ProfileForm
+          initial={profile}
+          verified={verified}
+          onSaved={onSaved}
+          slot={slot === undefined ? undefined : tab === "details" ? slot : null}
+        />
       </div>
       <div className={cn(tab === "details" && "hidden")}>
         <LookForm
@@ -53,6 +59,7 @@ export function ProfileEditor({ profile, look, verified, onSaved }: ProfileEdito
           handle={profile.handle ?? "you"}
           section={tab === "banner" ? "banner" : "avatar"}
           onSaved={onSaved}
+          slot={slot === undefined ? undefined : tab === "details" ? null : slot}
         />
       </div>
     </div>

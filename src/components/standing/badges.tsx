@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Portrait } from "@/components/characters/portrait";
-import { SectionHeading } from "@/components/home/section-heading";
-import { StandingToggle } from "@/components/standing/standing-toggle";
+import { SectionLabel } from "@/components/profile/section-label";
 import type { Badge } from "@/lib/standing/types";
 import { cn } from "@/lib/utils";
 
@@ -15,18 +14,15 @@ export function Badges({ badges, isOwner, onBoards }: BadgesProps) {
   if (badges.length === 0 && !isOwner) return null;
 
   return (
-    <section className="mt-12">
-      <SectionHeading
-        title="Fan badges"
-        aside={badges.length > 0 ? String(badges.length) : undefined}
-      />
+    <section className="mt-10">
+      <SectionLabel title="Fan badges" aside={badges.length > 0 ? String(badges.length) : undefined} />
 
       {badges.length === 0 ? (
-        <p className="text-muted-foreground mt-6 border p-4 text-sm">
+        <p className="text-muted-foreground mt-4 border p-4 text-sm">
           No badges yet. Battle with a character to start earning fan points.
         </p>
       ) : (
-        <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {badges.map((badge) => (
             <li key={badge.slug}>
               <Link
@@ -57,15 +53,10 @@ export function Badges({ badges, isOwner, onBoards }: BadgesProps) {
         </ul>
       )}
 
-      {isOwner ? (
-        <div className="mt-6 border p-4">
-          {!onBoards && badges.length > 0 ? (
-            <p className="text-muted-foreground mb-3 text-sm">
-              Only you can see these until you switch on boards.
-            </p>
-          ) : null}
-          <StandingToggle initial={onBoards} />
-        </div>
+      {isOwner && !onBoards && badges.length > 0 ? (
+        <p className="text-muted-foreground mt-3 text-sm">
+          Only you can see these until you switch on boards in Settings.
+        </p>
       ) : null}
     </section>
   );

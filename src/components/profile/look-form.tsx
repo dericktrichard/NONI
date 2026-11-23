@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { CharacterFinder } from "@/components/characters/character-finder";
 import { BannerSurface, ProfileAvatar, ProfileBanner } from "@/components/profile/banner";
 import { ImageUpload } from "@/components/profile/image-upload";
@@ -20,9 +21,11 @@ interface LookFormProps {
   handle: string;
   section: "avatar" | "banner";
   onSaved?: () => void;
+  /** undefined keeps the button inside the form, an element moves it there, null shows none */
+  slot?: HTMLElement | null;
 }
 
-export function LookForm({ initial, handle, section, onSaved }: LookFormProps) {
+export function LookForm({ initial, handle, section, onSaved, slot }: LookFormProps) {
   const router = useRouter();
   const [look, setLook] = useState<Look>(initial);
   const [busy, setBusy] = useState(false);
@@ -182,16 +185,30 @@ export function LookForm({ initial, handle, section, onSaved }: LookFormProps) {
         </p>
       ) : null}
 
-      <div className="border-t pt-5">
-        <button
-          type="button"
-          className="btn btn-solid"
-          disabled={busy}
-          onClick={() => void save()}
-        >
-          Save {section}
-        </button>
-      </div>
+      {slot === undefined ? (
+        <div className="border-t pt-5">
+          <button
+            type="button"
+            className="btn btn-solid"
+            disabled={busy}
+            onClick={() => void save()}
+          >
+            Save {section}
+          </button>
+        </div>
+      ) : slot ? (
+        createPortal(
+          <button
+            type="button"
+            className="btn btn-solid btn-sm"
+            disabled={busy}
+            onClick={() => void save()}
+          >
+            Save
+          </button>,
+          slot,
+        )
+      ) : null}
     </div>
   );
 }

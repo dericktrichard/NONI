@@ -4,15 +4,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { Portrait } from "@/components/characters/portrait";
-import { SectionHeading } from "@/components/home/section-heading";
 import { ListCard } from "@/components/lists/list-card";
 import { ProfileAvatar, ProfileBanner } from "@/components/profile/banner";
+import { Bio } from "@/components/profile/bio";
 import { OwnFeats } from "@/components/profile/own-feats";
 import { NewListButton } from "@/components/profile/new-list-button";
 import { OwnerTools } from "@/components/profile/owner-tools";
-import { PlusPanel } from "@/components/profile/plus-panel";
 import { ProfileTitle } from "@/components/profile/profile-title";
 import { ReportImageButton } from "@/components/profile/report-image-button";
+import { SectionLabel } from "@/components/profile/section-label";
 import { Badges } from "@/components/standing/badges";
 import { GlazePanel } from "@/components/standing/glaze-panel";
 import { getActivityStats, listOwnFeats, uidForHandle } from "@/lib/data/activity";
@@ -22,6 +22,7 @@ import { getBadges, getMyStanding } from "@/lib/data/standing";
 import { canViewProfile } from "@/lib/profile/visibility";
 import { roleOf } from "@/lib/security/roles";
 import { getSessionUser } from "@/lib/security/session";
+import { cn } from "@/lib/utils";
 
 const load = cache(getProfileByHandle);
 
@@ -31,6 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { handle } = await params;
   const profile = await load(handle);
   if (!profile) return { title: "Profile not found" };
+
   if (profile.private) {
     return {
       title: `@${profile.handle}`,
@@ -38,6 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       robots: { index: false, follow: false },
     };
   }
+
   return {
     title: `@${profile.handle}`,
     description: profile.bio || `@${profile.handle} on NONI`,
@@ -46,11 +49,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 function Stat({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="bg-background p-3 sm:p-4">
+    <div className="shrink-0 px-4 py-2.5">
       <dt className="eyebrow">{label}</dt>
-      <dd className="tabular font-display mt-1 text-base font-semibold sm:text-xl">
-        {children}
-      </dd>
+      <dd className="tabular font-display text-lg font-semibold">{children}</dd>
     </div>
   );
 }
@@ -59,7 +60,7 @@ function PrivateNotice({ handle }: { handle: string }) {
   return (
     <div className="mx-auto max-w-3xl px-4 pt-10 pb-24">
       <p className="eyebrow">Profile</p>
-      <h1 className="font-display mt-1 text-3xl font-semibold tracking-tight wrap-break-word sm:text-5xl">
+      <h1 className="font-display mt-1 text-2xl font-semibold tracking-tight wrap-break-word sm:text-3xl">
         @{handle}
       </h1>
       <p className="text-muted-foreground mt-6 flex items-center gap-3 border p-4 text-sm">
@@ -112,65 +113,65 @@ export default async function ProfilePage({ params }: Props) {
     <>
       <ProfileBanner
         look={profile.look}
-        className="-mt-(--nav-space) h-[calc(var(--nav-space)+9rem)] w-full sm:h-[calc(var(--nav-space)+15rem)]"
+        className="-mt-(--nav-space) h-[calc(var(--nav-space)+7rem)] w-full border-0! sm:h-[calc(var(--nav-space)+10rem)]"
       />
-
-      <div className="mx-auto max-w-3xl px-4 pb-24">
-        <header>
-          <ProfileAvatar
-            look={profile.look}
-            handle={profile.handle}
-            className="-mt-10 size-20 sm:-mt-14 sm:size-28"
-          />
-
-          <div className="mt-4">
-            <p className="eyebrow">
-              {isOwner ? "Your profile" : "Profile"}
-              {profile.private ? " · Private" : ""}
-            </p>
-            <h1 className="font-display mt-1 text-3xl font-semibold tracking-tight wrap-break-word sm:text-5xl">
-              @{profile.handle}
-            </h1>
-            <ProfileTitle look={profile.look} />
-            {profile.bio ? (
-              <p className="mt-3 max-w-xl text-sm whitespace-pre-line">{profile.bio}</p>
-            ) : null}
-            {profile.private ? (
-              <p className="text-muted-foreground mt-3 flex items-center gap-2 text-sm">
-                <Lock className="size-4 shrink-0" aria-hidden />
-                {isOwner
-                  ? "Only you and moderators can see this profile."
-                  : "Private profile, visible to moderators only."}
-              </p>
-            ) : null}
+      <div className="mx-auto max-w-6xl px-4 pb-20">
+        <header className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
+            <ProfileAvatar
+              look={profile.look}
+              handle={profile.handle}
+              className="-mt-6 size-20 shrink-0 sm:-mt-8 sm:size-24"
+            />
+            <div className="min-w-0 flex-1 pt-2">
+              <h1 className="font-display truncate text-lg leading-tight font-semibold tracking-tight sm:text-2xl">
+                @{profile.handle}
+              </h1>
+              <ProfileTitle look={profile.look} />
+              {profile.bio ? <Bio text={profile.bio} /> : null}
+            </div>
           </div>
 
-          {!isOwner && uid && (uploadedAvatar || uploadedBanner) ? (
-            <ReportImageButton
-              uid={uid}
-              avatar={uploadedAvatar}
-              banner={uploadedBanner}
-            />
-          ) : null}
-
-          {isOwner && own && viewer ? (
-            <OwnerTools
-              profile={own}
-              look={profile.look}
-              verified={viewer.email_verified === true}
-              staff={staff}
-              lists={ownLists}
-            />
-          ) : null}
+          <div className="shrink-0 pt-2">
+            {isOwner && own && viewer ? (
+              <OwnerTools
+                profile={own}
+                look={profile.look}
+                verified={viewer.email_verified === true}
+                staff={staff}
+                lists={ownLists}
+                onBoards={onBoards}
+              />
+            ) : uid && (uploadedAvatar || uploadedBanner) ? (
+              <ReportImageButton
+                uid={uid}
+                avatar={uploadedAvatar}
+                banner={uploadedBanner}
+              />
+            ) : null}
+          </div>
         </header>
 
-        {visibleStanding ? (
-          <GlazePanel standing={visibleStanding} isOwner={isOwner} />
+        <p className="eyebrow mt-3">
+          {isOwner ? "Your profile" : "Profile"}
+          {profile.private ? " · Private" : ""}
+        </p>
+        {profile.private ? (
+          <p className="text-muted-foreground mt-3 flex items-center gap-2 text-sm">
+            <Lock className="size-4 shrink-0" aria-hidden />
+            {isOwner
+              ? "Only you and moderators can see this profile."
+              : "Private profile, visible to moderators only."}
+          </p>
         ) : null}
-        {isOwner ? <PlusPanel /> : null}
+        {isOwner && viewer && viewer.email_verified !== true ? (
+          <p className="border-foreground bg-muted mt-4 max-w-md border-l-2 p-3 text-sm">
+            Your email is not verified. Open the link we emailed you, then sign in again.
+            Voting and submitting need a verified email.
+          </p>
+        ) : null}
 
-        <dl className="bg-border mt-8 grid grid-cols-2 gap-px border sm:grid-cols-3">
-          <Stat label="Member since">{profile.createdAt.slice(0, 10) || "--"}</Stat>
+        <dl className="no-scrollbar mt-5 flex divide-x overflow-x-auto border">
           <Stat label="Feats">{profile.featsSubmitted}</Stat>
           <Stat label="Arguments">{shown(stats.arguments)}</Stat>
           <Stat label="Votes cast">{shown(stats.votes)}</Stat>
@@ -178,73 +179,90 @@ export default async function ProfilePage({ params }: Props) {
           <Stat label="Favourites">{profile.favouriteCount}</Stat>
         </dl>
 
-        <Badges badges={badges} isOwner={isOwner} onBoards={onBoards} />
-
-        <section className="mt-12">
-          <SectionHeading
-            title="Favourite characters"
-            aside={
-              profile.favouriteCount > 0 ? `${profile.favouriteCount} total` : undefined
-            }
-          />
-          {profile.favourites.length === 0 ? (
-            <p className="text-muted-foreground mt-6 border p-4 text-sm">
-              {isOwner
-                ? "No favourites yet. Press Favourite on any character page to add one."
-                : "No favourite characters yet."}
-            </p>
-          ) : (
-            <ul className="mt-6 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
-              {profile.favourites.map((f) => (
-                <li key={f.id}>
-                  <Link href={`/characters/${f.id}`} className="group block">
-                    <Portrait
-                      name={f.name}
-                      src={f.imageUrl}
-                      sizes="(min-width: 768px) 112px, 30vw"
-                      className="aspect-2/3 w-full border"
-                    />
-                    <p className="mt-1.5 truncate text-sm font-medium group-hover:underline">
-                      {f.name}
-                    </p>
-                    <p className="eyebrow truncate">{f.verse}</p>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+        <div
+          className={cn(
+            "mt-6 grid gap-x-8 gap-y-2",
+            visibleStanding && "lg:grid-cols-[minmax(0,1fr)_20rem]",
           )}
-        </section>
+        >
+          {visibleStanding ? (
+            <aside className="lg:sticky lg:top-[calc(var(--nav-space)+1rem)] lg:col-start-2 lg:row-start-1 lg:self-start">
+              <GlazePanel standing={visibleStanding} isOwner={isOwner} />
+            </aside>
+          ) : null}
 
-        <section className="mt-12">
-          <SectionHeading title="Lists" />
-          {lists.length === 0 ? (
-            <p className="text-muted-foreground mt-6 border p-4 text-sm">
-              {isOwner ? (
-                <>
-                  No lists yet. Make your first one.
-                  <span className="mt-3 block">
-                    <NewListButton />
-                  </span>
-                </>
+          <div className="min-w-0 lg:col-start-1 lg:row-start-1">
+            <section>
+              <SectionLabel
+                title="Favourite characters"
+                aside={
+                  profile.favouriteCount > 0
+                    ? `${profile.favouriteCount} total`
+                    : undefined
+                }
+              />
+              {profile.favourites.length === 0 ? (
+                <p className="text-muted-foreground mt-4 border p-4 text-sm">
+                  {isOwner
+                    ? "No favourites yet. Press Favourite on any character page to add one."
+                    : "No favourite characters yet."}
+                </p>
               ) : (
-                "No public lists yet."
+                <ul className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-5 xl:grid-cols-6">
+                  {profile.favourites.map((f) => (
+                    <li key={f.id}>
+                      <Link href={`/characters/${f.id}`} className="group block">
+                        <Portrait
+                          name={f.name}
+                          src={f.imageUrl}
+                          sizes="(min-width: 768px) 112px, 30vw"
+                          className="aspect-2/3 w-full border"
+                        />
+                        <p className="mt-1.5 truncate text-sm font-medium group-hover:underline">
+                          {f.name}
+                        </p>
+                        <p className="eyebrow truncate">{f.verse}</p>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               )}
-            </p>
-          ) : (
-            <div className="mt-6 space-y-6">
-              {lists.map((list) => (
-                <ListCard key={list.id} list={list} isOwner={isOwner} />
-              ))}
-            </div>
-          )}
-        </section>
+            </section>
 
-        {isOwner ? (
-          <section className="mt-12">
-            <SectionHeading title="Your feats" />
-            <OwnFeats feats={ownFeats} />
-          </section>
-        ) : null}
+            <section className="mt-10">
+              <SectionLabel title="Lists" />
+              {lists.length === 0 ? (
+                <p className="text-muted-foreground mt-4 border p-4 text-sm">
+                  {isOwner ? (
+                    <>
+                      No lists yet. Make your first one.
+                      <span className="mt-3 block">
+                        <NewListButton />
+                      </span>
+                    </>
+                  ) : (
+                    "No public lists yet."
+                  )}
+                </p>
+              ) : (
+                <div className="mt-4 space-y-6">
+                  {lists.map((list) => (
+                    <ListCard key={list.id} list={list} isOwner={isOwner} />
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <Badges badges={badges} isOwner={isOwner} onBoards={onBoards} />
+
+            {isOwner ? (
+              <section className="mt-10">
+                <SectionLabel title="Your feats" />
+                <OwnFeats feats={ownFeats} />
+              </section>
+            ) : null}
+          </div>
+        </div>
       </div>
     </>
   );
