@@ -2,11 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Portrait } from "@/components/characters/portrait";
 import { Modal } from "@/components/ui/modal";
 import { useCharacterSearch } from "@/hooks/use-character-search";
 import type { MatchupPreset } from "@/lib/matchup/preset";
-import { randomPair } from "@/lib/matchup/random-pair";
 import { OPEN_MATCHUP } from "@/lib/ui/events";
 import { cn } from "@/lib/utils";
 
@@ -57,17 +57,17 @@ function Slot({ label, value, active, onSelect }: SlotProps) {
 function MakerPanel({
   preset,
   onDone,
+  slot: actions,
 }: {
   preset: MatchupPreset | null;
   onDone: () => void;
+  slot: HTMLElement | null;
 }) {
   const router = useRouter();
   const { text, change, results, list, failed } = useCharacterSearch();
   const [a, setA] = useState<MatchupPreset | null>(preset);
   const [b, setB] = useState<MatchupPreset | null>(null);
   const [slot, setSlot] = useState<"a" | "b">(preset ? "b" : "a");
-  const [busy, setBusy] = useState(false);
-  const [problem, setProblem] = useState(false);
 
   const other = slot === "a" ? b : a;
   const choices = list.filter((item) => item.id !== other?.id);
@@ -87,19 +87,6 @@ function MakerPanel({
     if (!a || !b || !ready) return;
     onDone();
     router.push(`/matchups/${a.id}/${b.id}`);
-  }
-
-  async function surprise() {
-    setBusy(true);
-    setProblem(false);
-    const pair = await randomPair();
-    setBusy(false);
-    if (!pair) {
-      setProblem(true);
-      return;
-    }
-    onDone();
-    router.push(`/matchups/${pair[0]}/${pair[1]}`);
   }
 
   return (
@@ -169,30 +156,19 @@ function MakerPanel({
         )}
       </div>
 
-      {problem ? (
-        <p role="alert" className="text-sm font-medium">
-          Could not pick a random matchup right now.
-        </p>
-      ) : null}
-
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-5">
-        <button
-          type="button"
-          className="btn btn-line"
-          disabled={busy}
-          onClick={() => void surprise()}
-        >
-          Surprise me
-        </button>
-        <button
-          type="button"
-          className="btn btn-solid"
-          disabled={!ready}
-          onClick={compare}
-        >
-          {ready ? "Compare" : "Pick two characters"}
-        </button>
-      </div>
+      {actions
+        ? createPortal(
+            <button
+              type="button"
+              className="eyebrow border border-foreground bg-foreground px-2 py-1 text-background! hover:opacity-85 disabled:opacity-50"
+              disabled={!ready}
+              onClick={compare}
+            >
+              {ready ? "Compare" : "Pick two characters"}
+            </button>,
+            actions,
+          )
+        : null}
     </div>
   );
 }
@@ -200,6 +176,7 @@ function MakerPanel({
 export function MatchupMaker() {
   const [open, setOpen] = useState(false);
   const [preset, setPreset] = useState<MatchupPreset | null>(null);
+  const [slot, setSlot] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     const show = (event: Event) => {
@@ -214,14 +191,16 @@ export function MatchupMaker() {
   return (
     <Modal
       wide
+      slim
       open={open}
       onClose={() => setOpen(false)}
-      eyebrow="Head to head"
-      title="New matchup"
+      title="Head to head"
+      actions={<span ref={setSlot} className="contents" />}
     >
       <MakerPanel
         key={preset?.id ?? "none"}
         preset={preset}
+        slot={slot}
         onDone={() => setOpen(false)}
       />
     </Modal>
