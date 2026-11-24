@@ -4,6 +4,7 @@ import { Pencil, Settings } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { DeleteAccountForm } from "@/components/profile/delete-account-form";
 import { ListBuilder } from "@/components/lists/list-builder";
 import { FlairShop } from "@/components/profile/flair-shop";
 import { PlusPanel } from "@/components/profile/plus-panel";
@@ -27,7 +28,7 @@ interface OwnerToolsProps {
   onBoards: boolean;
 }
 
-type Open = "settings" | "edit" | "lists" | "flair" | "signout" | null;
+type Open = "settings" | "edit" | "lists" | "flair" | "signout" | "delete" | null;
 
 function Row({
   title,
@@ -195,6 +196,13 @@ export function OwnerTools({
                 Sign out
               </button>
             </div>
+            <button
+              type="button"
+              className="btn btn-sm border-(--spark)! bg-(--spark)! text-black!"
+              onClick={() => setOpen("delete")}
+            >
+              Delete Account
+            </button>
           </section>
 
           {!verified ? (
@@ -231,6 +239,23 @@ export function OwnerTools({
             Cancel
           </button>
         </div>
+      </Modal>
+
+      <Modal
+        open={open === "delete"}
+        onClose={closeIf("delete")}
+        eyebrow="Account"
+        title="Delete account?"
+      >
+        <DeleteAccountForm
+          onCancel={() => setOpen("settings")}
+          onDeleted={() => {
+            setOpen(null);
+            void refresh();
+            router.push("/");
+            router.refresh();
+          }}
+        />
       </Modal>
 
       <Modal
