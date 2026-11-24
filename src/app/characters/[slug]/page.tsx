@@ -57,13 +57,13 @@ export default async function CharacterPage({ params }: Props) {
       <AdminBar slug={data.character.id} draft={data.character.draft === true} />
 
       {data.character.draft ? (
-        <p className="eyebrow mb-4">
+        <p className="border-foreground bg-muted mb-4 border-l-2 p-3 text-sm">
           Draft, not ranked yet. It joins the ranking once its feats are verified.
         </p>
       ) : null}
 
       {!data.character.draft && data.character.evidence === 0 ? (
-        <p className="eyebrow mb-4">
+        <p className="border-foreground bg-muted mb-4 border-l-2 p-3 text-sm">
           Baseline estimate. No verified feats yet, so this rank comes from an editor
           estimate. Treat it as a starting point and add a feat with proof to improve it.
         </p>

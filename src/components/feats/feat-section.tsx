@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
-import { SectionHeading } from "@/components/home/section-heading";
+import { SectionLabel } from "@/components/profile/section-label";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import { useSession } from "@/hooks/use-session";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import type { VoteValue } from "@/lib/ranking/vote";
@@ -45,6 +46,7 @@ export function FeatSection({
   const [busyId, setBusyId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
+  const [slot, setSlot] = useState<HTMLElement | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
 
   const ids = initialFeats.map((feat) => feat.id).join(",");
@@ -126,11 +128,11 @@ export function FeatSection({
   }
 
   return (
-    <section aria-label="Feats" className="mt-14">
-      <SectionHeading index="02" title="Feats" aside={`${visible.length} shown`} />
+    <section aria-label="Feats" className="mt-10">
+      <SectionLabel title="Feats" aside={`${visible.length} shown`} />
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-        <div role="group" aria-label="Filter feats" className="flex border">
+        <div role="group" aria-label="Filter feats" className="flex border-b">
           {FILTERS.map(({ key, label }) => (
             <button
               key={key}
@@ -138,8 +140,8 @@ export function FeatSection({
               aria-pressed={filter === key}
               onClick={() => setFilter(key)}
               className={cn(
-                "h-10 px-4 text-sm font-medium transition-colors",
-                filter === key ? "bg-accent text-accent-foreground" : "hover:bg-muted",
+                "hover:bg-muted h-10 border-b-2 border-transparent px-4 text-sm font-medium transition-colors",
+                filter === key && "border-b-accent",
               )}
             >
               {label}
@@ -147,31 +149,34 @@ export function FeatSection({
           ))}
         </div>
 
-        {!formOpen && (
-          <Button variant="primary" size="sm" onClick={openForm}>
-            <Plus className="size-4" aria-hidden />
-            Submit a feat
-          </Button>
-        )}
+        <Button variant="primary" size="sm" onClick={openForm}>
+          <Plus className="size-4" aria-hidden />
+          Submit a feat
+        </Button>
       </div>
 
       <p aria-live="polite" className="mt-3 min-h-5 text-sm font-medium">
         {notice}
       </p>
 
-      {formOpen && (
-        <div className="mt-3">
-          <FeatForm
-            characterId={characterId}
-            onCancel={() => setFormOpen(false)}
-            onCreated={(feat) => {
-              setFeats((list) => [feat, ...list]);
-              setFormOpen(false);
-              setNotice("Feat submitted. It is pending until the community votes.");
-            }}
-          />
-        </div>
-      )}
+      <Modal
+        wide
+        slim
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        title="Submit a feat"
+        actions={<span ref={setSlot} className="contents" />}
+      >
+        <FeatForm
+          characterId={characterId}
+          slot={slot}
+          onCreated={(feat) => {
+            setFeats((list) => [feat, ...list]);
+            setFormOpen(false);
+            setNotice("Feat submitted. It is pending until the community votes.");
+          }}
+        />
+      </Modal>
 
       {visible.length === 0 ? (
         <p className="text-muted-foreground mt-4 border p-10 text-center">
