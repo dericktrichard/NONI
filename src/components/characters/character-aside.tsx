@@ -1,8 +1,5 @@
-import { NewMatchupButton } from "@/components/matchups/matchup-actions";
-import { ShareButton } from "@/components/share/share-button";
 import type { CharacterView } from "@/types/character-page";
 import { EvidenceMeter } from "./evidence-meter";
-import { FavouriteButton } from "./favourite-button";
 
 export function CharacterAside({
   c,
@@ -27,26 +24,6 @@ export function CharacterAside({
         </p>
       </div>
 
-      <NewMatchupButton
-        preset={{
-          id: c.id,
-          name: c.name,
-          verse: c.verse,
-          imageUrl: c.imageUrl,
-          tier: c.tier,
-        }}
-        className="btn btn-solid h-auto w-full py-3 text-center whitespace-normal"
-      >
-        Compare with another character
-      </NewMatchupButton>
-
-      <FavouriteButton characterId={c.id} />
-
-      <ShareButton
-        title={`${c.name} on NONI`}
-        text={`${c.name} is ranked ${c.rank ? `#${c.rank}` : "unranked"} on NONI.`}
-        className="btn btn-quiet h-auto w-full py-3"
-      />
       {children}
     </aside>
   );

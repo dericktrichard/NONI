@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Loader2, X } from "lucide-react";
+import { useId, useState } from "react";
+import { createPortal } from "react-dom";
 import { controlClass } from "@/components/ui/fields";
 import { HAX_KIND_LIST, HAX_KINDS, type HaxKind } from "@/config/combat";
 import { LIMITS } from "@/config/limits";
@@ -122,10 +122,13 @@ function locatorLabel(row: ProofRow): string {
 interface FeatFormProps {
   characterId: string;
   onCreated: (feat: FeatView) => void;
-  onCancel: () => void;
+  /** The element in the pop-up header that holds the Submit button */
+  slot: HTMLElement | null;
+  onCancel?: () => void;
 }
 
-export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
+export function FeatForm({ characterId, onCreated, slot }: FeatFormProps) {
+  const formId = useId();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [claim, setClaim] = useState<ClaimFields>(blankClaim);
@@ -207,24 +210,7 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
   const canAddProof = proofs.length < LIMITS.proofsPerFeat;
 
   return (
-    <form onSubmit={submit} className="space-y-6 border p-4 sm:p-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="eyebrow">New feat</p>
-          <h3 className="font-display mt-1 text-2xl font-semibold tracking-tight">
-            Submit a feat
-          </h3>
-        </div>
-        <button
-          type="button"
-          onClick={onCancel}
-          aria-label="Close form"
-          className="hover:bg-muted -m-2 grid size-11 place-items-center"
-        >
-          <X className="size-5" />
-        </button>
-      </div>
-
+    <form id={formId} onSubmit={submit} className="space-y-6">
       <Field label="Title">
         <input
           value={title}
@@ -449,15 +435,19 @@ export function FeatForm({ characterId, onCreated, onCancel }: FeatFormProps) {
         </p>
       ) : null}
 
-      <div className="flex flex-wrap gap-3 border-t pt-5">
-        <button type="submit" className="btn btn-solid" disabled={busy}>
-          {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
-          Submit feat
-        </button>
-        <button type="button" className="btn btn-quiet" onClick={onCancel}>
-          Cancel
-        </button>
-      </div>
+      {slot
+        ? createPortal(
+            <button
+              type="submit"
+              form={formId}
+              className="eyebrow border border-foreground bg-foreground px-2 py-1 text-background! hover:opacity-85 disabled:opacity-50"
+              disabled={busy}
+            >
+              {busy ? "Submitting" : "Submit"}
+            </button>,
+            slot,
+          )
+        : null}
     </form>
   );
 }

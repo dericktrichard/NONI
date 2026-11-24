@@ -83,7 +83,7 @@ export function FavouriteButton({ characterId }: { characterId: string }) {
         onClick={() => void toggle()}
         disabled={busy}
         aria-pressed={favourited}
-        className="btn btn-line h-auto w-full gap-2 py-3"
+        className="btn btn-line btn-sm gap-2"
       >
         <Heart className={cn("size-4", favourited && "fill-current")} aria-hidden />
         {favourited ? "Favourited" : "Favourite"}

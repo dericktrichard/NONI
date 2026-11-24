@@ -1,4 +1,4 @@
-import { SectionHeading } from "@/components/home/section-heading";
+import { SectionLabel } from "@/components/profile/section-label";
 import { dimensionLabel } from "@/config/scales";
 import { kindText, tierText } from "@/lib/feats/labels";
 import type { HaxClaim } from "@/lib/ranking/profile";
@@ -33,9 +33,9 @@ function Abilities({ claims }: { claims: HaxClaim[] }) {
 export function PowerProfileCard({ profile }: { profile: PowerProfile }) {
   return (
     <section aria-label="Power profile">
-      <SectionHeading index="01" title="Power profile" />
+      <SectionLabel title="Power profile" />
 
-      <dl className="bg-border mt-6 grid grid-cols-2 gap-px border">
+      <dl className="bg-border mt-4 grid grid-cols-2 gap-px border">
         <Tile label="Attack potency">{tierText(profile.attackPotency)}</Tile>
         <Tile label="Durability">{tierText(profile.durability)}</Tile>
         <Tile label="Speed">{profile.speed}</Tile>

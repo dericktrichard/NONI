@@ -1,14 +1,17 @@
+import { NewMatchupButton } from "@/components/matchups/matchup-actions";
+import { ShareButton } from "@/components/share/share-button";
 import { Badge } from "@/components/ui/badge";
 import { MEDIA_LABELS } from "@/config/media";
 import { cn, formatScore, pad2 } from "@/lib/utils";
 import type { CharacterView } from "@/types/character-page";
+import { FavouriteButton } from "./favourite-button";
 import { Portrait } from "./portrait";
 
 function Stat({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="bg-background p-4">
       <dt className="eyebrow">{label}</dt>
-      <dd className="font-display mt-1 text-3xl leading-tight font-semibold tabular-nums">
+      <dd className="font-display mt-1 text-2xl leading-tight font-semibold tabular-nums wrap-break-word">
         {children}
       </dd>
     </div>
@@ -53,6 +56,27 @@ export function CharacterHero({ c }: { c: CharacterView }) {
               ))}
             </ul>
           ) : null}
+
+          <div className="mt-5 flex flex-wrap items-start gap-2 sm:mt-auto sm:pt-5">
+            <NewMatchupButton
+              preset={{
+                id: c.id,
+                name: c.name,
+                verse: c.verse,
+                imageUrl: c.imageUrl,
+                tier: c.tier,
+              }}
+              className="btn btn-solid btn-sm"
+            >
+              Compare
+            </NewMatchupButton>
+            <FavouriteButton characterId={c.id} />
+            <ShareButton
+              title={`${c.name} on NONI`}
+              text={`${c.name} is ranked ${c.rank ? `#${c.rank}` : "unranked"} on NONI.`}
+              className="btn btn-line btn-sm"
+            />
+          </div>
         </div>
       </div>
 
@@ -64,9 +88,7 @@ export function CharacterHero({ c }: { c: CharacterView }) {
         </Stat>
         <Stat label="Score">{formatScore(c.score)}</Stat>
         <Stat label="Tier">{c.tier}</Stat>
-        <Stat label="Speed">
-          <span className="text-lg">{c.speed}</span>
-        </Stat>
+        <Stat label="Speed">{c.speed}</Stat>
       </dl>
     </section>
   );
