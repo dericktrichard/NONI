@@ -47,10 +47,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-function Stat({ label, children }: { label: string; children: React.ReactNode }) {
+function Stat({
+  label,
+  short,
+  children,
+}: {
+  label: string;
+  short: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="shrink-0 px-4 py-2.5">
-      <dt className="eyebrow">{label}</dt>
+      <dt className="eyebrow">
+        <span className="sm:hidden">{short}</span>
+        <span className="hidden sm:inline">{label}</span>
+      </dt>
       <dd className="tabular font-display text-lg font-semibold">{children}</dd>
     </div>
   );
@@ -172,11 +183,21 @@ export default async function ProfilePage({ params }: Props) {
         ) : null}
 
         <dl className="no-scrollbar mt-5 flex divide-x overflow-x-auto border">
-          <Stat label="Feats">{profile.featsSubmitted}</Stat>
-          <Stat label="Arguments">{shown(stats.arguments)}</Stat>
-          <Stat label="Votes cast">{shown(stats.votes)}</Stat>
-          <Stat label="Public lists">{profile.lists.length}</Stat>
-          <Stat label="Favourites">{profile.favouriteCount}</Stat>
+          <Stat label="Feats" short="FEATS">
+            {profile.featsSubmitted}
+          </Stat>
+          <Stat label="Lists" short="LISTS">
+            {profile.lists.length}
+          </Stat>
+          <Stat label="Favourites" short="FAVS">
+            {profile.favouriteCount}
+          </Stat>
+          <Stat label="Arguments" short="ARGS">
+            {shown(stats.arguments)}
+          </Stat>
+          <Stat label="Votes" short="VOTES">
+            {shown(stats.votes)}
+          </Stat>
         </dl>
 
         <div
