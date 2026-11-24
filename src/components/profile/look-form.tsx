@@ -200,7 +200,7 @@ export function LookForm({ initial, handle, section, onSaved, slot }: LookFormPr
         createPortal(
           <button
             type="button"
-            className="btn btn-solid btn-sm"
+            className="eyebrow border border-foreground bg-foreground px-2 py-1 text-background! hover:opacity-85 disabled:opacity-50"
             disabled={busy}
             onClick={() => void save()}
           >

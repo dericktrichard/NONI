@@ -179,7 +179,7 @@ export function ProfileForm({ initial, verified, onSaved, slot }: ProfileFormPro
           <button
             type="submit"
             form={formId}
-            className="btn btn-solid btn-sm"
+            className="eyebrow border border-foreground bg-foreground px-2 py-1 text-background! hover:opacity-85 disabled:opacity-50"
             disabled={busy || issue !== null || normalized === "" || locked}
           >
             Save
