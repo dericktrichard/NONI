@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AdminHeader } from "@/components/admin/admin-header";
+import { CharacterTable } from "@/components/admin/character-table";
 import { PublishAllButton } from "@/components/admin/publish-all-button";
-import { PublishButton } from "@/components/admin/publish-button";
-import { TierBadge } from "@/components/characters/tier-badge";
-import { buttonStyles } from "@/components/ui/button";
 import { listCharacters } from "@/lib/data/admin-characters";
 import { hasRole } from "@/lib/security/roles";
 import { getSessionUser } from "@/lib/security/session";
@@ -16,59 +15,23 @@ export default async function AdminCharactersPage() {
 
   return (
     <>
-      <p className="eyebrow">Admin</p>
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-display text-4xl font-semibold tracking-tight">Characters</h1>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href="/admin/characters/import"
-            className={buttonStyles({ variant: "outline" })}
-          >
-            Import
-          </Link>
-          <Link
-            href="/admin/characters/new"
-            className={buttonStyles({ variant: "primary" })}
-          >
-            Add a character
-          </Link>
-        </div>
-      </div>
-      <p className="eyebrow mt-3">{characters.length} total</p>
-      <PublishAllButton count={characters.filter((c) => c.draft).length} />
-
-      <ul className="mt-6 divide-y border-y">
-        {characters.map((character) => (
-          <li
-            key={character.slug}
-            className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3"
-          >
-            <span className="eyebrow tabular w-12 shrink-0">
-              {character.draft ? "Draft" : (character.rank ?? "--")}
-            </span>
-            <div className="min-w-0 flex-1">
-              <Link
-                href={`/characters/${character.slug}`}
-                className="font-medium underline underline-offset-4"
-              >
-                {character.name}
-              </Link>
-              <p className="eyebrow truncate">
-                {character.verse} / {character.verifiedFeatCount} of {character.featCount}{" "}
-                feats verified
-              </p>
-            </div>
-            <TierBadge tier={character.tier} />
-            {character.draft ? <PublishButton slug={character.slug} /> : null}
-            <Link
-              href={`/admin/characters/${character.slug}/edit`}
-              className="min-h-11 px-2 py-3 text-sm underline underline-offset-4"
-            >
-              Edit
+      <AdminHeader
+        title="Characters"
+        actions={
+          <>
+            <Link href="/admin/import" className="btn btn-line btn-sm">
+              Import
             </Link>
-          </li>
-        ))}
-      </ul>
+            <Link href="/admin/characters/new" className="btn btn-solid btn-sm">
+              Add a character
+            </Link>
+          </>
+        }
+      />
+      <PublishAllButton count={characters.filter((c) => c.draft).length} />
+      <div className="mt-6">
+        <CharacterTable characters={characters} />
+      </div>
     </>
   );
 }

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { AdminHeader } from "@/components/admin/admin-header";
 import { NoticeForm } from "@/components/admin/notice-form";
 import { getNoticeForEdit } from "@/lib/data/site-notice";
 import { hasRole } from "@/lib/security/roles";
@@ -14,12 +15,10 @@ export default async function AdminNoticePage() {
 
   return (
     <>
-      <p className="eyebrow">Admin</p>
-      <h1 className="font-display mt-2 text-4xl font-semibold tracking-tight">Notice</h1>
-      <p className="text-muted-foreground mt-3 max-w-2xl text-sm">
-        A short message at the top of the home page, below the navigation. Switched off,
-        it does not exist for visitors.
-      </p>
+      <AdminHeader
+        title="Notice"
+        text="A short message at the top of the home page, below the navigation. Switched off, it does not exist for visitors."
+      />
       <NoticeForm initial={initial} />
     </>
   );

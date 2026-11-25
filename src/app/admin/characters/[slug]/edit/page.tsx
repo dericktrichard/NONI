@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
+import { AdminHeader } from "@/components/admin/admin-header";
 import { CharacterForm } from "@/components/admin/character-form";
+import { DeleteCharacter } from "@/components/admin/delete-character";
 import { getCharacterForEdit } from "@/lib/data/admin-characters";
 import { hasRole } from "@/lib/security/roles";
 import { getSessionUser } from "@/lib/security/session";
-import { DeleteCharacter } from "@/components/admin/delete-character";
 
 export default async function EditCharacterPage({
   params,
@@ -19,10 +20,7 @@ export default async function EditCharacterPage({
 
   return (
     <>
-      <p className="eyebrow">Admin</p>
-      <h1 className="font-display mt-2 text-4xl font-semibold tracking-tight">
-        Edit {character.name}
-      </h1>
+      <AdminHeader title={`Edit ${character.name}`} />
       <CharacterForm key={character.slug} initial={character} />
       <DeleteCharacter slug={character.slug} name={character.name} />
     </>
