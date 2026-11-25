@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Portrait } from "@/components/characters/portrait";
 import { TierBadge } from "@/components/characters/tier-badge";
-import { SectionHeading } from "@/components/home/section-heading";
+import { SectionLabel } from "@/components/profile/section-label";
 import { dimensionLabel } from "@/config/scales";
 import { kindText, tierText } from "@/lib/feats/labels";
 import type { MatchupPageData, MatchupSideView } from "@/lib/data/matchup-page";
@@ -9,7 +9,7 @@ import { favorsText, percentA, verdictText } from "@/lib/matchup/labels";
 import type { HaxClaim } from "@/lib/ranking/profile";
 import { cn } from "@/lib/utils";
 import { CommunityVote } from "@/components/matchups/community-vote";
-import { ArgumentForm } from "@/components/matchups/argument-form";
+import { ArgumentComposer } from "@/components/matchups/argument-composer";
 import { ArgumentList } from "@/components/matchups/argument-list";
 
 function Side({ side, flip }: { side: MatchupSideView; flip?: boolean }) {
@@ -123,9 +123,17 @@ export function MatchupView({ data }: { data: MatchupPageData }) {
         <Side side={b} flip />
       </div>
 
-      <section className="mt-12" aria-label="Verdict">
-        <SectionHeading index="01" title="Verdict" />
-        <div className="mt-6 border p-4 sm:p-6">
+      <section className="mt-10" aria-label="Verdict">
+        <SectionLabel title="Verdict" />
+        {baseline.length > 0 ? (
+          <p className="border-foreground bg-muted mt-4 border-l-2 p-3 text-sm">
+            {baseline.map((side) => side.name).join(" and ")}{" "}
+            {baseline.length > 1 ? "have" : "has"} no verified feats yet, so{" "}
+            {baseline.length > 1 ? "their profiles use" : "the profile uses"} the starting
+            baseline.
+          </p>
+        ) : null}
+        <div className="mt-4 border p-4 sm:p-6">
           <p className="font-display text-2xl font-semibold sm:text-3xl">
             {verdictText(result, names)}
           </p>
@@ -140,8 +148,8 @@ export function MatchupView({ data }: { data: MatchupPageData }) {
         </div>
       </section>
 
-      <section className="mt-12" aria-label="Community vote">
-        <SectionHeading index="02" title="Community vote" />
+      <section className="mt-10" aria-label="Community vote">
+        <SectionLabel title="Community vote" />
         <p className="text-muted-foreground mt-3 text-sm">
           Who do you think wins? Voting needs a verified account. It does not change the
           verdict above.
@@ -155,9 +163,9 @@ export function MatchupView({ data }: { data: MatchupPageData }) {
         </div>
       </section>
 
-      <section className="mt-12" aria-label="Side by side">
-        <SectionHeading index="03" title="Side by side" />
-        <div className={cn(ROW_GRID, "mt-6 border-b pb-2")}>
+      <section className="mt-10" aria-label="Side by side">
+        <SectionLabel title="Side by side" />
+        <div className={cn(ROW_GRID, "mt-4 border-b pb-2")}>
           <p className="eyebrow truncate">{a.name}</p>
           <span className="hidden sm:block" aria-hidden />
           <p className="eyebrow truncate sm:text-right">{b.name}</p>
@@ -193,9 +201,9 @@ export function MatchupView({ data }: { data: MatchupPageData }) {
         </dl>
       </section>
 
-      <section className="mt-12" aria-label="Why">
-        <SectionHeading index="04" title="Why" />
-        <ul className="mt-6 space-y-3">
+      <section className="mt-10" aria-label="Why">
+        <SectionLabel title="Why" />
+        <ul className="mt-4 space-y-3">
           {result.reasons.map((reason, index) => (
             <li key={index} className="border p-4">
               <p className="eyebrow">{favorsText(reason.favors, names)}</p>
@@ -205,26 +213,23 @@ export function MatchupView({ data }: { data: MatchupPageData }) {
         </ul>
       </section>
 
-      <section className="mt-12" aria-label="Arguments">
-        <SectionHeading index="05" title="Arguments" />
+      <section className="mt-10" aria-label="Arguments">
+        <SectionLabel title="Arguments" />
+        <ArgumentComposer
+          a={{ slug: a.slug, name: a.name }}
+          b={{ slug: b.slug, name: b.name }}
+          citable={data.citable}
+        />
         <ArgumentList
           items={data.arguments}
           names={names}
           slugs={{ a: a.slug, b: b.slug }}
-        />
-        <ArgumentForm
-          a={{ slug: a.slug, name: a.name }}
-          b={{ slug: b.slug, name: b.name }}
-          citable={data.citable}
         />
       </section>
 
       <p className="text-muted-foreground mt-10 text-sm">
         The verdict comes from fixed rules applied to each character&apos;s profile. It is
         not an opinion and it changes only when a feat is verified.
-        {baseline.length > 0
-          ? ` ${baseline.map((side) => side.name).join(" and ")} ${baseline.length > 1 ? "have" : "has"} no verified feats yet, so ${baseline.length > 1 ? "their profiles use" : "the profile uses"} the starting baseline.`
-          : ""}
       </p>
     </article>
   );

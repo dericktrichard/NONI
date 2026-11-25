@@ -53,7 +53,7 @@ export default async function MatchupPage({ params }: Props) {
       />
       <MatchupView data={data} />
 
-      <section className="mt-12 border p-4 sm:p-6" aria-label="Keep going">
+      <section className="mt-10 border p-4 sm:p-6" aria-label="Keep going">
         <p className="eyebrow">Keep going</p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <NewMatchupButton preset={presetOf(data.a)} className="btn btn-line btn-sm">
@@ -62,11 +62,11 @@ export default async function MatchupPage({ params }: Props) {
           <NewMatchupButton preset={presetOf(data.b)} className="btn btn-line btn-sm">
             Another opponent for {data.b.name}
           </NewMatchupButton>
-          <SurpriseButton className="btn btn-quiet btn-sm">Surprise me</SurpriseButton>
+          <SurpriseButton className="btn btn-line btn-sm">Surprise me</SurpriseButton>
           <ShareButton
             title={`${names.a} vs ${names.b}`}
             text={`${verdictText(data.result, names)}. Settle it on NONI.`}
-            className="btn btn-quiet btn-sm"
+            className="btn btn-line btn-sm"
           />
         </div>
       </section>

@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useId, useState } from "react";
+import { createPortal } from "react-dom";
 import { controlClass } from "@/components/ui/fields";
 import type { CitableFeat } from "@/lib/data/matchup-page";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
@@ -17,12 +17,16 @@ interface ArgumentFormProps {
   a: Side;
   b: Side;
   citable: CitableFeat[];
+  /** The element in the pop-up header that holds the Post button */
+  slot: HTMLElement | null;
+  onPosted?: () => void;
 }
 
 const keyOf = (feat: CitableFeat) => `${feat.characterId}/${feat.featId}`;
 
-export function ArgumentForm({ a, b, citable }: ArgumentFormProps) {
+export function ArgumentForm({ a, b, citable, slot, onPosted }: ArgumentFormProps) {
   const router = useRouter();
+  const formId = useId();
   const [side, setSide] = useState<"a" | "b" | "">("");
   const [body, setBody] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
@@ -80,6 +84,7 @@ export function ArgumentForm({ a, b, citable }: ArgumentFormProps) {
         setSide("");
         setMessage("Posted.");
         router.refresh();
+        onPosted?.();
         return;
       }
       const data = (await response.json().catch(() => null)) as { error?: string } | null;
@@ -92,11 +97,7 @@ export function ArgumentForm({ a, b, citable }: ArgumentFormProps) {
   }
 
   return (
-    <form onSubmit={submit} className="mt-6 space-y-5 border p-4 sm:p-6">
-      <h3 className="font-display text-xl font-semibold tracking-tight">
-        Make your case
-      </h3>
-
+    <form id={formId} onSubmit={submit} className="space-y-5">
       <fieldset>
         <legend className="eyebrow mb-2">Who wins?</legend>
         <div className="grid grid-cols-2 gap-3">
@@ -164,16 +165,25 @@ export function ArgumentForm({ a, b, citable }: ArgumentFormProps) {
         </ul>
       </fieldset>
 
-      <div className="flex items-center gap-3">
-        <Button type="submit" variant="primary" disabled={busy || !ready}>
-          Post argument
-        </Button>
-        {message ? (
-          <p role="status" className="text-sm">
-            {message}
-          </p>
-        ) : null}
-      </div>
+      {message ? (
+        <p role="status" className="text-sm font-medium">
+          {message}
+        </p>
+      ) : null}
+
+      {slot
+        ? createPortal(
+            <button
+              type="submit"
+              form={formId}
+              className="eyebrow border border-foreground bg-foreground px-2 py-1 text-background! hover:opacity-85 disabled:opacity-50"
+              disabled={busy || !ready}
+            >
+              {busy ? "Posting" : "Post"}
+            </button>,
+            slot,
+          )
+        : null}
     </form>
   );
 }
