@@ -14,7 +14,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!user || !hasRole(user, "moderator")) notFound();
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-8 pb-24">
+    <div className="mx-auto max-w-6xl px-4 pt-6 pb-24">
       <AdminNav admin={hasRole(user, "admin")} />
       {children}
     </div>
