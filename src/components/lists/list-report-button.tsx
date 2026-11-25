@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
+import { createPortal } from "react-dom";
 import { controlClass } from "@/components/ui/fields";
+import { Modal } from "@/components/ui/modal";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import { LIST_REPORT_LABELS, LIST_REPORT_REASONS } from "@/lib/lists/moderation";
 
@@ -12,6 +14,8 @@ export function ListReportButton({ listId }: { listId: string }) {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [slot, setSlot] = useState<HTMLElement | null>(null);
+  const formId = useId();
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -50,8 +54,8 @@ export function ListReportButton({ listId }: { listId: string }) {
     );
   }
 
-  if (!open) {
-    return (
+  return (
+    <>
       <button
         type="button"
         className="eyebrow hover:text-foreground min-h-11 underline underline-offset-4 transition-colors"
@@ -59,58 +63,60 @@ export function ListReportButton({ listId }: { listId: string }) {
       >
         Report
       </button>
-    );
-  }
 
-  return (
-    <form
-      onSubmit={submit}
-      className="bg-background w-full max-w-sm space-y-3 border p-3"
-    >
-      <select
-        value={reason}
-        onChange={(event) => setReason(event.target.value)}
-        aria-label="Reason"
-        required
-        className={controlClass}
+      <Modal
+        slim
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Report list"
+        actions={<span ref={setSlot} className="contents" />}
       >
-        <option value="">Choose a reason</option>
-        {LIST_REPORT_REASONS.map((value) => (
-          <option key={value} value={value}>
-            {LIST_REPORT_LABELS[value]}
-          </option>
-        ))}
-      </select>
-      <input
-        value={note}
-        onChange={(event) => setNote(event.target.value)}
-        maxLength={200}
-        placeholder="Details (optional)"
-        aria-label="Details"
-        className={controlClass}
-      />
-      <div className="flex gap-2">
-        <button
-          type="submit"
-          className="btn btn-solid btn-sm"
-          disabled={busy || reason === ""}
-        >
-          Send report
-        </button>
-        <button
-          type="button"
-          className="btn btn-quiet btn-sm"
-          onClick={() => setOpen(false)}
-          disabled={busy}
-        >
-          Cancel
-        </button>
-      </div>
-      {error ? (
-        <p role="alert" className="text-sm font-medium">
-          {error}
-        </p>
-      ) : null}
-    </form>
+        <form id={formId} onSubmit={submit} className="space-y-4">
+          <label className="block text-sm">
+            <span className="eyebrow mb-1 block">Reason</span>
+            <select
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+              required
+              className={controlClass}
+            >
+              <option value="">Choose a reason</option>
+              {LIST_REPORT_REASONS.map((value) => (
+                <option key={value} value={value}>
+                  {LIST_REPORT_LABELS[value]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block text-sm">
+            <span className="eyebrow mb-1 block">Details (optional)</span>
+            <input
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              maxLength={200}
+              className={controlClass}
+            />
+          </label>
+          {error ? (
+            <p role="alert" className="text-sm font-medium">
+              {error}
+            </p>
+          ) : null}
+          {slot
+            ? createPortal(
+                <button
+                  type="submit"
+                  form={formId}
+                  className="eyebrow border border-foreground bg-foreground px-2 py-1 text-background! hover:opacity-85 disabled:opacity-50"
+                  disabled={busy || reason === ""}
+                >
+                  {busy ? "Sending" : "Send report"}
+                </button>,
+                slot,
+              )
+            : null}
+        </form>
+      </Modal>
+    </>
   );
 }

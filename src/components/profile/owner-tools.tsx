@@ -68,6 +68,7 @@ export function OwnerTools({
   const [fresh, setFresh] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [slot, setSlot] = useState<HTMLElement | null>(null);
+  const [listSlot, setListSlot] = useState<HTMLElement | null>(null);
   const plus = usePlus();
 
   /** Only closes when this window is still the open one, so moving between windows never clobbers the next */
@@ -280,19 +281,20 @@ export function OwnerTools({
 
       <Modal
         wide
+        slim
         open={open === "lists"}
         onClose={closeIf("lists")}
-        eyebrow="Profile"
-        title="Your lists"
+        title="Your Lists"
+        actions={<span ref={setListSlot} className="contents" />}
       >
-        <ListBuilder lists={lists} openNew={fresh} />
+        <ListBuilder lists={lists} openNew={fresh} slot={listSlot} />
       </Modal>
 
       <Modal
         wide
+        slim
         open={open === "flair"}
         onClose={closeIf("flair")}
-        eyebrow="Profile"
         title="Flair"
       >
         <FlairShop look={look} />

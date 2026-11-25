@@ -1,10 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useId, useState } from "react";
+import { createPortal } from "react-dom";
 import { CharacterFinder } from "@/components/characters/character-finder";
 import { Portrait } from "@/components/characters/portrait";
 import { controlClass } from "@/components/ui/fields";
+import { Modal } from "@/components/ui/modal";
 import { Tri } from "@/components/ui/tri";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import type { UserList } from "@/lib/data/lists";
@@ -41,17 +43,23 @@ const VISIBILITY_COPY: Record<Visibility, { label: string; hint: string }> = {
 export function ListBuilder({
   lists,
   openNew = false,
+  slot,
 }: {
   lists: UserList[];
   openNew?: boolean;
+  /** The element in the pop-up header that holds the main action */
+  slot: HTMLElement | null;
 }) {
   const router = useRouter();
+  const formId = useId();
   const [editing, setEditing] = useState<string | null>(openNew ? "new" : null);
   const [title, setTitle] = useState("");
   const [visibility, setVisibility] = useState<Visibility>("public");
   const [rows, setRows] = useState<Row[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const doomed = lists.find((list) => list.id === confirmId) ?? null;
 
   const hint =
     title.trim().length < TITLE_MIN
@@ -177,8 +185,8 @@ export function ListBuilder({
   }
 
   async function remove(id: string) {
-    if (!window.confirm("Delete this list?")) return;
     const ok = await call(`/api/lists/${id}/delete`, "POST", {});
+    setConfirmId(null);
     if (ok) {
       if (editing === id) setEditing(null);
       router.refresh();
@@ -222,7 +230,7 @@ export function ListBuilder({
                       <button
                         type="button"
                         className="btn btn-quiet btn-sm"
-                        onClick={() => void remove(list.id)}
+                        onClick={() => setConfirmId(list.id)}
                         disabled={busy}
                       >
                         Delete
@@ -251,19 +259,36 @@ export function ListBuilder({
             </p>
           )}
 
-          <button
-            type="button"
-            className="btn btn-solid"
-            onClick={startNew}
-            disabled={lists.length >= MAX_LISTS}
-          >
-            {lists.length >= MAX_LISTS
-              ? `Limit of ${MAX_LISTS} lists reached`
-              : "New list"}
-          </button>
+          {lists.length >= MAX_LISTS ? (
+            <p className="text-muted-foreground text-sm">
+              Limit of {MAX_LISTS} lists reached.
+            </p>
+          ) : null}
+          {slot
+            ? createPortal(
+                <button
+                  type="button"
+                  className="eyebrow border border-foreground bg-foreground px-2 py-1 text-background! hover:opacity-85 disabled:opacity-50"
+                  onClick={startNew}
+                  disabled={lists.length >= MAX_LISTS}
+                >
+                  New list
+                </button>,
+                slot,
+              )
+            : null}
         </>
       ) : (
-        <form onSubmit={save} className="space-y-6">
+        <form id={formId} onSubmit={save} className="space-y-6">
+          <button
+            type="button"
+            className="eyebrow hover:text-foreground min-h-9"
+            onClick={() => setEditing(null)}
+            disabled={busy}
+          >
+            &lt; Your lists
+          </button>
+
           <label className="block text-sm">
             <span className="eyebrow mb-1 flex justify-between">
               <span>Title</span>
@@ -391,19 +416,19 @@ export function ListBuilder({
 
           {hint ? <p className="text-muted-foreground text-sm">{hint}</p> : null}
 
-          <div className="flex flex-wrap gap-3 border-t pt-5">
-            <button type="submit" className="btn btn-solid" disabled={busy || !ready}>
-              Save list
-            </button>
-            <button
-              type="button"
-              className="btn btn-quiet"
-              onClick={() => setEditing(null)}
-              disabled={busy}
-            >
-              Cancel
-            </button>
-          </div>
+          {slot
+            ? createPortal(
+                <button
+                  type="submit"
+                  form={formId}
+                  className="eyebrow border border-foreground bg-foreground px-2 py-1 text-background! hover:opacity-85 disabled:opacity-50"
+                  disabled={busy || !ready}
+                >
+                  Save
+                </button>,
+                slot,
+              )
+            : null}
         </form>
       )}
 
@@ -412,6 +437,36 @@ export function ListBuilder({
           {error}
         </p>
       ) : null}
+
+      <Modal
+        open={confirmId !== null}
+        onClose={() => setConfirmId(null)}
+        eyebrow="Your lists"
+        title="Delete list?"
+      >
+        <p className="text-sm">
+          {doomed ? `"${doomed.title}" will be deleted.` : "This list will be deleted."}{" "}
+          This cannot be undone.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="btn btn-sm border-(--spark)! bg-(--spark)! text-black!"
+            disabled={busy || doomed === null}
+            onClick={() => (doomed ? void remove(doomed.id) : undefined)}
+          >
+            {busy ? "Deleting" : "Delete list"}
+          </button>
+          <button
+            type="button"
+            className="btn btn-line btn-sm"
+            disabled={busy}
+            onClick={() => setConfirmId(null)}
+          >
+            Cancel
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

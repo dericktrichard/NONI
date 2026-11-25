@@ -9,6 +9,8 @@ interface ModalProps {
   title: string;
   eyebrow?: string;
   wide?: boolean;
+  /** Smaller width for short forms */
+  narrow?: boolean;
   /** One line title in the small uppercase style */
   slim?: boolean;
   /** Buttons shown in the header, before Esc */
@@ -22,6 +24,7 @@ export function Modal({
   title,
   eyebrow,
   wide,
+  narrow,
   slim,
   actions,
   children,
@@ -46,7 +49,7 @@ export function Modal({
       aria-labelledby={titleId}
       className={cn(
         "bg-background text-foreground m-auto max-h-[calc(100svh-2rem)] w-[calc(100%-2rem)] overflow-y-auto border p-0 backdrop:bg-black/60 backdrop:backdrop-blur-sm",
-        wide ? "max-w-2xl" : "max-w-lg",
+        wide ? "max-w-2xl" : narrow ? "max-w-sm" : "max-w-lg",
       )}
     >
       <div
