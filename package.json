@@ -14,7 +14,9 @@
     "role": "tsx --env-file=.env.local scripts/role.ts",
     "rerank": "tsx --env-file=.env.local scripts/rerank.ts",
     "plus": "tsx --env-file=.env.local scripts/plus.ts",
-    "wipe": "tsx --env-file=.env.local scripts/wipe-characters.ts"
+    "wipe": "tsx --env-file=.env.local scripts/wipe-characters.ts",
+    "backup": "tsx --env-file=.env.local scripts/backup.ts",
+    "verify": "npm run lint && npm test && node -e \"require('fs').rmSync('.next/dev/types',{recursive:true,force:true})\" && tsc --noEmit && next build"
   },
   "overrides": {
     "@grpc/grpc-js": "^1.14.0"
