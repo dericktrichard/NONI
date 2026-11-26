@@ -136,13 +136,17 @@ const SECTIONS: DocSection[] = [
     body: (
       <>
         <p>
-          We keep your data while your account exists. When you ask us to delete your
-          account we remove your profile, lists, favourites and personal details.
+          We keep your data while your account exists. You can delete your account
+          yourself from Settings on your profile: type DELETE to confirm, after signing
+          in within the last 30 minutes. We then remove your profile, handle, lists,
+          favourites, Glaze history and sign-in. You can also ask us by email.
         </p>
         <p>
-          Content you added to the shared record, such as feats and arguments, may stay in
-          anonymised form because rankings depend on it. We may keep limited records where
-          the law requires or to protect against abuse.
+          Feats, arguments and votes you added to the shared record stay, but they are
+          no longer linked to any profile: they show only a pseudonym, because rankings
+          depend on them. We keep a moderation log entry that
+          records an account was deleted, without identifying it, and we may keep limited
+          records where the law requires or to protect against abuse.
         </p>
       </>
     ),
@@ -154,7 +158,8 @@ const SECTIONS: DocSection[] = [
       <>
         <p>
           You can ask to see the data we hold about you, correct it, delete it, restrict
-          or object to how we use it, receive a copy, and withdraw consent you gave. Email{" "}
+          or object to how we use it, receive a copy, and withdraw consent you gave.
+          Deleting your account is self-service in Settings. For anything else, email{" "}
           {mail} and we will respond promptly and within the time the law requires.
         </p>
         <p>

@@ -498,7 +498,7 @@ function ListEntry({ list, ownerHandle }: PublicListEntry) {
             {list.title}
           </span>
           <span className="eyebrow block truncate">
-            by @{ownerHandle} · {count} {count === 1 ? "character" : "characters"}
+            by @{ownerHandle} / {count} {count === 1 ? "character" : "characters"}
           </span>
         </span>
         <span className="hidden gap-1 sm:flex" aria-hidden>

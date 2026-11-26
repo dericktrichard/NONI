@@ -78,7 +78,7 @@ export function Explore({ hero, overview, initial }: ExploreProps) {
     <>
       {mode === "overview" ? hero : null}
 
-      <main
+      <div
         className={cn(
           "mx-auto max-w-6xl px-4 pb-24",
           mode === "overview" ? "pt-6" : "pt-8",
@@ -131,7 +131,7 @@ export function Explore({ hero, overview, initial }: ExploreProps) {
             />
           )}
         </div>
-      </main>
+      </div>
     </>
   );
 }

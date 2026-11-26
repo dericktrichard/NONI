@@ -168,8 +168,11 @@ const SECTIONS: DocSection[] = [
     title: "Ending your use",
     body: (
       <p>
-        You can stop using NONI at any time and ask us to delete your account as described
-        in the privacy policy. We may suspend or end accounts that break these terms.
+        You can stop using NONI at any time and delete your account yourself from
+        Settings, as described in the privacy policy. Deleting it removes your Glaze
+        and anything you bought with it, and cannot be undone. Feats and arguments you
+        posted stay in the shared record without your name. We may suspend or end
+        accounts that break these terms.
       </p>
     ),
   },

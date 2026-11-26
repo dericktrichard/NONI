@@ -74,7 +74,7 @@ export function Modal({
           <button
             type="button"
             onClick={() => ref.current?.close()}
-            aria-label="Close"
+            aria-label="Close (Esc)"
             className="eyebrow hover:bg-muted border px-2 py-1"
           >
             Esc

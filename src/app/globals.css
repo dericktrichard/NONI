@@ -100,6 +100,8 @@
     ::before,
     ::after {
       animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
       transition-duration: 0.01ms !important;
     }
   }
@@ -142,7 +144,7 @@
   border: 1px solid color-mix(in srgb, var(--foreground) 14%, transparent);
 
   @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-    background-color: color-mix(in srgb, var(--background) 55%, transparent);
+    background-color: color-mix(in srgb, var(--background) 70%, transparent);
     -webkit-backdrop-filter: blur(16px) saturate(1.6);
     backdrop-filter: blur(16px) saturate(1.6);
 
@@ -226,7 +228,7 @@
     border-color 150ms,
     opacity 150ms;
   &:focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--color-foreground);
     outline-offset: 2px;
   }
   &:disabled {
@@ -501,4 +503,10 @@ summary,
 /* Where pinned action bars sit on a phone: above the bottom tab bar, or at the screen edge in play mode */
 :root {
   --sticky-bottom: calc(5rem + env(safe-area-inset-bottom));
+}
+
+/* Text fields keep a visible focus ring even where a component removed the outline. Unlayered, so it wins over utilities. */
+:is(input, textarea, select):not(.bg-transparent):focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: -2px;
 }
