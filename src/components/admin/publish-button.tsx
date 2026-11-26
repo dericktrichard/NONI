@@ -3,8 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-const LINK =
-  "min-h-11 px-2 py-3 text-sm underline underline-offset-4 disabled:opacity-50";
+const BUTTON = "btn btn-line btn-sm";
 
 /** Lives in a wrapping flex row: the button stays inline, a refusal takes its own line */
 export function PublishButton({ slug }: { slug: string }) {
@@ -47,7 +46,7 @@ export function PublishButton({ slug }: { slug: string }) {
         type="button"
         disabled={busy}
         onClick={() => void publish(false)}
-        className={LINK}
+        className={BUTTON}
       >
         Publish
       </button>
@@ -59,7 +58,7 @@ export function PublishButton({ slug }: { slug: string }) {
               type="button"
               disabled={busy}
               onClick={() => void publish(true)}
-              className={`${LINK} mt-1 font-medium`}
+              className={`${BUTTON} mt-2`}
             >
               Publish anyway
             </button>

@@ -9,9 +9,8 @@ import {
   type ListModAction,
   type ListReportReason,
 } from "@/lib/lists/moderation";
+import { cn } from "@/lib/utils";
 
-const buttonClass =
-  "min-h-11 border px-4 text-sm hover:bg-foreground/5 disabled:opacity-50";
 const LABELS: Record<ListModAction, string> = {
   hide: "Hide list",
   restore: "Restore list",
@@ -54,8 +53,8 @@ export function ListQueueItem({ list }: { list: ReportedList }) {
       <header>
         <p className="font-medium">{list.title}</p>
         <p className="text-muted-foreground text-sm">
-          by @{list.ownerHandle || "unknown"} ·{" "}
-          {list.status === "hidden" ? "hidden" : "visible"} · {list.reports.length}{" "}
+          by @{list.ownerHandle || "unknown"} /{" "}
+          {list.status === "hidden" ? "hidden" : "visible"} / {list.reports.length}{" "}
           {list.reports.length === 1 ? "report" : "reports"}
         </p>
       </header>
@@ -92,7 +91,7 @@ export function ListQueueItem({ list }: { list: ReportedList }) {
           <button
             key={action}
             type="button"
-            className={buttonClass}
+            className={cn("btn btn-sm", action === "hide" ? "btn-solid" : "btn-line")}
             onClick={() => act(action)}
             disabled={busy}
           >

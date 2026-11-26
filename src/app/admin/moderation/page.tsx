@@ -74,7 +74,7 @@ export default async function ModerationPage({
             {reported.length === 0 ? (
               <Empty text="No open reports." />
             ) : (
-              <ul>
+              <ul className="mt-4 space-y-3">
                 {reported.map((feat) => (
                   <QueueItem key={feat.id} feat={feat} />
                 ))}
@@ -92,7 +92,7 @@ export default async function ModerationPage({
             {reportedArguments.length === 0 ? (
               <Empty text="No open reports." />
             ) : (
-              <ul>
+              <ul className="mt-4 space-y-3">
                 {reportedArguments.map((item) => (
                   <ArgumentQueueItem
                     key={`${item.a}/${item.b}/${item.argumentId}`}
@@ -117,7 +117,7 @@ export default async function ModerationPage({
             {pending.length === 0 ? (
               <Empty text="Nothing waiting." />
             ) : (
-              <ul>
+              <ul className="mt-4 space-y-3">
                 {pending.map((feat) => (
                   <QueueItem key={feat.id} feat={feat} />
                 ))}

@@ -2,11 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 
 export function PublishAllButton({ count }: { count: number }) {
   const router = useRouter();
-  const [confirming, setConfirming] = useState(false);
+  const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -24,7 +24,7 @@ export function PublishAllButton({ count }: { count: number }) {
         published?: number;
       } | null;
       if (response.ok) {
-        setConfirming(false);
+        setOpen(false);
         setMessage(`Published ${json?.published ?? 0} characters.`);
         router.refresh();
         return;
@@ -42,37 +42,52 @@ export function PublishAllButton({ count }: { count: number }) {
   return (
     <div className="mt-6 border p-4 text-sm">
       {count > 0 ? (
-        confirming ? (
-          <div className="flex flex-wrap items-center gap-3">
-            <p className="flex-1">
-              Publish {count} drafts without verified feats? They rank on the editor
-              baseline and are labelled as estimates.
-            </p>
-            <Button variant="primary" disabled={busy} onClick={() => void run()}>
-              {busy ? "Publishing" : "Confirm"}
-            </Button>
-            <Button
-              variant="outline"
-              disabled={busy}
-              onClick={() => setConfirming(false)}
-            >
-              Cancel
-            </Button>
-          </div>
-        ) : (
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p>{count} drafts waiting.</p>
-            <Button variant="outline" onClick={() => setConfirming(true)}>
-              Publish all drafts
-            </Button>
-          </div>
-        )
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p>{count} drafts waiting.</p>
+          <button
+            type="button"
+            className="btn btn-line btn-sm"
+            onClick={() => setOpen(true)}
+          >
+            Publish all drafts
+          </button>
+        </div>
       ) : null}
       {message ? (
-        <p role="status" className="mt-2">
+        <p role="status" className={count > 0 ? "mt-2" : undefined}>
           {message}
         </p>
       ) : null}
+
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        eyebrow="Characters"
+        title="Publish all drafts?"
+      >
+        <p className="text-sm">
+          Publish {count} drafts without verified feats? They rank on the editor baseline
+          and are labelled as estimates.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="btn btn-solid btn-sm"
+            disabled={busy}
+            onClick={() => void run()}
+          >
+            {busy ? "Publishing" : "Publish all"}
+          </button>
+          <button
+            type="button"
+            className="btn btn-line btn-sm"
+            disabled={busy}
+            onClick={() => setOpen(false)}
+          >
+            Cancel
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

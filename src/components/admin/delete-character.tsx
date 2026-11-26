@@ -2,11 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { SectionLabel } from "@/components/profile/section-label";
 import { controlClass } from "@/components/ui/fields";
+import { Modal } from "@/components/ui/modal";
 
 export function DeleteCharacter({ slug, name }: { slug: string; name: string }) {
   const router = useRouter();
+  const [open, setOpen] = useState(false);
   const [typed, setTyped] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,41 +37,72 @@ export function DeleteCharacter({ slug, name }: { slug: string; name: string }) 
   }
 
   return (
-    <section className="mt-16 max-w-2xl border-t pt-8" aria-labelledby="danger">
-      <h2 id="danger" className="eyebrow">
-        Delete {name}
-      </h2>
-      <p className="mt-2 text-sm">
-        This permanently deletes the character, all of its feats and votes, every matchup
-        it appears in with its votes and arguments, and any reports about them. It cannot
-        be undone.
-      </p>
-      <label className="mt-4 block">
-        <span className="eyebrow">
-          Type <span className="font-mono normal-case">{slug}</span> to confirm
-        </span>
-        <input
-          value={typed}
-          onChange={(event) => setTyped(event.target.value)}
-          autoComplete="off"
-          spellCheck={false}
-          className={controlClass}
-        />
-      </label>
-      <div className="mt-4">
-        <Button
-          variant="outline"
-          disabled={busy || typed.trim().toLowerCase() !== slug}
-          onClick={() => void remove()}
-        >
-          Delete permanently
-        </Button>
-      </div>
-      {error ? (
-        <p role="alert" className="mt-3 text-sm font-medium">
-          {error}
+    <section id="danger" className="mt-12" aria-label="Danger zone">
+      <SectionLabel title="Danger zone" />
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border p-4">
+        <p className="max-w-xl text-sm">
+          Deleting {name} also deletes all of its feats and votes, every matchup it
+          appears in, and any reports about them. It cannot be undone.
         </p>
-      ) : null}
+        <button
+          type="button"
+          className="btn btn-sm border-(--spark)! bg-(--spark)! text-black!"
+          onClick={() => {
+            setTyped("");
+            setError(null);
+            setOpen(true);
+          }}
+        >
+          Delete character
+        </button>
+      </div>
+
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        eyebrow="Character"
+        title={`Delete ${name}?`}
+      >
+        <p className="text-sm">
+          This permanently deletes the character, all of its feats and votes, every
+          matchup it appears in with its votes and arguments, and any reports about them.
+        </p>
+        <label className="mt-5 block">
+          <span className="eyebrow">
+            Type <span className="font-mono normal-case">{slug}</span> to confirm
+          </span>
+          <input
+            value={typed}
+            onChange={(event) => setTyped(event.target.value)}
+            autoComplete="off"
+            spellCheck={false}
+            className={controlClass}
+          />
+        </label>
+        {error ? (
+          <p role="alert" className="mt-3 text-sm font-medium">
+            {error}
+          </p>
+        ) : null}
+        <div className="mt-6 flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="btn btn-sm border-(--spark)! bg-(--spark)! text-black! disabled:opacity-50"
+            disabled={busy || typed.trim().toLowerCase() !== slug}
+            onClick={() => void remove()}
+          >
+            {busy ? "Deleting" : "Delete permanently"}
+          </button>
+          <button
+            type="button"
+            className="btn btn-line btn-sm"
+            disabled={busy}
+            onClick={() => setOpen(false)}
+          >
+            Cancel
+          </button>
+        </div>
+      </Modal>
     </section>
   );
 }
