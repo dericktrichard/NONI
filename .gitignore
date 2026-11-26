@@ -35,6 +35,9 @@ yarn-error.log*
 .env.local
 !.env.example
 
+# local data backups (contain user data)
+/backups/
+
 # vercel
 .vercel
 
