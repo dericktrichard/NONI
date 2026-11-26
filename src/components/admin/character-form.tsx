@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Loader2, Plus, X } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { Portrait } from "@/components/characters/portrait";
-import { Button } from "@/components/ui/button";
+import { SaveBar } from "@/components/admin/save-bar";
+import { SectionLabel } from "@/components/profile/section-label";
 import { Field, TierSelect, controlClass } from "@/components/ui/fields";
 import { HAX_KIND_LIST, HAX_KINDS, type HaxKind } from "@/config/combat";
 import { MEDIA_LABELS, MEDIA_TYPES } from "@/config/media";
@@ -52,8 +53,11 @@ function AbilityEditor({
     onChange(rows.map((row) => (row.key === key ? { ...row, ...change } : row)));
 
   return (
-    <fieldset className="space-y-3">
-      <legend className="eyebrow mb-2">{title}</legend>
+    <section aria-label={title} className="space-y-3">
+      <SectionLabel title={title} />
+      {rows.length === 0 ? (
+        <p className="text-muted-foreground text-sm">None added.</p>
+      ) : null}
       {rows.map((row) => (
         <div
           key={row.key}
@@ -80,19 +84,22 @@ function AbilityEditor({
           />
           <button
             type="button"
-            aria-label="Remove"
+            className="btn btn-quiet btn-sm"
             onClick={() => onChange(rows.filter((r) => r.key !== row.key))}
-            className="hover:bg-muted grid size-11 place-items-center"
           >
-            <X className="size-4" />
+            Remove
           </button>
         </div>
       ))}
-      <Button variant="outline" size="sm" onClick={() => onChange([...rows, blankRow()])}>
+      <button
+        type="button"
+        className="btn btn-line btn-sm"
+        onClick={() => onChange([...rows, blankRow()])}
+      >
         <Plus className="size-4" aria-hidden />
         Add
-      </Button>
-    </fieldset>
+      </button>
+    </section>
   );
 }
 
@@ -233,13 +240,13 @@ export function CharacterForm({ initial }: { initial?: CharacterEditData }) {
 
   if (created) {
     return (
-      <div className="mt-8 border p-6">
+      <div className="border p-6">
         <p className="font-display text-xl font-semibold">Character created.</p>
-        <div className="mt-4 flex gap-4 text-sm">
-          <Link href={`/characters/${created}`} className="underline underline-offset-4">
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Link href={`/characters/${created}`} className="btn btn-line btn-sm">
             View the page
           </Link>
-          <a href="/admin/characters/new" className="underline underline-offset-4">
+          <a href="/admin/characters/new" className="btn btn-solid btn-sm">
             Add another
           </a>
         </div>
@@ -248,210 +255,217 @@ export function CharacterForm({ initial }: { initial?: CharacterEditData }) {
   }
 
   return (
-    <form onSubmit={submit} className="mt-8 max-w-2xl space-y-8">
-      {saved ? (
-        <p role="status" className="border p-3 text-sm">
-          Saved.{" "}
-          <Link href={`/characters/${slug}`} className="underline underline-offset-4">
-            View the page
-          </Link>
-        </p>
-      ) : null}
+    <form onSubmit={submit} className="space-y-8">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_17rem]">
+        <div className="min-w-0 space-y-8 lg:col-start-1 lg:row-start-1">
+          <section aria-label="Identity" className="space-y-4">
+            <SectionLabel title="Identity" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Name">
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  maxLength={80}
+                  required
+                  className={controlClass}
+                />
+              </Field>
+              <Field label={editing ? "Slug (fixed once created)" : "Slug (optional)"}>
+                <input
+                  value={slugText}
+                  onChange={(e) => setSlugText(e.target.value)}
+                  placeholder={slugify(name)}
+                  maxLength={80}
+                  readOnly={editing}
+                  className={controlClass}
+                />
+              </Field>
+              <Field label="Verse or franchise">
+                <input
+                  value={verse}
+                  onChange={(e) => setVerse(e.target.value)}
+                  maxLength={80}
+                  required
+                  className={controlClass}
+                />
+              </Field>
+              <Field label="Medium">
+                <select
+                  value={media}
+                  onChange={(e) => setMedia(e.target.value as MediaType)}
+                  className={controlClass}
+                >
+                  {MEDIA_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {MEDIA_LABELS[type]}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Version of (slug of the main character)">
+                <input
+                  value={entity}
+                  onChange={(e) => setEntity(e.target.value)}
+                  maxLength={80}
+                  placeholder="superman"
+                  className={controlClass}
+                />
+              </Field>
+              <Field label="Version label">
+                <input
+                  value={continuity}
+                  onChange={(e) => setContinuity(e.target.value)}
+                  maxLength={40}
+                  placeholder="DCEU"
+                  className={controlClass}
+                />
+              </Field>
+            </div>
+            <p className="text-muted-foreground text-sm">
+              Use the version fields when the same character exists in another medium or
+              continuity. Give every version the same &quot;Version of&quot; slug. Each
+              version keeps its own feats and ranking.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Aliases (comma separated)">
+                <input
+                  value={aliases}
+                  onChange={(e) => setAliases(e.target.value)}
+                  className={controlClass}
+                />
+              </Field>
+              <Field label="Tags (comma separated)">
+                <input
+                  value={tags}
+                  onChange={(e) => setTags(e.target.value)}
+                  className={controlClass}
+                />
+              </Field>
+            </div>
+          </section>
 
-      <fieldset className="space-y-4">
-        <legend className="eyebrow mb-2">Identity</legend>
-        <Field label="Name">
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            maxLength={80}
-            required
-            className={controlClass}
-          />
-        </Field>
-        <Field
-          label={
-            editing
-              ? "Slug (fixed once created)"
-              : "Slug (optional, used in the page address)"
-          }
+          <section aria-label="Baseline power" className="space-y-4">
+            <SectionLabel title="Baseline power" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <TierSelect
+                label="Attack potency"
+                value={attackPotency}
+                onChange={setAttackPotency}
+              />
+              <TierSelect label="Durability" value={durability} onChange={setDurability} />
+              <Field label="Speed">
+                <select
+                  value={speed}
+                  onChange={(e) => setSpeed(e.target.value)}
+                  required
+                  className={controlClass}
+                >
+                  <option value="">Select</option>
+                  {SPEED_LEVELS.map((level) => (
+                    <option key={level} value={level}>
+                      {level}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Dimensionality">
+                <select
+                  value={dimension}
+                  onChange={(e) => setDimension(Number(e.target.value))}
+                  className={controlClass}
+                >
+                  <option value={0}>Automatic from the tiers</option>
+                  {Array.from(
+                    { length: MAX_DIMENSION - MIN_DIMENSION + 1 },
+                    (_, i) => MIN_DIMENSION + i,
+                  ).map((n) => (
+                    <option key={n} value={n}>
+                      {dimensionLabel(n)}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+            {editing ? (
+              <p className="text-muted-foreground text-sm">
+                This is the starting baseline. Verified feats override it automatically on
+                the live profile.
+              </p>
+            ) : null}
+          </section>
+
+          <AbilityEditor title="Abilities" rows={hax} onChange={setHax} />
+          <AbilityEditor title="Resistances" rows={resistances} onChange={setResistances} />
+        </div>
+
+        <aside
+          aria-label="Image"
+          className="space-y-4 lg:sticky lg:top-[calc(var(--nav-space)+1rem)] lg:col-start-2 lg:row-start-1 lg:self-start"
         >
-          <input
-            value={slugText}
-            onChange={(e) => setSlugText(e.target.value)}
-            placeholder={slugify(name)}
-            maxLength={80}
-            readOnly={editing}
-            className={controlClass}
-          />
-        </Field>
-        <Field label="Verse or franchise">
-          <input
-            value={verse}
-            onChange={(e) => setVerse(e.target.value)}
-            maxLength={80}
-            required
-            className={controlClass}
-          />
-        </Field>
-        <Field label="Medium">
-          <select
-            value={media}
-            onChange={(e) => setMedia(e.target.value as MediaType)}
-            className={controlClass}
-          >
-            {MEDIA_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {MEDIA_LABELS[type]}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Version of (optional, slug of the main character)">
-          <input
-            value={entity}
-            onChange={(e) => setEntity(e.target.value)}
-            maxLength={80}
-            placeholder="superman"
-            className={controlClass}
-          />
-        </Field>
-        <Field label="Version label (optional)">
-          <input
-            value={continuity}
-            onChange={(e) => setContinuity(e.target.value)}
-            maxLength={40}
-            placeholder="DCEU"
-            className={controlClass}
-          />
-        </Field>
-        <p className="text-muted-foreground text-sm">
-          Use these when the same character exists in another medium or continuity. Give
-          every version the same &quot;Version of&quot; slug. Each version keeps its own
-          feats and ranking.
-        </p>
-        <Field label="Aliases (comma separated)">
-          <input
-            value={aliases}
-            onChange={(e) => setAliases(e.target.value)}
-            className={controlClass}
-          />
-        </Field>
-        <Field label="Tags (comma separated)">
-          <input
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            className={controlClass}
-          />
-        </Field>
-      </fieldset>
-
-      <fieldset className="space-y-4">
-        <legend className="eyebrow mb-2">Baseline power</legend>
-        <TierSelect
-          label="Attack potency"
-          value={attackPotency}
-          onChange={setAttackPotency}
-        />
-        <TierSelect label="Durability" value={durability} onChange={setDurability} />
-        <Field label="Speed">
-          <select
-            value={speed}
-            onChange={(e) => setSpeed(e.target.value)}
-            required
-            className={controlClass}
-          >
-            <option value="">Select</option>
-            {SPEED_LEVELS.map((level) => (
-              <option key={level} value={level}>
-                {level}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Dimensionality">
-          <select
-            value={dimension}
-            onChange={(e) => setDimension(Number(e.target.value))}
-            className={controlClass}
-          >
-            <option value={0}>Automatic from the tiers</option>
-            {Array.from(
-              { length: MAX_DIMENSION - MIN_DIMENSION + 1 },
-              (_, i) => MIN_DIMENSION + i,
-            ).map((n) => (
-              <option key={n} value={n}>
-                {dimensionLabel(n)}
-              </option>
-            ))}
-          </select>
-        </Field>
-        {editing ? (
-          <p className="text-muted-foreground text-sm">
-            This is the starting baseline. Verified feats override it automatically on the
-            live profile.
-          </p>
-        ) : null}
-      </fieldset>
-
-      <AbilityEditor title="Abilities" rows={hax} onChange={setHax} />
-      <AbilityEditor title="Resistances" rows={resistances} onChange={setResistances} />
-
-      <fieldset className="space-y-4">
-        <legend className="eyebrow mb-2">Image</legend>
-        <div className="flex items-start gap-4">
+          <SectionLabel title="Image" />
           <Portrait
             name={name || "Preview"}
             src={imageUrl}
-            sizes="160px"
-            className="aspect-4/5 w-40 shrink-0"
+            sizes="272px"
+            className="aspect-4/5 w-full max-w-60"
           />
-          <div className="min-w-0 flex-1 space-y-3">
-            <Field label="JPEG, PNG or WebP, up to 4 MB">
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                disabled={uploading}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) void upload(file);
-                  e.target.value = "";
-                }}
-                className="file:bg-muted block w-full text-sm file:mr-3 file:border file:px-3 file:py-2"
-              />
-            </Field>
-            {uploading ? <p className="eyebrow">Uploading</p> : null}
-            <Field label="Credit and source">
-              <input
-                value={credit}
-                onChange={(e) => setCredit(e.target.value)}
-                maxLength={200}
-                className={controlClass}
-              />
-            </Field>
-            {imageUrl ? (
-              <button
-                type="button"
-                onClick={() => setImageUrl(null)}
-                className="text-sm underline underline-offset-4"
-              >
-                Remove image
-              </button>
-            ) : null}
-          </div>
-        </div>
-      </fieldset>
+          <Field label="JPEG, PNG or WebP, up to 4 MB">
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              disabled={uploading}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void upload(file);
+                e.target.value = "";
+              }}
+              className="file:bg-muted block w-full text-sm file:mr-3 file:border file:px-3 file:py-2"
+            />
+          </Field>
+          {uploading ? <p className="eyebrow">Uploading</p> : null}
+          <Field label="Credit and source">
+            <input
+              value={credit}
+              onChange={(e) => setCredit(e.target.value)}
+              maxLength={200}
+              className={controlClass}
+            />
+          </Field>
+          {imageUrl ? (
+            <button
+              type="button"
+              className="btn btn-quiet btn-sm"
+              onClick={() => setImageUrl(null)}
+            >
+              Remove image
+            </button>
+          ) : null}
+        </aside>
+      </div>
 
-      {error ? (
-        <p role="alert" className="text-sm font-medium">
-          {error}
-        </p>
-      ) : null}
-
-      <Button type="submit" variant="primary" disabled={busy || uploading}>
-        {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
-        {editing ? "Save changes" : "Create character"}
-      </Button>
+      <SaveBar>
+        <button
+          type="submit"
+          className="btn btn-solid btn-sm"
+          disabled={busy || uploading}
+        >
+          {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
+          {editing ? "Save changes" : "Create character"}
+        </button>
+        {saved ? (
+          <p role="status" className="text-sm">
+            Saved.{" "}
+            <Link href={`/characters/${slug}`} className="underline underline-offset-4">
+              View the page
+            </Link>
+          </p>
+        ) : null}
+        {error ? (
+          <p role="alert" className="text-sm font-medium">
+            {error}
+          </p>
+        ) : null}
+      </SaveBar>
     </form>
   );
 }

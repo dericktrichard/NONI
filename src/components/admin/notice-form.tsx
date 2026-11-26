@@ -4,7 +4,8 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { NoticePanel } from "@/components/home/notice-panel";
-import { Button } from "@/components/ui/button";
+import { SaveBar } from "@/components/admin/save-bar";
+import { SectionLabel } from "@/components/profile/section-label";
 import { Field, controlClass } from "@/components/ui/fields";
 import { NOTICE_LIMITS } from "@/lib/validation/notice";
 
@@ -52,76 +53,90 @@ export function NoticeForm({ initial }: { initial: Initial }) {
   }
 
   return (
-    <div className="mt-8 max-w-2xl space-y-6">
-      <div className="flex items-center justify-between gap-4 border p-4">
-        <div>
-          <p className="text-sm font-medium">Show on the home page</p>
-          <p className="text-muted-foreground text-sm">
-            Off means nothing appears, as if it was never there.
-          </p>
+    <div className="space-y-8">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+        <div className="min-w-0 space-y-6">
+          <div className="flex items-center justify-between gap-4 border p-4">
+            <div>
+              <p className="text-sm font-medium">Show on the home page</p>
+              <p className="text-muted-foreground text-sm">
+                Off means nothing appears, as if it was never there.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={enabled}
+              aria-label="Show the notice on the home page"
+              onClick={() => setEnabled((value) => !value)}
+              className={`relative h-7 w-12 shrink-0 border transition-colors ${
+                enabled ? "bg-accent border-foreground" : "bg-muted"
+              }`}
+            >
+              <span
+                className={`bg-foreground absolute top-0.5 size-5 transition-[left] duration-150 ${
+                  enabled ? "left-6" : "left-0.5"
+                }`}
+              />
+            </button>
+          </div>
+
+          <Field label="Title">
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              maxLength={NOTICE_LIMITS.title}
+              className={controlClass}
+            />
+          </Field>
+
+          <Field label="Message">
+            <textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              maxLength={NOTICE_LIMITS.body}
+              rows={7}
+              className={controlClass}
+            />
+            <p className="eyebrow mt-1 text-right">
+              {body.length} / {NOTICE_LIMITS.body}
+            </p>
+          </Field>
         </div>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={enabled}
-          aria-label="Show the notice on the home page"
-          onClick={() => setEnabled((value) => !value)}
-          className={`relative h-7 w-12 shrink-0 border transition-colors ${
-            enabled ? "bg-accent border-foreground" : "bg-muted"
-          }`}
+
+        <aside
+          aria-label="Preview"
+          className="lg:sticky lg:top-[calc(var(--nav-space)+1rem)] lg:self-start"
         >
-          <span
-            className={`bg-foreground absolute top-0.5 size-5 transition-[left] duration-150 ${
-              enabled ? "left-6" : "left-0.5"
-            }`}
-          />
-        </button>
+          <SectionLabel title="Preview" />
+          <div className="mt-4">
+            {enabled && title.trim() && body.trim() ? (
+              <NoticePanel title={title.trim()} body={body.trim()} />
+            ) : (
+              <p className="text-muted-foreground border p-4 text-sm">
+                Nothing is shown. Visitors see no notice.
+              </p>
+            )}
+          </div>
+        </aside>
       </div>
 
-      <Field label="Title">
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          maxLength={NOTICE_LIMITS.title}
-          className={controlClass}
-        />
-      </Field>
-
-      <Field label="Message">
-        <textarea
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          maxLength={NOTICE_LIMITS.body}
-          rows={7}
-          className={controlClass}
-        />
-        <p className="eyebrow mt-1 text-right">
-          {body.length} / {NOTICE_LIMITS.body}
-        </p>
-      </Field>
-
-      <div className="flex flex-wrap items-center gap-3">
-        <Button variant="primary" disabled={busy} onClick={() => void save()}>
+      <SaveBar>
+        <button
+          type="button"
+          className="btn btn-solid btn-sm"
+          disabled={busy}
+          onClick={() => void save()}
+        >
           {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
           Save
-        </Button>
+        </button>
         {message ? (
           <p role="status" className="text-sm">
             {message}
           </p>
         ) : null}
-      </div>
-
-      <section aria-label="Preview">
-        <p className="eyebrow mb-2">Preview</p>
-        {enabled && title.trim() && body.trim() ? (
-          <NoticePanel title={title.trim()} body={body.trim()} />
-        ) : (
-          <p className="text-muted-foreground border p-4 text-sm">
-            Nothing is shown. Visitors see no notice.
-          </p>
-        )}
-      </section>
+      </SaveBar>
     </div>
   );
 }

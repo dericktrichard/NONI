@@ -60,7 +60,7 @@ export function QueueItem({ feat }: { feat: QueueFeat }) {
   }
 
   return (
-    <li className="border-b py-6">
+    <li className="border p-4">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <Badge variant={feat.status === "verified" ? "accent" : "outline"}>
           {feat.status}
