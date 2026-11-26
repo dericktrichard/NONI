@@ -8,6 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "NONI",
     description: "Fictional powerscaling backed by cited evidence.",
     id: "/",
+    lang: "en",
     start_url: "/",
     scope: "/",
     display: "standalone",

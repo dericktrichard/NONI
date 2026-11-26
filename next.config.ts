@@ -32,7 +32,12 @@ const nextConfig: NextConfig = {
     ];
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    const fresh = [{ key: "Cache-Control", value: "no-cache, max-age=0, must-revalidate" }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      { source: "/sw.js", headers: fresh },
+      { source: "/offline.html", headers: fresh },
+    ];
   },
 };
 

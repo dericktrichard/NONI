@@ -1,4 +1,4 @@
-const VERSION = "noni-v1";
+const VERSION = "noni-v2";
 const STATIC = `${VERSION}-static`;
 const OFFLINE = "/offline.html";
 const MAX_ASSETS = 120;
@@ -7,7 +7,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(STATIC)
-      .then((cache) => cache.add(OFFLINE))
+      .then((cache) => cache.add(new Request(OFFLINE, { cache: "reload" })))
       .then(() => self.skipWaiting()),
   );
 });
