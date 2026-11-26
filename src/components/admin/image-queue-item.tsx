@@ -62,7 +62,7 @@ export function ImageQueueItem({ item }: { item: ReportedImage }) {
           item.kind === "avatar" ? "aspect-square w-32" : "aspect-8/3 w-full max-w-md",
         )}
       >
-        <Image src={item.imageUrl} alt="" fill sizes="448px" className="object-cover" />
+        <Image src={item.imageUrl} alt="Uploaded image awaiting review" fill sizes="448px" className="object-cover" />
       </div>
 
       <ul className="mt-3 space-y-1 text-sm">

@@ -101,7 +101,7 @@ export default async function Home() {
       fallback={
         <>
           {heroNode}
-          <main className="mx-auto max-w-6xl px-4 pt-6 pb-24">{overviewNode}</main>
+          <div className="mx-auto max-w-6xl px-4 pt-6 pb-24">{overviewNode}</div>
         </>
       }
     >

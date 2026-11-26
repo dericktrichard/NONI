@@ -9,7 +9,7 @@ export default function ErrorPage({
   reset: () => void;
 }) {
   return (
-    <main className="mx-auto max-w-3xl px-4 py-24">
+    <div className="mx-auto max-w-3xl px-4 py-24">
       <div className="border p-6 sm:p-10">
         <p className="eyebrow">Something went wrong</p>
         <h1 className="font-display mt-3 text-3xl font-semibold tracking-tight sm:text-5xl">
@@ -28,6 +28,6 @@ export default function ErrorPage({
           </Link>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

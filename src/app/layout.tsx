@@ -62,10 +62,18 @@ export default function RootLayout({
     >
       <body>
         <ThemeProvider>
+          <a
+            href="#main"
+            className="bg-foreground text-background sr-only text-sm font-medium focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-100 focus:px-3 focus:py-2"
+          >
+            Skip to content
+          </a>
           <NavTracker />
           <Header />
           <div className="flex min-h-svh flex-col">
-            <div className="flex-1 pt-(--nav-space)">{children}</div>
+            <main id="main" className="flex-1 pt-(--nav-space)">
+              {children}
+            </main>
             <div
               data-chrome
               className="pb-[calc(5rem+env(safe-area-inset-bottom))] sm:pb-0"
