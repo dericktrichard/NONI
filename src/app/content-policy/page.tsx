@@ -82,7 +82,9 @@ const SECTIONS: DocSection[] = [
         </p>
         <p>
           If your content is hidden you can reply to the notice or write to {mail}, and a
-          different moderator will look again.
+          different moderator will look again. Deleting your account does not erase
+          feats and arguments you posted. They stay, with no link to you, so that
+          rankings stay consistent. Write to {mail} if you want one reviewed for removal.
         </p>
       </>
     ),

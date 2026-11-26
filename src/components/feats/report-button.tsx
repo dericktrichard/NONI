@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
+import { createPortal } from "react-dom";
 import { controlClass } from "@/components/ui/fields";
+import { Modal } from "@/components/ui/modal";
 import { OPEN_SIGN_IN } from "@/lib/auth/events";
 import {
   REPORT_REASONS,
@@ -14,17 +16,23 @@ interface ReportButtonProps {
   target: Record<string, string>;
 }
 
+const HB =
+  "eyebrow border border-foreground bg-foreground px-2 py-1 text-background! hover:opacity-85 disabled:opacity-50";
+
 export function ReportButton({ endpoint, target }: ReportButtonProps) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<ReportReason>("inaccurate");
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [slot, setSlot] = useState<HTMLElement | null>(null);
+  const formId = useId();
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setMessage(null);
+    setError(null);
     try {
       const response = await fetch(endpoint, {
         method: "POST",
@@ -33,6 +41,7 @@ export function ReportButton({ endpoint, target }: ReportButtonProps) {
       });
       if (response.status === 401) {
         window.dispatchEvent(new Event(OPEN_SIGN_IN));
+        setOpen(false);
         setMessage("Sign in to report.");
         return;
       }
@@ -43,9 +52,9 @@ export function ReportButton({ endpoint, target }: ReportButtonProps) {
         return;
       }
       const data = (await response.json().catch(() => null)) as { error?: string } | null;
-      setMessage(data?.error ?? "Could not send the report.");
+      setError(data?.error ?? "Could not send the report.");
     } catch {
-      setMessage("Could not send the report.");
+      setError("Network error. Try again.");
     } finally {
       setBusy(false);
     }
@@ -53,19 +62,32 @@ export function ReportButton({ endpoint, target }: ReportButtonProps) {
 
   return (
     <div className="text-sm">
-      {!open ? (
-        <button
-          type="button"
-          onClick={() => {
-            setOpen(true);
-            setMessage(null);
-          }}
-          className="eyebrow hover:text-foreground min-h-11 underline underline-offset-4 transition-colors"
-        >
-          Report
-        </button>
-      ) : (
-        <form onSubmit={submit} className="mt-2 w-full max-w-sm space-y-3 border p-3">
+      <button
+        type="button"
+        onClick={() => {
+          setOpen(true);
+          setMessage(null);
+          setError(null);
+        }}
+        className="eyebrow hover:text-foreground min-h-11 underline underline-offset-4 transition-colors"
+      >
+        Report
+      </button>
+
+      {message ? (
+        <p role="status" className="text-muted-foreground">
+          {message}
+        </p>
+      ) : null}
+
+      <Modal
+        slim
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Report"
+        actions={<span ref={setSlot} className="contents" />}
+      >
+        <form id={formId} onSubmit={submit} className="space-y-4">
           <label className="block">
             <span className="eyebrow mb-1 block">Reason</span>
             <select
@@ -90,26 +112,21 @@ export function ReportButton({ endpoint, target }: ReportButtonProps) {
               className={`${controlClass} h-auto py-2`}
             />
           </label>
-          <div className="flex gap-2">
-            <button type="submit" disabled={busy} className="btn btn-solid btn-sm">
-              Send report
-            </button>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="btn btn-quiet btn-sm"
-            >
-              Cancel
-            </button>
-          </div>
+          {error ? (
+            <p role="alert" className="text-sm font-medium">
+              {error}
+            </p>
+          ) : null}
+          {slot
+            ? createPortal(
+                <button type="submit" form={formId} className={HB} disabled={busy}>
+                  {busy ? "Sending" : "Send report"}
+                </button>,
+                slot,
+              )
+            : null}
         </form>
-      )}
-
-      {message ? (
-        <p role="status" className="text-muted-foreground mt-1">
-          {message}
-        </p>
-      ) : null}
+      </Modal>
     </div>
   );
 }
